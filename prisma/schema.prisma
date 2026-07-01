@@ -1,0 +1,454 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTENTICAÇÃO & CONTROLE DE ACESSO
+// ═══════════════════════════════════════════════════════════
+
+enum Role {
+  ADMIN
+  MEDICO
+  PSICOLOGO
+  ENFERMEIRO
+  TERAPEUTA
+  SECRETARIA
+  FINANCEIRO
+  MONITOR
+  APOIO
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          Role
+  cpf           String?   @unique
+  crm           String?   // Para médicos
+  crp           String?   // Para psicólogos
+  coren         String?   // Para enfermeiros
+  phone         String?
+  active        Boolean   @default(true)
+  twoFactorEnabled Boolean @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relações
+  sessions      Session[]
+  auditLogs     AuditLog[]
+  evolucoes     Evolucao[]
+  prescricoes   Prescricao[]
+  agendamentos  Agendamento[]   @relation("profissional")
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("sessions")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   // CREATE, READ, UPDATE, DELETE
+  entity    String   // Nome da tabela/módulo
+  entityId  String?  // ID do registro afetado
+  details   Json?    // Dados antes/depois
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ═══════════════════════════════════════════════════════════
+// PACIENTES & PRONTUÁRIO
+// ═══════════════════════════════════════════════════════════
+
+enum StatusPaciente {
+  ATIVO         // Em tratamento
+  ALTA          // Alta médica
+  EVADIDO       // Abandonou tratamento
+  TRANSFERIDO   // Transferido para outra unidade
+  OBITO         // Falecimento
+}
+
+enum EstadoCivil {
+  SOLTEIRO
+  CASADO
+  DIVORCIADO
+  VIUVO
+  UNIAO_ESTAVEL
+}
+
+model Paciente {
+  id              String         @id @default(uuid())
+  nome            String
+  cpf             String         @unique
+  rg              String?
+  dataNascimento  DateTime
+  sexo            String
+  estadoCivil     EstadoCivil
+  profissao       String?
+  telefone        String?
+  email           String?
+  status          StatusPaciente @default(ATIVO)
+
+  // Endereço
+  endereco        String?
+  bairro          String?
+  cidade          String?
+  uf              String?
+  cep             String?
+
+  // Clínico
+  substanciaPrincipal String?    // Droga principal de uso
+  tempoUso            String?    // Tempo de uso
+  internacoesPrevias  Int        @default(0)
+  comorbidades        String?    // Comorbidades psiquiátricas
+  alergias            String?
+
+  // Tratamento
+  dataAdmissao    DateTime
+  dataAltaPrevista DateTime?
+  dataAlta        DateTime?
+  diasTratamento  Int
+  quartoId        String?
+
+  // Financeiro
+  matriculaValor  Float?
+  mensalidadeValor Float?
+  diaVencimento   Int?          // 5 ou 20
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?      // Soft delete
+
+  // Relações
+  responsaveis    Responsavel[]
+  evolucoes       Evolucao[]
+  prescricoes     Prescricao[]
+  agendamentos    Agendamento[]
+  documentos      Documento[]
+  movimentacoes   MovimentacaoFinanceira[]
+  quarto          Quarto?        @relation(fields: [quartoId], references: [id])
+  comunicacoes    Comunicacao[]
+
+  @@index([nome])
+  @@index([cpf])
+  @@index([status])
+  @@map("pacientes")
+}
+
+model Responsavel {
+  id              String      @id @default(uuid())
+  pacienteId      String
+  nome            String
+  cpf             String
+  dataNascimento  DateTime?
+  profissao       String?
+  estadoCivil     EstadoCivil?
+  parentesco      String      // mãe, pai, cônjuge, etc
+  telefone        String
+  email           String?
+  endereco        String?
+  isFinanceiro    Boolean     @default(true) // É o responsável financeiro?
+  createdAt       DateTime    @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@map("responsaveis")
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVOLUÇÃO CLÍNICA
+// ═══════════════════════════════════════════════════════════
+
+enum TipoEvolucao {
+  MEDICA
+  PSICOLOGICA
+  ENFERMAGEM
+  TERAPEUTICA
+  SOCIAL
+  NUTRICIONAL
+}
+
+model Evolucao {
+  id            String        @id @default(uuid())
+  pacienteId    String
+  profissionalId String
+  tipo          TipoEvolucao
+  conteudo      String        // Texto da evolução (criptografado em prod)
+  sinaisVitais  Json?         // { pa, fc, fr, temp, spo2, peso }
+  assinado      Boolean       @default(false)
+  assinadoEm    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  paciente     Paciente @relation(fields: [pacienteId], references: [id])
+  profissional User     @relation(fields: [profissionalId], references: [id])
+
+  @@index([pacienteId, createdAt])
+  @@map("evolucoes")
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRESCRIÇÕES
+// ═══════════════════════════════════════════════════════════
+
+model Prescricao {
+  id            String   @id @default(uuid())
+  pacienteId    String
+  medicoId      String
+  medicamento   String
+  dosagem       String
+  via           String   // Oral, IM, IV, etc
+  frequencia    String   // 8/8h, 12/12h, etc
+  duracao       String?  // 7 dias, contínuo, etc
+  observacoes   String?
+  ativa         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+  medico   User     @relation(fields: [medicoId], references: [id])
+
+  @@index([pacienteId, ativa])
+  @@map("prescricoes")
+}
+
+// ═══════════════════════════════════════════════════════════
+// AGENDAMENTO
+// ═══════════════════════════════════════════════════════════
+
+enum StatusAgendamento {
+  AGENDADO
+  CONFIRMADO
+  EM_ATENDIMENTO
+  CONCLUIDO
+  CANCELADO
+  FALTA
+}
+
+model Agendamento {
+  id              String             @id @default(uuid())
+  pacienteId      String
+  profissionalId  String
+  tipo            String             // Consulta, Terapia, Exame, etc
+  dataHora        DateTime
+  duracao         Int                @default(50) // minutos
+  status          StatusAgendamento  @default(AGENDADO)
+  observacoes     String?
+  sala            String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  paciente     Paciente @relation(fields: [pacienteId], references: [id])
+  profissional User     @relation("profissional", fields: [profissionalId], references: [id])
+
+  @@index([profissionalId, dataHora])
+  @@index([pacienteId, dataHora])
+  @@map("agendamentos")
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUARTOS & LEITOS
+// ═══════════════════════════════════════════════════════════
+
+enum StatusQuarto {
+  DISPONIVEL
+  OCUPADO
+  MANUTENCAO
+  LIMPEZA
+}
+
+model Quarto {
+  id          String       @id @default(uuid())
+  numero      String       @unique
+  andar       Int
+  capacidade  Int          @default(1)
+  status      StatusQuarto @default(DISPONIVEL)
+  tipo        String?      // Individual, Duplo, Enfermaria
+  observacoes String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  pacientes Paciente[]
+
+  @@map("quartos")
+}
+
+// ═══════════════════════════════════════════════════════════
+// FINANCEIRO
+// ═══════════════════════════════════════════════════════════
+
+enum TipoMovimentacao {
+  RECEITA
+  DESPESA
+}
+
+enum CategoriaFinanceira {
+  MATRICULA
+  MENSALIDADE
+  MEDICAMENTO
+  TRANSPORTE
+  ALIMENTACAO
+  LAVANDERIA
+  EXAME
+  PROCEDIMENTO
+  OUTRO
+}
+
+enum StatusPagamento {
+  PENDENTE
+  PAGO
+  ATRASADO
+  CANCELADO
+}
+
+model MovimentacaoFinanceira {
+  id            String               @id @default(uuid())
+  pacienteId    String?
+  tipo          TipoMovimentacao
+  categoria     CategoriaFinanceira
+  descricao     String
+  valor         Float
+  dataVencimento DateTime
+  dataPagamento DateTime?
+  status        StatusPagamento      @default(PENDENTE)
+  formaPagamento String?             // Pix, Boleto, Cartão, Dinheiro
+  pixTxId       String?              // ID da transação Pix
+  nfeNumero     String?              // Número da NF-e emitida
+  observacoes   String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  paciente Paciente? @relation(fields: [pacienteId], references: [id])
+
+  @@index([pacienteId, dataVencimento])
+  @@index([status])
+  @@map("movimentacoes_financeiras")
+}
+
+// ═══════════════════════════════════════════════════════════
+// DOCUMENTOS
+// ═══════════════════════════════════════════════════════════
+
+enum TipoDocumento {
+  CONTRATO
+  RECEITA_SIMPLES
+  RECEITA_ESPECIAL
+  ATESTADO
+  DECLARACAO
+  RECIBO
+  RELATORIO_MEDICO
+  RELATORIO_PSICOLOGICO
+  PTI // Plano Terapêutico Individual
+  TERMO_CONSENTIMENTO
+  OUTRO
+}
+
+model Documento {
+  id          String        @id @default(uuid())
+  pacienteId  String
+  tipo        TipoDocumento
+  titulo      String
+  arquivo     String        // Path do arquivo
+  formato     String        // docx, pdf
+  geradoPor   String        // userId
+  assinado    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@index([pacienteId, tipo])
+  @@map("documentos")
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMUNICAÇÃO (BotConversa)
+// ═══════════════════════════════════════════════════════════
+
+enum CanalComunicacao {
+  WHATSAPP
+  EMAIL
+  SMS
+  INTERNO
+}
+
+enum StatusMensagem {
+  ENVIADA
+  ENTREGUE
+  LIDA
+  FALHA
+}
+
+model Comunicacao {
+  id            String           @id @default(uuid())
+  pacienteId    String?
+  destinatario  String           // Telefone ou email
+  canal         CanalComunicacao
+  assunto       String?
+  mensagem      String
+  status        StatusMensagem   @default(ENVIADA)
+  botconversaId String?          // ID no BotConversa
+  createdAt     DateTime         @default(now())
+
+  paciente Paciente? @relation(fields: [pacienteId], references: [id])
+
+  @@index([pacienteId, createdAt])
+  @@map("comunicacoes")
+}
+
+// ═══════════════════════════════════════════════════════════
+// ESTOQUE & INVENTÁRIO
+// ═══════════════════════════════════════════════════════════
+
+enum CategoriaItem {
+  MEDICAMENTO
+  MATERIAL_HOSPITALAR
+  HIGIENE
+  LIMPEZA
+  ALIMENTO
+  EQUIPAMENTO
+  ROUPA_CAMA
+  OUTRO
+}
+
+model ItemEstoque {
+  id            String         @id @default(uuid())
+  nome          String
+  categoria     CategoriaItem
+  unidade       String         // Un, Cx, Kg, L
+  quantidade    Int            @default(0)
+  minimo        Int            @default(5)  // Estoque mínimo para alerta
+  validade      DateTime?
+  localizacao   String?
+  fornecedor    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([categoria])
+  @@index([validade])
+  @@map("itens_estoque")
+}
