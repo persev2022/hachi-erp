@@ -45,3 +45,4 @@ Thumbs.db
 # Generated
 *.tsbuildinfo
 next-env.d.ts
+.vercel
