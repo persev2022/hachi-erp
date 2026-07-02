@@ -1,26 +1,26 @@
 /**
  * BotConversa API Client
- * Documentação: https://backend.botconversa.com.br/api/v1/docs
+ * Documentação: https://backend.botconversa.com.br/swagger
+ * Base URL: https://backend.botconversa.com.br/api/v1/webhook
+ * Auth: Header "API-KEY"
+ * Rate limit: 600 RPM
  */
 
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { prisma } from "@/lib/prisma";
 
-const API_BASE = "https://backend.botconversa.com.br/api/v1";
+const API_BASE = "https://backend.botconversa.com.br/api/v1/webhook";
 
 async function getApiKey(): Promise<string> {
-  // Try process.env first
   if (process.env.BOTCONVERSA_API_KEY) {
     return process.env.BOTCONVERSA_API_KEY;
   }
 
-  // Fallback: read from database
   const config = await prisma.systemConfig.findUnique({ where: { key: "integracoes" } });
   if (config) {
     try {
       const settings = JSON.parse(config.value);
       if (settings.botconversa?.apiKey) {
-        // Cache in process.env for subsequent calls
         process.env.BOTCONVERSA_API_KEY = settings.botconversa.apiKey;
         return settings.botconversa.apiKey;
       }
@@ -30,7 +30,7 @@ async function getApiKey(): Promise<string> {
   throw new Error("BOTCONVERSA_API_KEY não configurada. Vá em Configurações → Integrações.");
 }
 
-async function getClient() {
+async function getClient(): Promise<AxiosInstance> {
   const apiKey = await getApiKey();
 
   return axios.create({
@@ -55,27 +55,106 @@ export interface SendFlowPayload {
 }
 
 /**
- * Envia uma mensagem de texto avulsa via WhatsApp.
+ * Busca subscriber por telefone.
+ * GET /subscriber/get_by_phone/{phone}/
  */
-export async function enviarMensagem(payload: SendMessagePayload) {
+export async function buscarSubscriberPorTelefone(phone: string): Promise<any> {
   const client = await getClient();
-  const response = await client.post("/message/send-text", {
-    phone: payload.phone,
-    text: payload.message,
+  const cleanPhone = phone.replace(/\D/g, "");
+  const response = await client.get(`/subscriber/get_by_phone/${cleanPhone}/`);
+  return response.data;
+}
+
+/**
+ * Cria um subscriber (se não existe).
+ * POST /subscriber/
+ */
+export async function criarSubscriber(phone: string, nome?: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.post("/subscriber/", {
+    phone: phone.replace(/\D/g, ""),
+    first_name: nome || "",
   });
   return response.data;
 }
 
 /**
- * Dispara um fluxo automatizado para um contato.
+ * Envia uma mensagem de texto para um subscriber.
+ * Fluxo: busca subscriber por telefone → envia mensagem
+ * POST /subscriber/{subscriber_id}/send_message/
+ */
+export async function enviarMensagem(payload: SendMessagePayload) {
+  const client = await getClient();
+  const cleanPhone = payload.phone.replace(/\D/g, "");
+
+  // Step 1: Find or create subscriber
+  let subscriberId: string;
+  try {
+    const subscriber = await buscarSubscriberPorTelefone(cleanPhone);
+    subscriberId = subscriber.id;
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      // Subscriber not found, create one
+      const newSubscriber = await criarSubscriber(cleanPhone);
+      subscriberId = newSubscriber.id;
+    } else {
+      throw error;
+    }
+  }
+
+  // Step 2: Send message
+  const response = await client.post(`/subscriber/${subscriberId}/send_message/`, {
+    text: payload.message,
+    type: "text",
+  });
+  return response.data;
+}
+
+/**
+ * Dispara um fluxo automatizado para um subscriber.
+ * POST /subscriber/{subscriber_id}/send_flow/
  */
 export async function dispararFluxo(payload: SendFlowPayload) {
   const client = await getClient();
-  const response = await client.post("/flow/start", {
-    phone: payload.phone,
+  const cleanPhone = payload.phone.replace(/\D/g, "");
+
+  // Find subscriber
+  let subscriberId: string;
+  try {
+    const subscriber = await buscarSubscriberPorTelefone(cleanPhone);
+    subscriberId = subscriber.id;
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      const newSubscriber = await criarSubscriber(cleanPhone);
+      subscriberId = newSubscriber.id;
+    } else {
+      throw error;
+    }
+  }
+
+  const response = await client.post(`/subscriber/${subscriberId}/send_flow/`, {
     flow_id: payload.flowId,
-    variables: payload.variables || {},
   });
+  return response.data;
+}
+
+/**
+ * Lista fluxos disponíveis.
+ * GET /flows/
+ */
+export async function listarFluxos() {
+  const client = await getClient();
+  const response = await client.get("/flows/");
+  return response.data;
+}
+
+/**
+ * Lista subscribers (paginado).
+ * GET /subscribers/
+ */
+export async function listarSubscribers(page = 1) {
+  const client = await getClient();
+  const response = await client.get(`/subscribers/?page=${page}`);
   return response.data;
 }
 
@@ -83,16 +162,5 @@ export async function dispararFluxo(payload: SendFlowPayload) {
  * Busca informações de um contato pelo telefone.
  */
 export async function buscarContato(phone: string) {
-  const client = await getClient();
-  const response = await client.get(`/contact/find?phone=${phone}`);
-  return response.data;
-}
-
-/**
- * Lista fluxos disponíveis.
- */
-export async function listarFluxos() {
-  const client = await getClient();
-  const response = await client.get("/flow/list");
-  return response.data;
+  return buscarSubscriberPorTelefone(phone);
 }

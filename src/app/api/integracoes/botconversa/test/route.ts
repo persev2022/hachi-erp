@@ -3,9 +3,8 @@ import { getSessionFromRequest } from "@/lib/auth";
 
 /**
  * POST: Test BotConversa API connection.
- * The BotConversa API base URL is https://backend.botconversa.com.br/api/v1
- * We test by calling GET /subscriber?phone=0 — a valid key returns 200/404 (subscriber not found),
- * an invalid key returns 401/403.
+ * Base URL: https://backend.botconversa.com.br/api/v1/webhook
+ * Uses GET /flows/ to verify the key works (lists available flows).
  */
 export async function POST(req: Request) {
   const session = await getSessionFromRequest(req);
@@ -24,9 +23,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Test with a subscriber lookup — verifies auth works
+    // Test with GET /flows/ — lists available flows
     const response = await fetch(
-      "https://backend.botconversa.com.br/api/v1/subscriber/?phone=5500000000000",
+      "https://backend.botconversa.com.br/api/v1/webhook/flows/",
       {
         method: "GET",
         headers: {
@@ -36,7 +35,6 @@ export async function POST(req: Request) {
       }
     );
 
-    // 401/403 = invalid key
     if (response.status === 401 || response.status === 403) {
       return NextResponse.json(
         { error: "API Key inválida. Verifique a chave no painel do BotConversa." },
@@ -44,39 +42,29 @@ export async function POST(req: Request) {
       );
     }
 
-    // 404 on subscriber = key is valid, just subscriber not found (expected)
-    // 200 = key valid and subscriber found
-    // Any 2xx or 404 = connection is working
-    if (response.ok || response.status === 404) {
+    if (response.ok) {
       return NextResponse.json({ success: true, message: "Conexão com BotConversa OK!" });
     }
 
-    // Try alternative endpoint structure
-    const altResponse = await fetch(
-      "https://backend.botconversa.com.br/api/v1/webhook/",
+    // Fallback: try /tags/ endpoint
+    const fallback = await fetch(
+      "https://backend.botconversa.com.br/api/v1/webhook/tags/",
       {
         method: "GET",
-        headers: {
-          "API-KEY": apiKey,
-          "Content-Type": "application/json",
-        },
+        headers: { "API-KEY": apiKey },
       }
     );
 
-    if (altResponse.status === 401 || altResponse.status === 403) {
-      return NextResponse.json(
-        { error: "API Key inválida" },
-        { status: 400 }
-      );
+    if (fallback.status === 401 || fallback.status === 403) {
+      return NextResponse.json({ error: "API Key inválida" }, { status: 400 });
     }
 
-    if (altResponse.ok || altResponse.status === 404 || altResponse.status === 405) {
+    if (fallback.ok) {
       return NextResponse.json({ success: true, message: "Conexão com BotConversa OK!" });
     }
 
-    // If we get here, the API structure might have changed
     return NextResponse.json(
-      { error: `Resposta inesperada (status ${response.status}). Verifique se a API Key está correta.` },
+      { error: `Resposta inesperada (status ${response.status})` },
       { status: 400 }
     );
   } catch (error: any) {
