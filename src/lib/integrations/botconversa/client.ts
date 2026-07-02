@@ -104,8 +104,8 @@ export async function enviarMensagem(payload: SendMessagePayload) {
 
   // Step 2: Send message
   const response = await client.post(`/subscriber/${subscriberId}/send_message/`, {
-    text: payload.message,
     type: "text",
+    value: payload.message,
   });
   return response.data;
 }
