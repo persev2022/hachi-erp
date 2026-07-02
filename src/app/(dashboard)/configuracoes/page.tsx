@@ -110,6 +110,10 @@ export default function ConfiguracoesPage() {
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/configuracoes/audit">Audit Log</Link>
                 </Button>
+              ) : section.title === "Integrações" ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/configuracoes/integracoes">Configurar</Link>
+                </Button>
               ) : (
                 <Button
                   variant="outline"
