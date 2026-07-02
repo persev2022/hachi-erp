@@ -13,7 +13,7 @@
 | 0.2 | Configurar ESLint + Prettier | 01-Architect | 14-Reviewer | ✅ |
 | 0.3 | Setup Vitest + primeiro teste | 13-Testing | 14-Reviewer | ✅ |
 | 0.4 | Configurar CI/CD (GitHub Actions) | 13-Testing | 14-Reviewer | ✅ |
-| 0.5 | Docker Compose (PostgreSQL + app) | 01-Architect | 14-Reviewer | ⬜ |
+| 0.5 | Docker Compose (PostgreSQL + app) | 01-Architect | 14-Reviewer | ✅ |
 
 ---
 
@@ -26,7 +26,7 @@
 | 1.3 | Implementar NextAuth.js (login/register) | 03-Backend | 05-Security | ✅ |
 | 1.4 | Middleware RBAC completo | 05-Security | 14-Reviewer | ✅ |
 | 1.5 | Serviço de Audit Log | 05-Security | 14-Reviewer | ✅ |
-| 1.6 | Criptografia de campos sensíveis | 05-Security | 14-Reviewer | ⬜ |
+| 1.6 | Criptografia de campos sensíveis | 05-Security | 14-Reviewer | ✅ |
 
 ---
 
@@ -65,7 +65,7 @@
 | 4.3 | API prescrições médicas | 07-Clinical | 14-Reviewer | ✅ |
 | 4.4 | Tela de prescrições (criar, ativar, desativar) | 02-Frontend | 15-Critic | ✅ |
 | 4.5 | Timeline de prontuário (histórico visual) | 02-Frontend | 15-Critic | ✅ |
-| 4.6 | Sinais vitais (registro + gráfico) | 07-Clinical + 11-Reports | 14-Reviewer | ⬜ |
+| 4.6 | Sinais vitais (registro + gráfico) | 07-Clinical + 11-Reports | 14-Reviewer | ✅ |
 | 4.7 | Plano Terapêutico Individual (PTI) | 07-Clinical | 15-Critic | ⬜ |
 
 ---
@@ -129,7 +129,7 @@
 | # | Task | Agente | Supervisor | Status |
 |---|------|--------|-----------|--------|
 | 9.1 | Integração BotConversa (envio de msgs) | 10-Communication + 06-Integrations | 05-Security | ✅ |
-| 9.2 | Templates de mensagem configuráveis | 10-Communication | 15-Critic | ⬜ |
+| 9.2 | Templates de mensagem configuráveis | 10-Communication | 15-Critic | ✅ |
 | 9.3 | Fluxos automáticos (lembrete consulta, cobrança) | 10-Communication | 14-Reviewer | ✅ |
 | 9.4 | Portal da família (auth separada) | 10-Communication + 05-Security | 15-Critic | ⬜ |
 | 9.5 | Histórico de comunicações por paciente | 10-Communication | 14-Reviewer | ✅ |
@@ -157,7 +157,7 @@
 | 11.1 | 2FA (autenticação dois fatores) | 05-Security | 14-Reviewer | ⬜ |
 | 11.2 | Tela de audit log (para ADMIN) | 05-Security + 02-Frontend | 14-Reviewer | ✅ |
 | 11.3 | Política de senhas (complexidade, expiração) | 05-Security | 14-Reviewer | ✅ |
-| 11.4 | Termos de consentimento LGPD | 05-Security | 15-Critic | ⬜ |
+| 11.4 | Termos de consentimento LGPD | 05-Security | 15-Critic | ✅ |
 | 11.5 | Backup automatizado + restore | 05-Security + 01-Architect | 14-Reviewer | ⬜ |
 | 11.6 | Pentest e hardening | 05-Security | 14-Reviewer | ⬜ |
 
@@ -168,9 +168,9 @@
 | # | Task | Agente | Supervisor | Status |
 |---|------|--------|-----------|--------|
 | 12.1 | Testes unitários de services | 13-Testing | 14-Reviewer | ✅ |
-| 12.2 | Testes de integração (API routes) | 13-Testing | 14-Reviewer | ⬜ |
-| 12.3 | Mocks de integrações externas | 13-Testing + 06-Integrations | 14-Reviewer | ⬜ |
-| 12.4 | Testes de RBAC (acesso negado) | 13-Testing + 05-Security | 14-Reviewer | ⬜ |
+| 12.2 | Testes de integração (API routes) | 13-Testing | 14-Reviewer | ✅ |
+| 12.3 | Mocks de integrações externas | 13-Testing + 06-Integrations | 14-Reviewer | ✅ |
+| 12.4 | Testes de RBAC (acesso negado) | 13-Testing + 05-Security | 14-Reviewer | ✅ |
 | 12.5 | E2E com Playwright (futuro) | 13-Testing | 15-Critic | ⬜ |
 | 12.6 | Cobertura mínima 80% em services | 13-Testing | 14-Reviewer | ⬜ |
 
