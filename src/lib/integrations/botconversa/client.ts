@@ -71,9 +71,14 @@ export async function buscarSubscriberPorTelefone(phone: string): Promise<any> {
  */
 export async function criarSubscriber(phone: string, nome?: string): Promise<any> {
   const client = await getClient();
+  const parts = (nome || "Contato").split(" ");
+  const firstName = parts[0] || "Contato";
+  const lastName = parts.slice(1).join(" ") || phone.slice(-4);
+
   const response = await client.post("/subscriber/", {
     phone: phone.replace(/\D/g, ""),
-    first_name: nome || "",
+    first_name: firstName,
+    last_name: lastName,
   });
   return response.data;
 }
