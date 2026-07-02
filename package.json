@@ -1,23 +1,30 @@
 {
   "name": "hachi-erp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Hachi ERP — Sistema integrado para clínicas de reabilitação em dependência química",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@prisma/client": "^6.9.0",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.2",
     "@tanstack/react-query": "^5.62.0",
     "@tanstack/react-table": "^8.20.0",
+    "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "jose": "^6.0.0",
     "lucide-react": "^0.468.0",
     "next": "15.3.3",
     "react": "^19.0.0",
@@ -28,12 +35,15 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.0",
+    "prisma": "^6.9.0",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.3"
   },
   "engines": {

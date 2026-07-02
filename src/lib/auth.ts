@@ -1,0 +1,50 @@
+import { SignJWT, jwtVerify } from "jose";
+import bcrypt from "bcryptjs";
+
+const SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback-secret-change-me");
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12);
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+export async function createToken(payload: { userId: string; role: string }): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(SECRET);
+}
+
+export async function verifyToken(token: string): Promise<{ userId: string; role: string } | null> {
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    return payload as unknown as { userId: string; role: string };
+  } catch {
+    return null;
+  }
+}
+
+export async function getSessionFromRequest(req: Request): Promise<{ userId: string; role: string } | null> {
+  // Try cookie first
+  const cookieHeader = req.headers.get("cookie") || "";
+  const cookies = Object.fromEntries(
+    cookieHeader.split(";").map((c) => {
+      const [key, ...val] = c.trim().split("=");
+      return [key, val.join("=")];
+    })
+  );
+  const tokenFromCookie = cookies["session-token"];
+
+  // Try Authorization header
+  const authHeader = req.headers.get("authorization") || "";
+  const tokenFromHeader = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  const token = tokenFromCookie || tokenFromHeader;
+  if (!token) return null;
+
+  return verifyToken(token);
+}
