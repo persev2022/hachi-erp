@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest, hashPassword } from "@/lib/auth";
 import { logAudit } from "@/lib/services/audit";
+import { validatePassword } from "@/lib/security/password-policy";
 
 const createUserSchema = z.object({
   name: z.string().min(2, "Nome é obrigatório"),
@@ -83,6 +84,15 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { success: false, error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    // Enforce password policy
+    const policyResult = validatePassword(parsed.data.password);
+    if (!policyResult.valid) {
+      return NextResponse.json(
+        { success: false, error: "Senha não atende política", details: { password: policyResult.errors } },
         { status: 400 }
       );
     }

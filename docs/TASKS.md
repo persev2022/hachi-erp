@@ -76,7 +76,7 @@
 |---|------|--------|-----------|--------|
 | 5.1 | API agendamentos (CRUD + conflitos) | 03-Backend | 14-Reviewer | ✅ |
 | 5.2 | Calendário visual (dia/semana/mês) | 02-Frontend | 15-Critic | ✅ |
-| 5.3 | Notificações de consulta (BotConversa) | 10-Communication | 06-Integrations | ⬜ |
+| 5.3 | Notificações de consulta (BotConversa) | 10-Communication | 06-Integrations | ✅ |
 | 5.4 | Escalas de funcionários | 09-Admin | 15-Critic | ⬜ |
 | 5.5 | Controle de salas | 09-Admin | 14-Reviewer | ⬜ |
 
@@ -92,7 +92,7 @@
 | 6.4 | Webhook de confirmação Pix | 06-Integrations | 05-Security | ⬜ |
 | 6.5 | Emissão de NFS-e | 08-Financial + 06-Integrations | 14-Reviewer | ⬜ |
 | 6.6 | Tela de fluxo de caixa | 02-Frontend + 08-Financial | 15-Critic | ✅ |
-| 6.7 | Controle de inadimplência + alertas | 08-Financial | 10-Communication | ⬜ |
+| 6.7 | Controle de inadimplência + alertas | 08-Financial | 10-Communication | ✅ |
 | 6.8 | Relatórios financeiros (DRE) | 11-Reports | 14-Reviewer | ⬜ |
 
 ---
@@ -103,7 +103,7 @@
 |---|------|--------|-----------|--------|
 | 7.1 | API quartos (CRUD + mapa) | 09-Admin | 14-Reviewer | ✅ |
 | 7.2 | Mapa visual de ocupação | 02-Frontend + 09-Admin | 15-Critic | ✅ |
-| 7.3 | Check-in / check-out de pacientes | 09-Admin | 07-Clinical | ⬜ |
+| 7.3 | Check-in / check-out de pacientes | 09-Admin | 07-Clinical | ✅ |
 | 7.4 | API estoque (CRUD + alertas) | 09-Admin | 14-Reviewer | ✅ |
 | 7.5 | Tela de estoque com alertas visuais | 02-Frontend | 15-Critic | ✅ |
 | 7.6 | Controle de itens pessoais do paciente | 09-Admin | 14-Reviewer | ⬜ |
@@ -133,7 +133,7 @@
 | 9.3 | Fluxos automáticos (lembrete consulta, cobrança) | 10-Communication | 14-Reviewer | ✅ |
 | 9.4 | Portal da família (auth separada) | 10-Communication + 05-Security | 15-Critic | ⬜ |
 | 9.5 | Histórico de comunicações por paciente | 10-Communication | 14-Reviewer | ✅ |
-| 9.6 | Notificações internas (equipe) | 10-Communication | 02-Frontend | ⬜ |
+| 9.6 | Notificações internas (equipe) | 10-Communication | 02-Frontend | ✅ |
 
 ---
 
@@ -142,9 +142,9 @@
 | # | Task | Agente | Supervisor | Status |
 |---|------|--------|-----------|--------|
 | 10.1 | Dashboard executivo (KPIs reais) | 11-Reports | 15-Critic | ✅ |
-| 10.2 | Relatório de ocupação por período | 11-Reports | 14-Reviewer | ⬜ |
-| 10.3 | Relatório clínico (adesão, evoluções) | 11-Reports + 07-Clinical | 14-Reviewer | ⬜ |
-| 10.4 | Relatório financeiro consolidado | 11-Reports + 08-Financial | 14-Reviewer | ⬜ |
+| 10.2 | Relatório de ocupação por período | 11-Reports | 14-Reviewer | ✅ |
+| 10.3 | Relatório clínico (adesão, evoluções) | 11-Reports + 07-Clinical | 14-Reviewer | ✅ |
+| 10.4 | Relatório financeiro consolidado | 11-Reports + 08-Financial | 14-Reviewer | ✅ |
 | 10.5 | Exportação PDF/Excel | 11-Reports | 12-Documents | ⬜ |
 | 10.6 | Relatórios para órgãos públicos (SISNAD) | 11-Reports | 05-Security | ⬜ |
 
@@ -156,7 +156,7 @@
 |---|------|--------|-----------|--------|
 | 11.1 | 2FA (autenticação dois fatores) | 05-Security | 14-Reviewer | ⬜ |
 | 11.2 | Tela de audit log (para ADMIN) | 05-Security + 02-Frontend | 14-Reviewer | ✅ |
-| 11.3 | Política de senhas (complexidade, expiração) | 05-Security | 14-Reviewer | ⬜ |
+| 11.3 | Política de senhas (complexidade, expiração) | 05-Security | 14-Reviewer | ✅ |
 | 11.4 | Termos de consentimento LGPD | 05-Security | 15-Critic | ⬜ |
 | 11.5 | Backup automatizado + restore | 05-Security + 01-Architect | 14-Reviewer | ⬜ |
 | 11.6 | Pentest e hardening | 05-Security | 14-Reviewer | ⬜ |
@@ -167,7 +167,7 @@
 
 | # | Task | Agente | Supervisor | Status |
 |---|------|--------|-----------|--------|
-| 12.1 | Testes unitários de services | 13-Testing | 14-Reviewer | ⬜ |
+| 12.1 | Testes unitários de services | 13-Testing | 14-Reviewer | ✅ |
 | 12.2 | Testes de integração (API routes) | 13-Testing | 14-Reviewer | ⬜ |
 | 12.3 | Mocks de integrações externas | 13-Testing + 06-Integrations | 14-Reviewer | ⬜ |
 | 12.4 | Testes de RBAC (acesso negado) | 13-Testing + 05-Security | 14-Reviewer | ⬜ |
