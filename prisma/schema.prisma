@@ -452,3 +452,15 @@ model ItemEstoque {
   @@index([validade])
   @@map("itens_estoque")
 }
+
+// ═══════════════════════════════════════════════════════════
+// CONFIGURAÇÕES DO SISTEMA
+// ═══════════════════════════════════════════════════════════
+
+model SystemConfig {
+  key       String   @id
+  value     String   // JSON encoded value
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
