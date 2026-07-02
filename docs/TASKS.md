@@ -12,7 +12,7 @@
 | 0.1 | Instalar dependências e verificar build | 01-Architect | 14-Reviewer | ✅ |
 | 0.2 | Configurar ESLint + Prettier | 01-Architect | 14-Reviewer | ✅ |
 | 0.3 | Setup Vitest + primeiro teste | 13-Testing | 14-Reviewer | ✅ |
-| 0.4 | Configurar CI/CD (GitHub Actions) | 13-Testing | 14-Reviewer | ⬜ |
+| 0.4 | Configurar CI/CD (GitHub Actions) | 13-Testing | 14-Reviewer | ✅ |
 | 0.5 | Docker Compose (PostgreSQL + app) | 01-Architect | 14-Reviewer | ⬜ |
 
 ---
@@ -88,9 +88,9 @@
 |---|------|--------|-----------|--------|
 | 6.1 | API movimentações financeiras | 08-Financial | 14-Reviewer | ✅ |
 | 6.2 | Conta corrente por paciente | 08-Financial | 14-Reviewer | ✅ |
-| 6.3 | Geração de cobrança Pix | 08-Financial + 06-Integrations | 05-Security | ⬜ |
-| 6.4 | Webhook de confirmação Pix | 06-Integrations | 05-Security | ⬜ |
-| 6.5 | Emissão de NFS-e | 08-Financial + 06-Integrations | 14-Reviewer | ⬜ |
+| 6.3 | Geração de cobrança Pix | 08-Financial + 06-Integrations | 05-Security | ✅ |
+| 6.4 | Webhook de confirmação Pix | 06-Integrations | 05-Security | ✅ |
+| 6.5 | Emissão de NFS-e | 08-Financial + 06-Integrations | 14-Reviewer | ✅ |
 | 6.6 | Tela de fluxo de caixa | 02-Frontend + 08-Financial | 15-Critic | ✅ |
 | 6.7 | Controle de inadimplência + alertas | 08-Financial | 10-Communication | ✅ |
 | 6.8 | Relatórios financeiros (DRE) | 11-Reports | 14-Reviewer | ⬜ |

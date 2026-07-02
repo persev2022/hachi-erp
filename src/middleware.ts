@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   "/login",
   "/api/auth/login",
   "/api/integracoes/botconversa/webhook",
+  "/api/integracoes/pix/webhook",
   "/_next",
   "/images",
   "/favicon.ico",
