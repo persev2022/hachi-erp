@@ -1,4 +1,7 @@
+"use client";
+
 import { Sidebar } from "@/components/layout/sidebar";
+import { ToastProvider } from "@/components/ui/toast-simple";
 
 export default function DashboardLayout({
   children,
@@ -6,9 +9,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen">
-      <Sidebar />
-      <main className="pl-64">{children}</main>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen">
+        <Sidebar />
+        <main className="pl-64">{children}</main>
+      </div>
+    </ToastProvider>
   );
 }

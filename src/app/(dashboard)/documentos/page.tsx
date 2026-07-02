@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface Documento {
   id: string;
@@ -41,6 +42,8 @@ const tipoColors: Record<string, string> = {
 };
 
 export default function DocumentosPage() {
+  const { show } = useToast();
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -48,13 +51,21 @@ export default function DocumentosPage() {
           <h1 className="text-2xl font-bold">Documentos</h1>
           <p className="text-sm text-muted-foreground mt-1">Geração e gerenciamento de documentos clínicos e administrativos</p>
         </div>
-        <Button><Plus className="h-4 w-4 mr-2" />Gerar Documento</Button>
+        <Button onClick={() => show("Selecione o tipo de documento", "info")}>
+          <Plus className="h-4 w-4 mr-2" />Gerar Documento
+        </Button>
       </div>
 
       {/* Atalhos de geração rápida */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
         {["Contrato", "Receita Simples", "Receita Especial", "Atestado", "Recibo", "PTI", "Relatório"].map((tipo) => (
-          <Button key={tipo} variant="outline" size="sm" className="text-xs">
+          <Button
+            key={tipo}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => show(`Gerando ${tipo}... (em desenvolvimento)`, "info")}
+          >
             <FileText className="h-3 w-3 mr-1" />
             {tipo}
           </Button>
@@ -65,7 +76,9 @@ export default function DocumentosPage() {
       <div className="rounded-lg border bg-card">
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="font-semibold">Documentos Recentes</h2>
-          <Button variant="ghost" size="sm"><Filter className="h-3 w-3 mr-1" />Filtrar</Button>
+          <Button variant="ghost" size="sm" onClick={() => show("Filtros em desenvolvimento", "info")}>
+            <Filter className="h-3 w-3 mr-1" />Filtrar
+          </Button>
         </div>
         <Table>
           <TableHeader>
@@ -100,8 +113,22 @@ export default function DocumentosPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" title="Visualizar"><Eye className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" title="Download"><Download className="h-4 w-4" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Visualizar"
+                      onClick={() => show(`Visualizando "${doc.titulo}"...`, "info")}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Download"
+                      onClick={() => show(`Baixando "${doc.titulo}"...`, "success")}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>

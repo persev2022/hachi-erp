@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface Movimentacao {
   id: string;
@@ -41,6 +42,8 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function FinanceiroPage() {
+  const { show } = useToast();
+
   const totalReceitas = movimentacoesMock
     .filter((m) => m.tipo === "receita" && m.status === "Pago")
     .reduce((acc, m) => acc + m.valor, 0);
@@ -61,9 +64,15 @@ export default function FinanceiroPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Gerar Pix</Button>
-          <Button variant="outline">Emitir NF-e</Button>
-          <Button>Nova Movimentação</Button>
+          <Button variant="outline" onClick={() => show("Gerando cobrança Pix... (integração em desenvolvimento)", "info")}>
+            Gerar Pix
+          </Button>
+          <Button variant="outline" onClick={() => show("Emissão de NF-e em desenvolvimento", "info")}>
+            Emitir NF-e
+          </Button>
+          <Button onClick={() => show("Formulário de movimentação em desenvolvimento", "info")}>
+            Nova Movimentação
+          </Button>
         </div>
       </div>
 

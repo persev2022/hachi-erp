@@ -5,6 +5,7 @@ import { FileHeart, Search, Clock, User, Stethoscope, Brain, Heart } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface Evolucao {
   id: string;
@@ -37,12 +38,17 @@ const tipoConfig: Record<string, { color: string; icon: React.ElementType }> = {
 
 export default function ProntuarioPage() {
   const [busca, setBusca] = React.useState("");
+  const [filtroTipo, setFiltroTipo] = React.useState<string>("Todas");
+  const { show } = useToast();
 
-  const filtradas = evolucoesMock.filter(
-    (e) => e.paciente.toLowerCase().includes(busca.toLowerCase()) ||
+  const filtradas = evolucoesMock.filter((e) => {
+    const matchBusca =
+      e.paciente.toLowerCase().includes(busca.toLowerCase()) ||
       e.profissional.toLowerCase().includes(busca.toLowerCase()) ||
-      e.resumo.toLowerCase().includes(busca.toLowerCase())
-  );
+      e.resumo.toLowerCase().includes(busca.toLowerCase());
+    const matchTipo = filtroTipo === "Todas" || e.tipo === filtroTipo;
+    return matchBusca && matchTipo;
+  });
 
   return (
     <div className="p-8 space-y-6">
@@ -51,7 +57,9 @@ export default function ProntuarioPage() {
           <h1 className="text-2xl font-bold">Prontuário Eletrônico</h1>
           <p className="text-sm text-muted-foreground mt-1">Evoluções clínicas e histórico dos pacientes</p>
         </div>
-        <Button><FileHeart className="h-4 w-4 mr-2" />Nova Evolução</Button>
+        <Button onClick={() => show("Formulário de evolução em desenvolvimento", "info")}>
+          <FileHeart className="h-4 w-4 mr-2" />Nova Evolução
+        </Button>
       </div>
 
       {/* Filtros */}
@@ -62,7 +70,13 @@ export default function ProntuarioPage() {
         </div>
         <div className="flex gap-1">
           {["Todas", "Médica", "Psicológica", "Enfermagem", "Terapêutica"].map((tipo) => (
-            <Button key={tipo} variant="outline" size="sm" className="text-xs">
+            <Button
+              key={tipo}
+              variant={filtroTipo === tipo ? "default" : "outline"}
+              size="sm"
+              className="text-xs"
+              onClick={() => setFiltroTipo(tipo)}
+            >
               {tipo}
             </Button>
           ))}
@@ -94,11 +108,23 @@ export default function ProntuarioPage() {
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ev.data} às {ev.hora}</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="shrink-0">Ver completo</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => show(`${ev.paciente} — ${ev.tipo} (${ev.data} ${ev.hora}): ${ev.resumo}`, "info")}
+                >
+                  Ver completo
+                </Button>
               </div>
             </div>
           );
         })}
+        {filtradas.length === 0 && (
+          <div className="text-center text-muted-foreground py-8">
+            Nenhuma evolução encontrada.
+          </div>
+        )}
       </div>
     </div>
   );

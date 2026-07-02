@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +13,13 @@ import {
 } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push("/dashboard");
+  };
+
   return (
     <Card className="w-full max-w-md shadow-xl border-border/50">
       <CardHeader className="text-center space-y-4 pb-2">
@@ -31,7 +39,7 @@ export default function LoginPage() {
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               Email

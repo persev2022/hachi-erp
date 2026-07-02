@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
+import { useToast } from "@/components/ui/toast-simple";
 import {
   LayoutDashboard,
   Users,
@@ -34,6 +35,16 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { show } = useToast();
+
+  const handleLogout = () => {
+    if (window.confirm("Deseja realmente sair do sistema?")) {
+      show("Logout realizado. Redirecionando...", "success");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
+    }
+  };
 
   return (
     <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex flex-col">
@@ -77,7 +88,10 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="p-3 border-t border-border">
-        <button className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full"
+        >
           <LogOut className="h-4 w-4" />
           Sair
         </button>

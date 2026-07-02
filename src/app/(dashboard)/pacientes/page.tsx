@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/toast-simple";
 
 type StatusPaciente = "Ativo" | "Alta" | "Evadido";
 
@@ -27,70 +28,14 @@ interface Paciente {
 }
 
 const pacientesMock: Paciente[] = [
-  {
-    id: "1",
-    nome: "Carlos Eduardo Silva",
-    cpf: "123.456.789-00",
-    status: "Ativo",
-    dataAdmissao: "10/01/2025",
-    quarto: "Q-101",
-  },
-  {
-    id: "2",
-    nome: "Marcos Antônio Oliveira",
-    cpf: "234.567.890-11",
-    status: "Ativo",
-    dataAdmissao: "15/02/2025",
-    quarto: "Q-102",
-  },
-  {
-    id: "3",
-    nome: "Rafael Souza Lima",
-    cpf: "345.678.901-22",
-    status: "Alta",
-    dataAdmissao: "03/11/2024",
-    quarto: "—",
-  },
-  {
-    id: "4",
-    nome: "João Pedro Ferreira",
-    cpf: "456.789.012-33",
-    status: "Ativo",
-    dataAdmissao: "22/03/2025",
-    quarto: "Q-201",
-  },
-  {
-    id: "5",
-    nome: "André Luiz Barbosa",
-    cpf: "567.890.123-44",
-    status: "Evadido",
-    dataAdmissao: "08/12/2024",
-    quarto: "—",
-  },
-  {
-    id: "6",
-    nome: "Thiago Mendes Costa",
-    cpf: "678.901.234-55",
-    status: "Ativo",
-    dataAdmissao: "01/04/2025",
-    quarto: "Q-103",
-  },
-  {
-    id: "7",
-    nome: "Lucas Gabriel Santos",
-    cpf: "789.012.345-66",
-    status: "Ativo",
-    dataAdmissao: "18/04/2025",
-    quarto: "Q-202",
-  },
-  {
-    id: "8",
-    nome: "Felipe Augusto Rocha",
-    cpf: "890.123.456-77",
-    status: "Alta",
-    dataAdmissao: "05/09/2024",
-    quarto: "—",
-  },
+  { id: "1", nome: "Carlos Eduardo Silva", cpf: "123.456.789-00", status: "Ativo", dataAdmissao: "10/01/2025", quarto: "Q-101" },
+  { id: "2", nome: "Marcos Antônio Oliveira", cpf: "234.567.890-11", status: "Ativo", dataAdmissao: "15/02/2025", quarto: "Q-102" },
+  { id: "3", nome: "Rafael Souza Lima", cpf: "345.678.901-22", status: "Alta", dataAdmissao: "03/11/2024", quarto: "—" },
+  { id: "4", nome: "João Pedro Ferreira", cpf: "456.789.012-33", status: "Ativo", dataAdmissao: "22/03/2025", quarto: "Q-201" },
+  { id: "5", nome: "André Luiz Barbosa", cpf: "567.890.123-44", status: "Evadido", dataAdmissao: "08/12/2024", quarto: "—" },
+  { id: "6", nome: "Thiago Mendes Costa", cpf: "678.901.234-55", status: "Ativo", dataAdmissao: "01/04/2025", quarto: "Q-103" },
+  { id: "7", nome: "Lucas Gabriel Santos", cpf: "789.012.345-66", status: "Ativo", dataAdmissao: "18/04/2025", quarto: "Q-202" },
+  { id: "8", nome: "Felipe Augusto Rocha", cpf: "890.123.456-77", status: "Alta", dataAdmissao: "05/09/2024", quarto: "—" },
 ];
 
 const statusColor: Record<StatusPaciente, string> = {
@@ -101,6 +46,7 @@ const statusColor: Record<StatusPaciente, string> = {
 
 export default function PacientesPage() {
   const [busca, setBusca] = React.useState("");
+  const { show } = useToast();
 
   const pacientesFiltrados = pacientesMock.filter(
     (p) =>
@@ -173,10 +119,20 @@ export default function PacientesPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" title="Ver detalhes">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Ver detalhes"
+                      onClick={() => show(`Detalhes de ${paciente.nome} — módulo em desenvolvimento`, "info")}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" title="Editar">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Editar"
+                      onClick={() => show(`Editando ${paciente.nome}... (em desenvolvimento)`, "info")}
+                    >
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </div>

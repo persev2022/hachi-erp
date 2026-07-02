@@ -4,6 +4,7 @@ import * as React from "react";
 import { Settings, Users, Shield, Bell, Database, Plug, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface ConfigSection {
   title: string;
@@ -65,6 +66,8 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function ConfiguracoesPage() {
+  const { show } = useToast();
+
   return (
     <div className="p-8 space-y-6">
       <div>
@@ -98,7 +101,13 @@ export default function ConfiguracoesPage() {
               </div>
             </div>
             <div className="mt-4 flex justify-end">
-              <Button variant="outline" size="sm">Configurar</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => show(`Configurações de ${section.title} em desenvolvimento`, "info")}
+              >
+                Configurar
+              </Button>
             </div>
           </div>
         ))}

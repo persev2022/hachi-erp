@@ -12,8 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toast-simple";
 
 export default function NovoPacientePage() {
+  const { show } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    show("Paciente salvo com sucesso!", "success");
+  };
+
   return (
     <div className="p-8 space-y-6 max-w-4xl">
       {/* Header */}
@@ -31,7 +39,7 @@ export default function NovoPacientePage() {
         </div>
       </div>
 
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Dados Pessoais */}
         <Card>
           <CardHeader>

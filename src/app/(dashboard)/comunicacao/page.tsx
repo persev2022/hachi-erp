@@ -5,6 +5,7 @@ import { MessageSquare, Send, Phone, Check, CheckCheck, AlertCircle } from "luci
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface Mensagem {
   id: string;
@@ -48,6 +49,8 @@ const tipoColors: Record<string, string> = {
 };
 
 export default function ComunicacaoPage() {
+  const { show } = useToast();
+
   return (
     <div className="p-8 space-y-6">
       {/* Header */}
@@ -59,11 +62,11 @@ export default function ComunicacaoPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => show("Fluxos BotConversa em desenvolvimento", "info")}>
             <Phone className="h-4 w-4 mr-2" />
             Enviar Fluxo
           </Button>
-          <Button>
+          <Button onClick={() => show("Envio de mensagem em desenvolvimento", "info")}>
             <Send className="h-4 w-4 mr-2" />
             Nova Mensagem
           </Button>

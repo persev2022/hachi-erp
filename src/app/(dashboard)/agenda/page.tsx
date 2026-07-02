@@ -4,6 +4,7 @@ import * as React from "react";
 import { Calendar, Clock, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface Agendamento {
   id: string;
@@ -34,6 +35,8 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function AgendaPage() {
+  const { show } = useToast();
+
   const hoje = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "numeric",
@@ -49,7 +52,7 @@ export default function AgendaPage() {
           <h1 className="text-2xl font-bold text-foreground">Agenda</h1>
           <p className="text-sm text-muted-foreground mt-1 capitalize">{hoje}</p>
         </div>
-        <Button>
+        <Button onClick={() => show("Formulário de agendamento em desenvolvimento", "info")}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Agendamento
         </Button>
@@ -95,7 +98,11 @@ export default function AgendaPage() {
                 {ag.tipo} — {ag.profissional} — {ag.sala}
               </p>
             </div>
-            <Button variant="ghost" size="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => show(`${ag.hora} — ${ag.paciente}: ${ag.tipo} com ${ag.profissional} (${ag.sala})`, "info")}
+            >
               Detalhes
             </Button>
           </div>

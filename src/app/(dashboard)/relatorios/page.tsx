@@ -4,6 +4,7 @@ import * as React from "react";
 import { BarChart3, TrendingUp, Users, BedDouble, DollarSign, Calendar, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface KPI {
   label: string;
@@ -49,6 +50,8 @@ const catColors: Record<string, string> = {
 };
 
 export default function RelatoriosPage() {
+  const { show } = useToast();
+
   return (
     <div className="p-8 space-y-6">
       <div>
@@ -117,7 +120,13 @@ export default function RelatoriosPage() {
                 <p className="text-xs text-muted-foreground mt-0.5">{rel.descricao}</p>
                 <p className="text-xs text-muted-foreground mt-1">Última geração: {rel.ultimaGeracao}</p>
               </div>
-              <Button variant="outline" size="sm"><Download className="h-3 w-3 mr-1" />Gerar</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => show(`Gerando ${rel.nome}... (em desenvolvimento)`, "info")}
+              >
+                <Download className="h-3 w-3 mr-1" />Gerar
+              </Button>
             </div>
           ))}
         </div>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/toast-simple";
 
 interface Item {
   id: string;
@@ -35,6 +36,7 @@ const itensMock: Item[] = [
 
 export default function EstoquePage() {
   const [busca, setBusca] = React.useState("");
+  const { show } = useToast();
   const alertas = itensMock.filter((i) => i.quantidade <= i.minimo);
 
   const filtrados = itensMock.filter((i) =>
@@ -49,7 +51,9 @@ export default function EstoquePage() {
           <h1 className="text-2xl font-bold">Estoque</h1>
           <p className="text-sm text-muted-foreground mt-1">Controle de medicamentos e materiais</p>
         </div>
-        <Button><Plus className="h-4 w-4 mr-2" />Novo Item</Button>
+        <Button onClick={() => show("Cadastro de item em desenvolvimento", "info")}>
+          <Plus className="h-4 w-4 mr-2" />Novo Item
+        </Button>
       </div>
 
       {/* Alertas */}
