@@ -66,7 +66,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/hachi-logo.svg" alt="Hachi" className="h-16 w-16" />
+          <img src="/images/hachi-logo.svg" alt="Hachi" className="h-20 w-20" />
         </div>
         <div>
           <CardTitle className="text-2xl">Hachi ERP</CardTitle>
