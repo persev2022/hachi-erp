@@ -4,14 +4,34 @@
  */
 
 import axios from "axios";
+import { prisma } from "@/lib/prisma";
 
 const API_BASE = "https://backend.botconversa.com.br/api/v1";
 
-function getClient() {
-  const apiKey = process.env.BOTCONVERSA_API_KEY;
-  if (!apiKey) {
-    throw new Error("BOTCONVERSA_API_KEY não configurada");
+async function getApiKey(): Promise<string> {
+  // Try process.env first
+  if (process.env.BOTCONVERSA_API_KEY) {
+    return process.env.BOTCONVERSA_API_KEY;
   }
+
+  // Fallback: read from database
+  const config = await prisma.systemConfig.findUnique({ where: { key: "integracoes" } });
+  if (config) {
+    try {
+      const settings = JSON.parse(config.value);
+      if (settings.botconversa?.apiKey) {
+        // Cache in process.env for subsequent calls
+        process.env.BOTCONVERSA_API_KEY = settings.botconversa.apiKey;
+        return settings.botconversa.apiKey;
+      }
+    } catch {}
+  }
+
+  throw new Error("BOTCONVERSA_API_KEY não configurada. Vá em Configurações → Integrações.");
+}
+
+async function getClient() {
+  const apiKey = await getApiKey();
 
   return axios.create({
     baseURL: API_BASE,
@@ -24,7 +44,7 @@ function getClient() {
 }
 
 export interface SendMessagePayload {
-  phone: string; // Formato: 5548999990001 (DDI + DDD + Número)
+  phone: string;
   message: string;
 }
 
@@ -38,7 +58,7 @@ export interface SendFlowPayload {
  * Envia uma mensagem de texto avulsa via WhatsApp.
  */
 export async function enviarMensagem(payload: SendMessagePayload) {
-  const client = getClient();
+  const client = await getClient();
   const response = await client.post("/message/send-text", {
     phone: payload.phone,
     text: payload.message,
@@ -50,7 +70,7 @@ export async function enviarMensagem(payload: SendMessagePayload) {
  * Dispara um fluxo automatizado para um contato.
  */
 export async function dispararFluxo(payload: SendFlowPayload) {
-  const client = getClient();
+  const client = await getClient();
   const response = await client.post("/flow/start", {
     phone: payload.phone,
     flow_id: payload.flowId,
@@ -63,7 +83,7 @@ export async function dispararFluxo(payload: SendFlowPayload) {
  * Busca informações de um contato pelo telefone.
  */
 export async function buscarContato(phone: string) {
-  const client = getClient();
+  const client = await getClient();
   const response = await client.get(`/contact/find?phone=${phone}`);
   return response.data;
 }
@@ -72,7 +92,7 @@ export async function buscarContato(phone: string) {
  * Lista fluxos disponíveis.
  */
 export async function listarFluxos() {
-  const client = getClient();
+  const client = await getClient();
   const response = await client.get("/flow/list");
   return response.data;
 }
