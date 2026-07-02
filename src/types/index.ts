@@ -1,10 +1,12 @@
 /**
  * Tipos globais do Hachi ERP.
- * Tipos específicos de módulo ficam em seus respectivos arquivos.
+ * Quando o Prisma estiver conectado, reimportar de @prisma/client.
  */
 
-export type { Role, StatusPaciente, EstadoCivil } from "@prisma/client";
-export type { User, Paciente, Responsavel, Evolucao, Prescricao, Agendamento, Quarto, MovimentacaoFinanceira, Documento, Comunicacao, ItemEstoque, AuditLog } from "@prisma/client";
+// Enums (espelhados do schema.prisma para uso sem banco)
+export type Role = "ADMIN" | "MEDICO" | "PSICOLOGO" | "ENFERMEIRO" | "TERAPEUTA" | "SECRETARIA" | "FINANCEIRO" | "MONITOR" | "APOIO";
+export type StatusPaciente = "ATIVO" | "ALTA" | "EVADIDO" | "TRANSFERIDO" | "OBITO";
+export type EstadoCivil = "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
 
 // ─── API Response Padrão ────────────────────────────────────────
 export interface ApiResponse<T = unknown> {
