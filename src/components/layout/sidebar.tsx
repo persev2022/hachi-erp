@@ -81,7 +81,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <div className="h-16 flex items-center justify-between px-6 border-b border-border">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/hachi-logo.svg" alt="Hachi" className="h-11 w-11" />
+          <img src="/images/hachi-logo.png" alt="Hachi" className="h-11 w-11 rounded-md object-contain" />
           <span className="font-bold text-lg text-foreground">Hachi</span>
           <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
             ERP
@@ -181,7 +181,7 @@ export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
       </button>
       <div className="flex items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/hachi-logo.svg" alt="Hachi" className="h-9 w-9" />
+        <img src="/images/hachi-logo.png" alt="Hachi" className="h-9 w-9 rounded-md object-contain" />
         <span className="font-bold text-foreground">Hachi</span>
       </div>
     </header>
