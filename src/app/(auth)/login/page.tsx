@@ -25,11 +25,8 @@ export default function LoginPage() {
       <CardHeader className="text-center space-y-4 pb-2">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="h-14 w-14 rounded-xl bg-primary flex items-center justify-center shadow-lg">
-            <span className="text-primary-foreground font-bold text-2xl">
-              H
-            </span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/hachi-logo.svg" alt="Hachi" className="h-16 w-16" />
         </div>
         <div>
           <CardTitle className="text-2xl">Hachi ERP</CardTitle>

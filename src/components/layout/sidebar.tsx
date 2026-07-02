@@ -51,9 +51,8 @@ export function Sidebar() {
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">H</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/hachi-logo.svg" alt="Hachi" className="h-9 w-9" />
           <span className="font-bold text-lg text-foreground">Hachi</span>
           <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
             ERP
