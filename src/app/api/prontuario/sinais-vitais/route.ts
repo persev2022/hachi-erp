@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth";
 
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
     const evolucoes = await prisma.evolucao.findMany({
       where: {
         pacienteId,
-        sinaisVitais: { not: null },
+        sinaisVitais: { not: Prisma.DbNull },
         createdAt: { gte: since },
       },
       select: {

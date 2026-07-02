@@ -66,7 +66,7 @@
 | 4.4 | Tela de prescrições (criar, ativar, desativar) | 02-Frontend | 15-Critic | ✅ |
 | 4.5 | Timeline de prontuário (histórico visual) | 02-Frontend | 15-Critic | ✅ |
 | 4.6 | Sinais vitais (registro + gráfico) | 07-Clinical + 11-Reports | 14-Reviewer | ✅ |
-| 4.7 | Plano Terapêutico Individual (PTI) | 07-Clinical | 15-Critic | ⬜ |
+| 4.7 | Plano Terapêutico Individual (PTI) | 07-Clinical | 15-Critic | ✅ |
 
 ---
 
@@ -77,7 +77,7 @@
 | 5.1 | API agendamentos (CRUD + conflitos) | 03-Backend | 14-Reviewer | ✅ |
 | 5.2 | Calendário visual (dia/semana/mês) | 02-Frontend | 15-Critic | ✅ |
 | 5.3 | Notificações de consulta (BotConversa) | 10-Communication | 06-Integrations | ✅ |
-| 5.4 | Escalas de funcionários | 09-Admin | 15-Critic | ⬜ |
+| 5.4 | Escalas de funcionários | 09-Admin | 15-Critic | ✅ |
 | 5.5 | Controle de salas | 09-Admin | 14-Reviewer | ⬜ |
 
 ---
@@ -145,7 +145,7 @@
 | 10.2 | Relatório de ocupação por período | 11-Reports | 14-Reviewer | ✅ |
 | 10.3 | Relatório clínico (adesão, evoluções) | 11-Reports + 07-Clinical | 14-Reviewer | ✅ |
 | 10.4 | Relatório financeiro consolidado | 11-Reports + 08-Financial | 14-Reviewer | ✅ |
-| 10.5 | Exportação PDF/Excel | 11-Reports | 12-Documents | ⬜ |
+| 10.5 | Exportação PDF/Excel | 11-Reports | 12-Documents | ✅ |
 | 10.6 | Relatórios para órgãos públicos (SISNAD) | 11-Reports | 05-Security | ⬜ |
 
 ---
@@ -154,7 +154,7 @@
 
 | # | Task | Agente | Supervisor | Status |
 |---|------|--------|-----------|--------|
-| 11.1 | 2FA (autenticação dois fatores) | 05-Security | 14-Reviewer | ⬜ |
+| 11.1 | 2FA (autenticação dois fatores) | 05-Security | 14-Reviewer | ✅ |
 | 11.2 | Tela de audit log (para ADMIN) | 05-Security + 02-Frontend | 14-Reviewer | ✅ |
 | 11.3 | Política de senhas (complexidade, expiração) | 05-Security | 14-Reviewer | ✅ |
 | 11.4 | Termos de consentimento LGPD | 05-Security | 15-Critic | ✅ |

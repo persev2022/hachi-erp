@@ -42,6 +42,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Runtime data
+data/
+
 # Generated
 *.tsbuildinfo
 next-env.d.ts
