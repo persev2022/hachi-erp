@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Settings, Users, Shield, Bell, Database, Plug, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,13 +102,23 @@ export default function ConfiguracoesPage() {
               </div>
             </div>
             <div className="mt-4 flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => show(`Configurações de ${section.title} em desenvolvimento`, "info")}
-              >
-                Configurar
-              </Button>
+              {section.title === "Usuários & Permissões" ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/configuracoes/usuarios">Gerenciar</Link>
+                </Button>
+              ) : section.title === "Segurança & LGPD" ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/configuracoes/audit">Audit Log</Link>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => show(`Configurações de ${section.title} em desenvolvimento`, "info")}
+                >
+                  Configurar
+                </Button>
+              )}
             </div>
           </div>
         ))}

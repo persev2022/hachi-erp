@@ -1,113 +1,147 @@
 "use client";
 
+import * as React from "react";
+import Link from "next/link";
 import {
   Users,
   BedDouble,
   Calendar,
   DollarSign,
-  TrendingUp,
   AlertTriangle,
-  MessageSquare,
-  FileText,
+  FileHeart,
+  Package,
+  Loader2,
 } from "lucide-react";
-import { useToast } from "@/components/ui/toast-simple";
+
+interface DashboardData {
+  kpis: {
+    pacientesAtivos: number;
+    ocupacao: number;
+    agendamentosHoje: number;
+    receitaMes: number;
+    inadimplentes: number;
+    evolucoesPendentes: number;
+    estoqueBaixo: number;
+  };
+  proximosAgendamentos: {
+    id: string;
+    hora: string;
+    paciente: string;
+    tipo: string;
+    profissional: string;
+  }[];
+  alertas: { msg: string; tipo: string }[];
+}
 
 export default function DashboardPage() {
-  const { show } = useToast();
+  const [data, setData] = React.useState<DashboardData | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch("/api/relatorios/dashboard")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setData(d.data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const kpis = data?.kpis;
 
   const stats = [
-    { label: "Pacientes Ativos", value: "24", icon: Users, color: "text-hachi-teal-500" },
-    { label: "Ocupação", value: "80%", icon: BedDouble, color: "text-emerald-600" },
-    { label: "Consultas Hoje", value: "12", icon: Calendar, color: "text-blue-600" },
-    { label: "Receita Mensal", value: "R$ 156k", icon: DollarSign, color: "text-hachi-gold-500" },
-    { label: "Taxa Adesão", value: "92%", icon: TrendingUp, color: "text-green-600" },
-    { label: "Inadimplência", value: "3", icon: AlertTriangle, color: "text-red-500" },
-    { label: "Mensagens Hoje", value: "47", icon: MessageSquare, color: "text-purple-600" },
-    { label: "Docs Gerados", value: "8", icon: FileText, color: "text-orange-600" },
-  ];
-
-  const agendamentos = [
-    { hora: "08:00", paciente: "João da Silva", tipo: "Consulta Psiquiátrica", prof: "Dr. Marcos" },
-    { hora: "09:00", paciente: "Maria Santos", tipo: "Terapia Individual", prof: "Dra. Ana" },
-    { hora: "10:30", paciente: "Carlos Oliveira", tipo: "Avaliação Enfermagem", prof: "Enf. Paula" },
-    { hora: "14:00", paciente: "Pedro Lima", tipo: "Terapia em Grupo", prof: "Dr. Ricardo" },
-  ];
-
-  const alertas = [
-    { msg: "3 mensalidades vencidas", tipo: "financeiro", acao: "Verificar no módulo Financeiro" },
-    { msg: "Estoque de Clonazepam baixo", tipo: "estoque", acao: "Verificar no módulo Estoque" },
-    { msg: "Alvará vence em 15 dias", tipo: "compliance", acao: "Providenciar renovação" },
-    { msg: "2 evoluções pendentes", tipo: "clinico", acao: "Registrar no Prontuário" },
+    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes" },
+    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos" },
+    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda" },
+    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro" },
+    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro" },
+    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario" },
+    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque" },
   ];
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-4 md:p-6 space-y-6 md:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Visão geral da clínica — {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Visão geral — {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
         </p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat) => (
-          <div
+          <Link
             key={stat.label}
-            className="bg-card border border-border rounded-lg p-5 hover:shadow-md transition-shadow"
+            href={stat.href}
+            className="bg-card border rounded-lg p-4 md:p-5 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-xl md:text-2xl font-bold mt-1">{stat.value}</p>
               </div>
-              <stat.icon className={`h-8 w-8 ${stat.color} opacity-80`} />
+              <stat.icon className={`h-6 w-6 md:h-8 md:w-8 ${stat.color} opacity-80`} />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
-      {/* Seções do Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Próximos Agendamentos */}
-        <div className="bg-card border border-border rounded-lg p-5 lg:col-span-2">
+        <div className="bg-card border rounded-lg p-4 md:p-5 lg:col-span-2">
           <h2 className="text-lg font-semibold mb-4">Próximos Agendamentos</h2>
-          <div className="space-y-3">
-            {agendamentos.map((agenda, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-3 rounded-md bg-muted/50 hover:bg-muted transition cursor-pointer"
-                onClick={() => show(`Abrindo detalhes de ${agenda.paciente}...`, "info")}
-              >
-                <span className="text-sm font-mono text-muted-foreground w-12">{agenda.hora}</span>
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{agenda.paciente}</p>
-                  <p className="text-xs text-muted-foreground">{agenda.tipo} — {agenda.prof}</p>
+          {data?.proximosAgendamentos && data.proximosAgendamentos.length > 0 ? (
+            <div className="space-y-2">
+              {data.proximosAgendamentos.map((ag) => (
+                <div
+                  key={ag.id}
+                  className="flex items-center gap-3 md:gap-4 p-3 rounded-md bg-muted/50 hover:bg-muted transition"
+                >
+                  <span className="text-sm font-mono text-muted-foreground w-12">{ag.hora}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{ag.paciente}</p>
+                    <p className="text-xs text-muted-foreground">{ag.tipo} — {ag.profissional}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhum agendamento pendente para hoje.</p>
+          )}
         </div>
 
         {/* Alertas */}
-        <div className="bg-card border border-border rounded-lg p-5">
+        <div className="bg-card border rounded-lg p-4 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Alertas</h2>
-          <div className="space-y-3">
-            {alertas.map((alerta, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 p-3 rounded-md bg-destructive/5 border border-destructive/20 cursor-pointer hover:bg-destructive/10 transition"
-                onClick={() => show(`Ação sugerida: ${alerta.acao}`, "warning")}
-              >
-                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">{alerta.msg}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{alerta.tipo}</p>
+          {data?.alertas && data.alertas.length > 0 ? (
+            <div className="space-y-2">
+              {data.alertas.map((alerta, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3 rounded-md bg-destructive/5 border border-destructive/20"
+                >
+                  <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">{alerta.msg}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{alerta.tipo}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              ✓ Nenhum alerta no momento
+            </p>
+          )}
         </div>
       </div>
     </div>

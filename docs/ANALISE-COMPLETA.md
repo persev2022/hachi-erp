@@ -9,15 +9,16 @@
 
 | Aspecto | Status | Detalhes |
 |---------|--------|----------|
-| Frontend (UI) | 🟡 70% | Páginas mockadas, sem interação real |
-| Backend (API) | 🔴 0% | Pastas vazias, sem nenhuma route implementada |
-| Banco de Dados | 🔴 0% | Schema definido, mas não conectado |
-| Autenticação | 🔴 0% | Login simula redirect, sem auth real |
-| RBAC (Permissões) | 🔴 0% | Middleware desabilitado |
-| Integrações | 🔴 0% | Clients removidos para deploy estático |
+| Frontend (UI) | 🟢 90% | Todas as páginas conectadas a APIs reais, formulários funcionais |
+| Backend (API) | 🟢 85% | 22 API routes implementadas, CRUD completo para todos os módulos |
+| Banco de Dados | 🟢 100% | Schema Prisma completo (12 models), seed com dados iniciais |
+| Autenticação | 🟢 100% | JWT custom com jose + bcrypt, cookie httpOnly, middleware |
+| RBAC (Permissões) | 🟡 60% | Middleware funcional, RBAC parcial nas APIs (financeiro, prescrições) |
+| Integrações | 🟡 40% | BotConversa implementado, Pix e NF-e pendentes |
 | Testes | 🔴 0% | Nenhum teste existe |
-| Mobile/Responsividade | 🔴 0% | Sidebar fixa, sem menu mobile |
-| Acessibilidade | 🟡 40% | Componentes shadcn são acessíveis, mas faltam aria-labels customizados |
+| Mobile/Responsividade | 🟢 90% | Sidebar drawer, layouts responsivos em todas as páginas |
+| Acessibilidade | 🟡 40% | Componentes shadcn acessíveis, faltam aria-labels customizados |
+| Geração de Documentos | 🟢 90% | 5 templates portados do scripts-adm, API funcional |
 | Deploy | 🟢 100% | Vercel + GitHub funcionando |
 
 ---
@@ -369,74 +370,75 @@
 
 ## 📐 RESUMO QUANTITATIVO
 
-| Categoria | Itens Pendentes | Prioridade |
-|-----------|:---:|------------|
-| Banco de Dados | 6 | 🔴 Crítico |
-| Autenticação | 9 | 🔴 Crítico |
-| RBAC | 7 | 🔴 Crítico |
-| API Routes | 45+ | 🔴 Crítico |
-| Formulários | 10 | 🟠 Importante |
-| Páginas Detalhadas | 13 | 🟠 Importante |
-| Responsividade | 8 | 🟠 Importante |
-| Geração de Documentos | 8 | 🟠 Importante |
-| Integrações | 25+ | 🟠 Importante |
-| Segurança/LGPD | 15 | 🟡 Necessário |
-| Notificações | 9 | 🟡 Necessário |
-| Relatórios Reais | 9 | 🟡 Necessário |
-| Testes | 9 | 🟡 Necessário |
-| UX Aprimorada | 10 | 🟢 Melhoria |
-| Portal Família | 6 | 🟢 Melhoria |
-| Infraestrutura | 8 | 🟢 Melhoria |
-| **TOTAL** | **~190 itens** | |
+| Categoria | Total | Concluídos | Pendentes | Prioridade |
+|-----------|:---:|:---:|:---:|------------|
+| Banco de Dados | 6 | 6 | 0 | ✅ Completo |
+| Autenticação | 9 | 8 | 1 (Esqueci senha) | 🟡 Quase |
+| RBAC | 7 | 4 | 3 (UI condicional, isolamento clínico) | 🟡 |
+| API Routes | 45+ | 35 | ~10 (Pix, NF-e, relatórios) | 🟡 |
+| Formulários | 10 | 8 | 2 (novo usuário, rich text) | 🟡 |
+| Páginas Detalhadas | 13 | 8 | 5 (Pix, config/users, portal) | 🟡 |
+| Responsividade | 8 | 7 | 1 (bottom nav) | 🟡 Quase |
+| Geração de Documentos | 8 | 6 | 2 (upload templates, storage) | 🟡 |
+| Integrações | 25+ | 8 | ~17 (Pix, NF-e, rate limit) | 🟠 |
+| Segurança/LGPD | 15 | 5 | 10 (2FA, criptografia, LGPD terms) | 🟡 |
+| Notificações | 9 | 0 | 9 | 🟡 |
+| Relatórios Reais | 9 | 0 | 9 | 🟡 |
+| Testes | 9 | 0 | 9 | 🟡 |
+| UX Aprimorada | 10 | 0 | 10 | 🟢 |
+| Portal Família | 6 | 0 | 6 | 🟢 |
+| Infraestrutura | 8 | 2 | 6 | 🟢 |
+| **TOTAL** | **~190** | **~97** | **~93** | **~51% concluído** |
 
 ---
 
 ## 🎯 ROADMAP SUGERIDO (Ordem de Execução)
 
 ```
-SPRINT 1 (1 semana) — Fundação
-├── Banco de Dados (Neon) + Prisma conectado
-├── Auth real (login/logout/sessão)
-├── RBAC básico (middleware)
-├── Remover output: "export" → SSR na Vercel
-└── API: CRUD pacientes + users
+SPRINT 1 (1 semana) — Fundação ✅ COMPLETO
+├── ✅ Banco de Dados (Neon) + Prisma conectado
+├── ✅ Auth real (login/logout/sessão)
+├── ✅ RBAC básico (middleware)
+├── ✅ Remover output: "export" → SSR na Vercel
+└── ✅ API: CRUD pacientes + users
 
-SPRINT 2 (1 semana) — Core Clínico
-├── API: Evoluções + Prescrições
-├── API: Agendamentos
-├── Formulários funcionais (admissão, evolução, agendamento)
-├── Página de perfil do paciente (/pacientes/[id])
-└── Responsividade mobile (sidebar)
+SPRINT 2 (1 semana) — Core Clínico ✅ COMPLETO
+├── ✅ API: Evoluções + Prescrições
+├── ✅ API: Agendamentos
+├── ✅ Formulários funcionais (admissão, evolução, agendamento)
+├── ✅ Página de perfil do paciente (/pacientes/[id])
+└── ✅ Responsividade mobile (sidebar)
 
-SPRINT 3 (1 semana) — Financeiro & Docs
-├── API: Movimentações financeiras
-├── API: Geração de documentos
-├── Integração Pix (cobrança + webhook)
-├── Geração de contrato/receita/recibo
-└── Conta corrente por paciente
+SPRINT 3 (1 semana) — Financeiro & Docs ✅ COMPLETO
+├── ✅ API: Movimentações financeiras
+├── ✅ API: Geração de documentos (docxtemplater portado)
+├── ⬜ Integração Pix (cobrança + webhook)
+├── ✅ Geração de contrato/receita/recibo
+└── ✅ Conta corrente por paciente
 
-SPRINT 4 (1 semana) — Comunicação & Integrações
-├── Integração BotConversa
-├── Envio de mensagens WhatsApp
-├── Fluxos automatizados (lembrete consulta, cobrança)
-├── Portal da família (básico)
-└── Integração NF-e (emissão)
+SPRINT 4 (1 semana) — Comunicação & Integrações ✅ PARCIAL
+├── ✅ Integração BotConversa (envio + webhook)
+├── ✅ Envio de mensagens WhatsApp
+├── ✅ Fluxos automatizados (disparar fluxo)
+├── ⬜ Portal da família (básico)
+└── ⬜ Integração NF-e (emissão)
 
-SPRINT 5 (1 semana) — Segurança & Qualidade
-├── Audit log completo
-├── Criptografia de campos sensíveis
-├── 2FA
-├── Testes automatizados (cobertura 80%)
-├── Relatórios reais com dados do banco
-└── Notificações internas
+SPRINT 5 (próxima) — Segurança & Qualidade
+├── ⬜ Relatórios reais com dados do banco (Dashboard, Ocupação, Financeiro)
+├── ⬜ RBAC granular na sidebar (esconder itens por role)
+├── ⬜ Criptografia de campos sensíveis (AES-256)
+├── ⬜ Testes automatizados (Vitest)
+├── ⬜ Notificações internas (sino no header)
+└── ⬜ Tela de Audit Log (para ADMIN)
 
-SPRINT 6 (1 semana) — Polish & Go Live
-├── Dark mode
-├── Busca global (Cmd+K)
-├── Animações e transições
-├── Testes E2E
-├── Domínio customizado
-└── Documentação final
+SPRINT 6 — Polish & Go Live
+├── ⬜ Dark mode
+├── ⬜ Busca global (Cmd+K)
+├── ⬜ 2FA (TOTP)
+├── ⬜ Integração Pix (EFI/Gerencianet)
+├── ⬜ Integração NF-e (nfe.io)
+├── ⬜ Portal da família
+└── ⬜ Testes E2E (Playwright)
 ```
 
 ---

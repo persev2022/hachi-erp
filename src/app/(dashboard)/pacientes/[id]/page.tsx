@@ -1,0 +1,456 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import {
+  ArrowLeft,
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  Pill,
+  FileHeart,
+  Wallet,
+  BedDouble,
+  Clock,
+  Loader2,
+  Stethoscope,
+  Brain,
+  Heart,
+  CheckCircle2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+type Tab = "resumo" | "evolucoes" | "prescricoes" | "agenda" | "financeiro";
+
+const statusColor: Record<string, string> = {
+  ATIVO: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  ALTA: "bg-blue-100 text-blue-700 border-blue-200",
+  EVADIDO: "bg-red-100 text-red-700 border-red-200",
+  TRANSFERIDO: "bg-amber-100 text-amber-700 border-amber-200",
+  OBITO: "bg-gray-100 text-gray-700 border-gray-200",
+};
+
+const tipoEvolucaoIcon: Record<string, React.ElementType> = {
+  MEDICA: Stethoscope,
+  PSICOLOGICA: Brain,
+  ENFERMAGEM: Heart,
+  TERAPEUTICA: User,
+  SOCIAL: User,
+  NUTRICIONAL: User,
+};
+
+function formatDate(d: string | null | undefined) {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleDateString("pt-BR");
+  } catch {
+    return "—";
+  }
+}
+
+function formatDateTime(d: string | null | undefined) {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
+}
+
+export default function PacienteDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const [paciente, setPaciente] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState<Tab>("resumo");
+
+  // Extra data for tabs
+  const [evolucoes, setEvolucoes] = React.useState<any[]>([]);
+  const [prescricoes, setPrescricoes] = React.useState<any[]>([]);
+  const [loadingTab, setLoadingTab] = React.useState(false);
+
+  React.useEffect(() => {
+    async function fetchPaciente() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/pacientes/${id}`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setError(data.error || "Erro ao carregar paciente");
+          return;
+        }
+        setPaciente(data.data);
+      } catch {
+        setError("Erro de conexão");
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (id) fetchPaciente();
+  }, [id]);
+
+  React.useEffect(() => {
+    if (!id) return;
+
+    async function fetchTabData() {
+      setLoadingTab(true);
+      try {
+        if (activeTab === "evolucoes") {
+          const res = await fetch(`/api/prontuario/evolucoes?pacienteId=${id}`);
+          const data = await res.json();
+          if (data.success) setEvolucoes(data.data);
+        } else if (activeTab === "prescricoes") {
+          const res = await fetch(`/api/prontuario/prescricoes?pacienteId=${id}`);
+          const data = await res.json();
+          if (data.success) setPrescricoes(data.data);
+        }
+      } catch {
+        // fail silently
+      } finally {
+        setLoadingTab(false);
+      }
+    }
+
+    if (activeTab === "evolucoes" || activeTab === "prescricoes") {
+      fetchTabData();
+    }
+  }, [activeTab, id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Carregando...</span>
+      </div>
+    );
+  }
+
+  if (error || !paciente) {
+    return (
+      <div className="p-8">
+        <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+          {error || "Paciente não encontrado"}
+        </div>
+        <Button variant="outline" className="mt-4" asChild>
+          <Link href="/pacientes">← Voltar</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+    { key: "resumo", label: "Resumo", icon: User },
+    { key: "evolucoes", label: "Evoluções", icon: FileHeart },
+    { key: "prescricoes", label: "Prescrições", icon: Pill },
+    { key: "agenda", label: "Agenda", icon: Calendar },
+    { key: "financeiro", label: "Financeiro", icon: Wallet },
+  ];
+
+  return (
+    <div className="p-4 md:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <Button variant="ghost" size="icon" asChild className="shrink-0 self-start">
+          <Link href="/pacientes">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-xl md:text-2xl font-bold truncate">{paciente.nome}</h1>
+            <Badge variant="outline" className={statusColor[paciente.status]}>
+              {paciente.status}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            CPF: {paciente.cpf} · Admissão: {formatDate(paciente.dataAdmissao)}
+            {paciente.quarto && ` · Quarto ${paciente.quarto.numero}`}
+          </p>
+        </div>
+        <Button variant="outline" asChild className="shrink-0">
+          <Link href={`/pacientes/${id}/editar`}>Editar</Link>
+        </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 overflow-x-auto border-b pb-px">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition whitespace-nowrap ${
+              activeTab === tab.key
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === "resumo" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Dados Pessoais */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="h-4 w-4" /> Dados Pessoais
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <div><span className="text-muted-foreground">Nascimento:</span> {formatDate(paciente.dataNascimento)}</div>
+                <div><span className="text-muted-foreground">Sexo:</span> {paciente.sexo === "M" ? "Masculino" : "Feminino"}</div>
+                <div><span className="text-muted-foreground">Estado Civil:</span> {paciente.estadoCivil}</div>
+                <div><span className="text-muted-foreground">Profissão:</span> {paciente.profissao || "—"}</div>
+              </div>
+              {paciente.telefone && (
+                <div className="flex items-center gap-2 pt-2">
+                  <Phone className="h-3 w-3 text-muted-foreground" />
+                  <span>{paciente.telefone}</span>
+                </div>
+              )}
+              {paciente.endereco && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
+                  <span>{paciente.endereco}, {paciente.bairro} - {paciente.cidade}/{paciente.uf}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Dados Clínicos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Stethoscope className="h-4 w-4" /> Dados Clínicos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div><span className="text-muted-foreground">Substância principal:</span> {paciente.substanciaPrincipal || "—"}</div>
+              <div><span className="text-muted-foreground">Tempo de uso:</span> {paciente.tempoUso || "—"}</div>
+              <div><span className="text-muted-foreground">Internações prévias:</span> {paciente.internacoesPrevias}</div>
+              <div><span className="text-muted-foreground">Comorbidades:</span> {paciente.comorbidades || "—"}</div>
+              <div><span className="text-muted-foreground">Alergias:</span> {paciente.alergias || "Nenhuma informada"}</div>
+            </CardContent>
+          </Card>
+
+          {/* Tratamento */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <BedDouble className="h-4 w-4" /> Tratamento Atual
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div><span className="text-muted-foreground">Admissão:</span> {formatDate(paciente.dataAdmissao)}</div>
+              <div><span className="text-muted-foreground">Previsão alta:</span> {formatDate(paciente.dataAltaPrevista)}</div>
+              <div><span className="text-muted-foreground">Dias de tratamento:</span> {paciente.diasTratamento} dias</div>
+              <div><span className="text-muted-foreground">Quarto:</span> {paciente.quarto?.numero || "Não atribuído"}</div>
+            </CardContent>
+          </Card>
+
+          {/* Responsável */}
+          {paciente.responsaveis?.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <User className="h-4 w-4" /> Responsável
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {paciente.responsaveis.map((r: any) => (
+                  <div key={r.id} className="space-y-1">
+                    <div className="font-medium">{r.nome} ({r.parentesco})</div>
+                    <div className="text-muted-foreground">{r.telefone}</div>
+                    {r.email && <div className="text-muted-foreground">{r.email}</div>}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Últimas Evoluções (preview) */}
+          {paciente.evolucoes?.length > 0 && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileHeart className="h-4 w-4" /> Últimas Evoluções
+                </CardTitle>
+                <CardDescription>
+                  <button
+                    className="text-primary hover:underline text-xs"
+                    onClick={() => setActiveTab("evolucoes")}
+                  >
+                    Ver todas →
+                  </button>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {paciente.evolucoes.slice(0, 5).map((ev: any) => {
+                  const Icon = tipoEvolucaoIcon[ev.tipo] || FileHeart;
+                  return (
+                    <div key={ev.id} className="flex items-start gap-3 text-sm">
+                      <Icon className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{ev.tipo}</span>
+                          <span className="text-muted-foreground text-xs">{formatDateTime(ev.createdAt)}</span>
+                          {ev.assinado && <CheckCircle2 className="h-3 w-3 text-emerald-500" />}
+                        </div>
+                        <p className="text-muted-foreground truncate">{ev.conteudo}</p>
+                        <p className="text-xs text-muted-foreground">{ev.profissional?.name}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {activeTab === "evolucoes" && (
+        <div className="space-y-3">
+          {loadingTab ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : evolucoes.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Nenhuma evolução registrada.</p>
+          ) : (
+            evolucoes.map((ev) => {
+              const Icon = tipoEvolucaoIcon[ev.tipo] || FileHeart;
+              return (
+                <Card key={ev.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Icon className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline">{ev.tipo}</Badge>
+                          <span className="text-xs text-muted-foreground">{formatDateTime(ev.createdAt)}</span>
+                          {ev.assinado && (
+                            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
+                              Assinado
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm mt-2 leading-relaxed">{ev.conteudo}</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {ev.profissional?.name} ({ev.profissional?.role})
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {activeTab === "prescricoes" && (
+        <div className="space-y-3">
+          {loadingTab ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : prescricoes.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Nenhuma prescrição registrada.</p>
+          ) : (
+            prescricoes.map((p) => (
+              <Card key={p.id} className={!p.ativa ? "opacity-60" : ""}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Pill className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium text-sm">{p.medicamento}</span>
+                        <Badge variant="outline" className={p.ativa ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}>
+                          {p.ativa ? "Ativa" : "Suspensa"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {p.dosagem} — Via {p.via} — {p.frequencia}
+                        {p.duracao && ` — ${p.duracao}`}
+                      </p>
+                      {p.observacoes && (
+                        <p className="text-xs text-muted-foreground mt-1">Obs: {p.observacoes}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Prescrito por: {p.medico?.name} {p.medico?.crm && `(CRM ${p.medico.crm})`}
+                      </p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(p.createdAt)}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === "agenda" && (
+        <div className="space-y-3">
+          {paciente.agendamentos?.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Nenhum agendamento próximo.</p>
+          ) : (
+            paciente.agendamentos?.map((ag: any) => (
+              <Card key={ag.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{ag.tipo}</span>
+                        <Badge variant="outline">{ag.status}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        <Clock className="h-3 w-3 inline mr-1" />
+                        {formatDateTime(ag.dataHora)} — {ag.duracao}min
+                        {ag.sala && ` — ${ag.sala}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ag.profissional?.name}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === "financeiro" && (
+        <div className="text-center text-muted-foreground py-8">
+          <Wallet className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p>Módulo financeiro em desenvolvimento.</p>
+          <p className="text-xs mt-1">
+            Mensalidade: R$ {paciente.mensalidadeValor?.toFixed(2) || "—"} · Vencimento dia {paciente.diaVencimento || "—"}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

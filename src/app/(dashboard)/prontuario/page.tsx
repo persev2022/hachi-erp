@@ -1,7 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { FileHeart, Search, Clock, User, Stethoscope, Brain, Heart } from "lucide-react";
+import {
+  FileHeart,
+  Search,
+  Clock,
+  User,
+  Stethoscope,
+  Brain,
+  Heart,
+  Plus,
+  CheckCircle2,
+  Loader2,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,123 +21,294 @@ import { useToast } from "@/components/ui/toast-simple";
 
 interface Evolucao {
   id: string;
-  paciente: string;
-  tipo: "Médica" | "Psicológica" | "Enfermagem" | "Terapêutica";
-  profissional: string;
-  resumo: string;
-  data: string;
-  hora: string;
+  pacienteId: string;
+  paciente: { id: string; nome: string };
+  profissional: { id: string; name: string; role: string };
+  tipo: string;
+  conteudo: string;
+  sinaisVitais: any;
   assinado: boolean;
+  assinadoEm: string | null;
+  createdAt: string;
 }
 
-const evolucoesMock: Evolucao[] = [
-  { id: "1", paciente: "Carlos Eduardo Silva", tipo: "Médica", profissional: "Dr. Marcos Vieira", resumo: "Paciente estável, redução gradual de Clonazepam. Sem queixas novas. Apetite preservado.", data: "01/07/2026", hora: "08:30", assinado: true },
-  { id: "2", paciente: "Carlos Eduardo Silva", tipo: "Psicológica", profissional: "Dra. Ana Paula", resumo: "Sessão individual: trabalho de prevenção à recaída. Paciente demonstra insight sobre gatilhos.", data: "01/07/2026", hora: "10:00", assinado: true },
-  { id: "3", paciente: "Marcos Antônio Oliveira", tipo: "Enfermagem", profissional: "Enf. Paula Santos", resumo: "PA: 120x80, FC: 72, T: 36.2°C. Aceitou medicação. Sono regular. Sem intercorrências.", data: "01/07/2026", hora: "07:00", assinado: true },
-  { id: "4", paciente: "João Pedro Ferreira", tipo: "Terapêutica", profissional: "Dr. Ricardo Lima", resumo: "Participação ativa na terapia em grupo. Tema: comunicação familiar. Paciente emocionado ao relatar.", data: "30/06/2026", hora: "16:00", assinado: true },
-  { id: "5", paciente: "Thiago Mendes Costa", tipo: "Médica", profissional: "Dr. Marcos Vieira", resumo: "Queixa de insônia. Ajustada medicação noturna. Orientado sobre higiene do sono.", data: "30/06/2026", hora: "09:00", assinado: false },
-  { id: "6", paciente: "Lucas Gabriel Santos", tipo: "Psicológica", profissional: "Psic. Fernanda Costa", resumo: "Avaliação inicial concluída. Perfil: alta impulsividade, baixa tolerância à frustração.", data: "30/06/2026", hora: "14:00", assinado: true },
-  { id: "7", paciente: "Marcos Antônio Oliveira", tipo: "Médica", profissional: "Dr. Marcos Vieira", resumo: "Exames laboratoriais normais. Manter conduta atual. Reavaliar em 15 dias.", data: "29/06/2026", hora: "11:00", assinado: true },
-  { id: "8", paciente: "João Pedro Ferreira", tipo: "Enfermagem", profissional: "Enf. Paula Santos", resumo: "Paciente recusou jantar. Queixa de náusea. Administrado Ondansetrona. Melhora após 30min.", data: "29/06/2026", hora: "19:30", assinado: true },
-];
-
 const tipoConfig: Record<string, { color: string; icon: React.ElementType }> = {
-  Médica: { color: "bg-blue-100 text-blue-700 border-blue-200", icon: Stethoscope },
-  Psicológica: { color: "bg-purple-100 text-purple-700 border-purple-200", icon: Brain },
-  Enfermagem: { color: "bg-pink-100 text-pink-700 border-pink-200", icon: Heart },
-  Terapêutica: { color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: User },
+  MEDICA: { color: "bg-blue-100 text-blue-700 border-blue-200", icon: Stethoscope },
+  PSICOLOGICA: { color: "bg-purple-100 text-purple-700 border-purple-200", icon: Brain },
+  ENFERMAGEM: { color: "bg-pink-100 text-pink-700 border-pink-200", icon: Heart },
+  TERAPEUTICA: { color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: User },
+  SOCIAL: { color: "bg-orange-100 text-orange-700 border-orange-200", icon: User },
+  NUTRICIONAL: { color: "bg-amber-100 text-amber-700 border-amber-200", icon: User },
 };
+
+function formatDateTime(d: string) {
+  try {
+    return new Date(d).toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
+}
 
 export default function ProntuarioPage() {
   const [busca, setBusca] = React.useState("");
   const [filtroTipo, setFiltroTipo] = React.useState<string>("Todas");
+  const [evolucoes, setEvolucoes] = React.useState<Evolucao[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [showForm, setShowForm] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [pacientes, setPacientes] = React.useState<{ id: string; nome: string }[]>([]);
   const { show } = useToast();
 
-  const filtradas = evolucoesMock.filter((e) => {
-    const matchBusca =
-      e.paciente.toLowerCase().includes(busca.toLowerCase()) ||
-      e.profissional.toLowerCase().includes(busca.toLowerCase()) ||
-      e.resumo.toLowerCase().includes(busca.toLowerCase());
-    const matchTipo = filtroTipo === "Todas" || e.tipo === filtroTipo;
-    return matchBusca && matchTipo;
+  const fetchEvolucoes = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filtroTipo !== "Todas") params.set("tipo", filtroTipo);
+      params.set("pageSize", "50");
+
+      const res = await fetch(`/api/prontuario/evolucoes?${params.toString()}`);
+      const data = await res.json();
+
+      if (data.success) {
+        setEvolucoes(data.data);
+      }
+    } catch {
+      show("Erro ao carregar evoluções", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [filtroTipo, show]);
+
+  React.useEffect(() => {
+    fetchEvolucoes();
+  }, [fetchEvolucoes]);
+
+  // Fetch patients list for the form
+  React.useEffect(() => {
+    fetch("/api/pacientes?pageSize=100&status=ATIVO")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setPacientes(d.data.map((p: any) => ({ id: p.id, nome: p.nome })));
+      })
+      .catch(() => {});
+  }, []);
+
+  const filtradas = evolucoes.filter((e) => {
+    if (!busca) return true;
+    const term = busca.toLowerCase();
+    return (
+      e.paciente.nome.toLowerCase().includes(term) ||
+      e.profissional.name.toLowerCase().includes(term) ||
+      e.conteudo.toLowerCase().includes(term)
+    );
   });
 
+  const handleNewEvolucao = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const form = new FormData(e.currentTarget);
+    const payload = {
+      pacienteId: form.get("pacienteId"),
+      tipo: form.get("tipo"),
+      conteudo: form.get("conteudo"),
+    };
+
+    try {
+      const res = await fetch("/api/prontuario/evolucoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        show(data.error || "Erro ao criar evolução", "error");
+        return;
+      }
+
+      show("Evolução registrada com sucesso!", "success");
+      setShowForm(false);
+      fetchEvolucoes();
+    } catch {
+      show("Erro de conexão", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Prontuário Eletrônico</h1>
-          <p className="text-sm text-muted-foreground mt-1">Evoluções clínicas e histórico dos pacientes</p>
+          <h1 className="text-xl md:text-2xl font-bold">Prontuário Eletrônico</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Evoluções clínicas e histórico dos pacientes
+          </p>
         </div>
-        <Button onClick={() => show("Formulário de evolução em desenvolvimento", "info")}>
-          <FileHeart className="h-4 w-4 mr-2" />Nova Evolução
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Evolução
         </Button>
       </div>
 
-      {/* Filtros */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar paciente, profissional ou conteúdo..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9 w-80" />
+      {/* Modal de Nova Evolução */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card border rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Nova Evolução</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <form onSubmit={handleNewEvolucao} className="p-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Paciente *</label>
+                <select
+                  name="pacienteId"
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Selecione o paciente</option>
+                  {pacientes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tipo *</label>
+                <select
+                  name="tipo"
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Selecione</option>
+                  <option value="MEDICA">Médica</option>
+                  <option value="PSICOLOGICA">Psicológica</option>
+                  <option value="ENFERMAGEM">Enfermagem</option>
+                  <option value="TERAPEUTICA">Terapêutica</option>
+                  <option value="SOCIAL">Social</option>
+                  <option value="NUTRICIONAL">Nutricional</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Conteúdo da Evolução *</label>
+                <textarea
+                  name="conteudo"
+                  required
+                  minLength={10}
+                  rows={6}
+                  placeholder="Descreva a evolução clínica do paciente..."
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y min-h-[120px]"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Registrar
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
-        <div className="flex gap-1">
-          {["Todas", "Médica", "Psicológica", "Enfermagem", "Terapêutica"].map((tipo) => (
+      )}
+
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar paciente, profissional ou conteúdo..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex gap-1 overflow-x-auto">
+          {["Todas", "MEDICA", "PSICOLOGICA", "ENFERMAGEM", "TERAPEUTICA"].map((tipo) => (
             <Button
               key={tipo}
               variant={filtroTipo === tipo ? "default" : "outline"}
               size="sm"
-              className="text-xs"
+              className="text-xs whitespace-nowrap"
               onClick={() => setFiltroTipo(tipo)}
             >
-              {tipo}
+              {tipo === "Todas" ? "Todas" : tipo.charAt(0) + tipo.slice(1).toLowerCase()}
             </Button>
           ))}
         </div>
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-muted-foreground">Carregando evoluções...</span>
+        </div>
+      )}
+
       {/* Timeline de evoluções */}
-      <div className="space-y-3">
-        {filtradas.map((ev) => {
-          const config = tipoConfig[ev.tipo];
-          const Icon = config.icon;
-          return (
-            <div key={ev.id} className="bg-card border rounded-lg p-5 hover:shadow-sm transition">
-              <div className="flex items-start gap-4">
-                <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${config.color}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm">{ev.paciente}</span>
-                    <Badge variant="outline" className={config.color}>{ev.tipo}</Badge>
-                    {!ev.assinado && (
-                      <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200">Não assinado</Badge>
-                    )}
+      {!loading && (
+        <div className="space-y-3">
+          {filtradas.map((ev) => {
+            const config = tipoConfig[ev.tipo] || tipoConfig.MEDICA;
+            const Icon = config.icon;
+            return (
+              <div key={ev.id} className="bg-card border rounded-lg p-4 md:p-5 hover:shadow-sm transition">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className={`h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center shrink-0 ${config.color}`}>
+                    <Icon className="h-4 w-4 md:h-5 md:w-5" />
                   </div>
-                  <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed">{ev.resumo}</p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><User className="h-3 w-3" />{ev.profissional}</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ev.data} às {ev.hora}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">{ev.paciente.nome}</span>
+                      <Badge variant="outline" className={config.color}>
+                        {ev.tipo.charAt(0) + ev.tipo.slice(1).toLowerCase()}
+                      </Badge>
+                      {ev.assinado ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                          Não assinado
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed line-clamp-2">
+                      {ev.conteudo}
+                    </p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {ev.profissional.name}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDateTime(ev.createdAt)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => show(`${ev.paciente} — ${ev.tipo} (${ev.data} ${ev.hora}): ${ev.resumo}`, "info")}
-                >
-                  Ver completo
-                </Button>
               </div>
+            );
+          })}
+          {filtradas.length === 0 && !loading && (
+            <div className="text-center text-muted-foreground py-8">
+              Nenhuma evolução encontrada.
             </div>
-          );
-        })}
-        {filtradas.length === 0 && (
-          <div className="text-center text-muted-foreground py-8">
-            Nenhuma evolução encontrada.
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

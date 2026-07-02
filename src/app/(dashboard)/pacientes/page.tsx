@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/toast-simple";
+
 
 type StatusPaciente = "ATIVO" | "ALTA" | "EVADIDO" | "TRANSFERIDO" | "OBITO";
 
@@ -83,7 +83,6 @@ export default function PacientesPage() {
     pageSize: 20,
     totalPages: 0,
   });
-  const { show } = useToast();
   const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const fetchPacientes = React.useCallback(async (search: string, page = 1) => {
@@ -226,27 +225,21 @@ export default function PacientesPage() {
                         variant="ghost"
                         size="icon"
                         title="Ver detalhes"
-                        onClick={() =>
-                          show(
-                            `Detalhes de ${paciente.nome} — módulo em desenvolvimento`,
-                            "info"
-                          )
-                        }
+                        asChild
                       >
-                        <Eye className="h-4 w-4" />
+                        <Link href={`/pacientes/${paciente.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         title="Editar"
-                        onClick={() =>
-                          show(
-                            `Editando ${paciente.nome}... (em desenvolvimento)`,
-                            "info"
-                          )
-                        }
+                        asChild
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Link href={`/pacientes/${paciente.id}/editar`}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
                   </TableCell>

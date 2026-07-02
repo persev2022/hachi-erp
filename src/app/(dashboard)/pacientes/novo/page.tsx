@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,14 +17,100 @@ import { useToast } from "@/components/ui/toast-simple";
 
 export default function NovoPacientePage() {
   const { show } = useToast();
+  const router = useRouter();
+  const [loading, setLoading] = React.useState(false);
+  const [errors, setErrors] = React.useState<Record<string, string[]>>({});
+  const [quartos, setQuartos] = React.useState<{ id: string; numero: string }[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fetch available rooms
+  React.useEffect(() => {
+    fetch("/api/quartos?status=DISPONIVEL")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setQuartos(d.data || []);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    show("Paciente salvo com sucesso!", "success");
+    setLoading(true);
+    setErrors({});
+
+    const form = new FormData(e.currentTarget);
+
+    const payload: any = {
+      nome: form.get("nome"),
+      cpf: (form.get("cpf") as string).replace(/\D/g, ""),
+      dataNascimento: form.get("dataNascimento"),
+      sexo: form.get("sexo"),
+      estadoCivil: form.get("estadoCivil"),
+      profissao: form.get("profissao") || undefined,
+      telefone: form.get("telefone") || undefined,
+      email: form.get("email") || "",
+      endereco: form.get("endereco") || undefined,
+      bairro: form.get("bairro") || undefined,
+      cidade: form.get("cidade") || undefined,
+      uf: form.get("uf") || undefined,
+      cep: form.get("cep") || undefined,
+      substanciaPrincipal: form.get("substanciaPrincipal") || undefined,
+      tempoUso: form.get("tempoUso") || undefined,
+      internacoesPrevias: parseInt(form.get("internacoesPrevias") as string) || 0,
+      comorbidades: form.get("comorbidades") || undefined,
+      alergias: form.get("alergias") || undefined,
+      dataAdmissao: form.get("dataAdmissao"),
+      diasTratamento: parseInt(form.get("diasTratamento") as string) || 90,
+      quartoId: form.get("quartoId") || undefined,
+      mensalidadeValor: parseFloat(form.get("mensalidadeValor") as string) || undefined,
+      diaVencimento: parseInt(form.get("diaVencimento") as string) || undefined,
+    };
+
+    // Build responsavel if provided
+    const respNome = form.get("respNome") as string;
+    if (respNome) {
+      payload.responsavel = {
+        nome: respNome,
+        cpf: (form.get("respCpf") as string || "").replace(/\D/g, ""),
+        parentesco: form.get("respParentesco"),
+        telefone: form.get("respTelefone"),
+        email: form.get("respEmail") || "",
+        isFinanceiro: true,
+      };
+    }
+
+    try {
+      const res = await fetch("/api/pacientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        if (data.details) {
+          setErrors(data.details);
+        }
+        show(data.error || "Erro ao salvar paciente", "error");
+        return;
+      }
+
+      show("Paciente cadastrado com sucesso!", "success");
+      router.push(`/pacientes/${data.data.id}`);
+    } catch {
+      show("Erro de conexão ao salvar paciente", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const fieldError = (field: string) =>
+    errors[field] ? (
+      <p className="text-xs text-destructive mt-1">{errors[field][0]}</p>
+    ) : null;
+
   return (
-    <div className="p-8 space-y-6 max-w-4xl">
+    <div className="p-4 md:p-8 space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -32,7 +119,7 @@ export default function NovoPacientePage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Novo Paciente</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Novo Paciente</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Preencha os dados para admissão
           </p>
@@ -51,48 +138,73 @@ export default function NovoPacientePage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2 space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Nome Completo
+                Nome Completo *
               </label>
-              <Input placeholder="Nome completo do paciente" />
+              <Input name="nome" placeholder="Nome completo do paciente" required />
+              {fieldError("nome")}
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">CPF</label>
-              <Input placeholder="000.000.000-00" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Data de Nascimento
-              </label>
-              <Input type="date" />
+              <label className="text-sm font-medium text-foreground">CPF *</label>
+              <Input name="cpf" placeholder="000.000.000-00" required />
+              {fieldError("cpf")}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Sexo
+                Data de Nascimento *
               </label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <Input name="dataNascimento" type="date" required />
+              {fieldError("dataNascimento")}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Sexo *
+              </label>
+              <select
+                name="sexo"
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <option value="">Selecione</option>
                 <option value="M">Masculino</option>
                 <option value="F">Feminino</option>
               </select>
+              {fieldError("sexo")}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Estado Civil
+                Estado Civil *
               </label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <select
+                name="estadoCivil"
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <option value="">Selecione</option>
-                <option value="solteiro">Solteiro(a)</option>
-                <option value="casado">Casado(a)</option>
-                <option value="divorciado">Divorciado(a)</option>
-                <option value="viuvo">Viúvo(a)</option>
-                <option value="uniao_estavel">União Estável</option>
+                <option value="SOLTEIRO">Solteiro(a)</option>
+                <option value="CASADO">Casado(a)</option>
+                <option value="DIVORCIADO">Divorciado(a)</option>
+                <option value="VIUVO">Viúvo(a)</option>
+                <option value="UNIAO_ESTAVEL">União Estável</option>
               </select>
+              {fieldError("estadoCivil")}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Telefone
+              </label>
+              <Input name="telefone" placeholder="(00) 00000-0000" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Email
+              </label>
+              <Input name="email" type="email" placeholder="email@exemplo.com" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Profissão
               </label>
-              <Input placeholder="Profissão" />
+              <Input name="profissao" placeholder="Profissão" />
             </div>
           </CardContent>
         </Card>
@@ -106,27 +218,27 @@ export default function NovoPacientePage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2 space-y-2">
               <label className="text-sm font-medium text-foreground">Rua</label>
-              <Input placeholder="Rua, número, complemento" />
+              <Input name="endereco" placeholder="Rua, número, complemento" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Bairro
               </label>
-              <Input placeholder="Bairro" />
+              <Input name="bairro" placeholder="Bairro" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Cidade
               </label>
-              <Input placeholder="Cidade" />
+              <Input name="cidade" placeholder="Cidade" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">UF</label>
-              <Input placeholder="UF" maxLength={2} />
+              <Input name="uf" placeholder="UF" maxLength={2} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">CEP</label>
-              <Input placeholder="00000-000" />
+              <Input name="cep" placeholder="00000-000" />
             </div>
           </CardContent>
         </Card>
@@ -144,39 +256,42 @@ export default function NovoPacientePage() {
               <label className="text-sm font-medium text-foreground">
                 Substância Principal
               </label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <select
+                name="substanciaPrincipal"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <option value="">Selecione</option>
-                <option value="alcool">Álcool</option>
-                <option value="cocaina">Cocaína</option>
-                <option value="crack">Crack</option>
-                <option value="maconha">Maconha</option>
-                <option value="multiplas">Múltiplas Substâncias</option>
-                <option value="outros">Outros</option>
+                <option value="Álcool">Álcool</option>
+                <option value="Cocaína">Cocaína</option>
+                <option value="Crack">Crack</option>
+                <option value="Maconha">Maconha</option>
+                <option value="Múltiplas Substâncias">Múltiplas Substâncias</option>
+                <option value="Outros">Outros</option>
               </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Tempo de Uso
               </label>
-              <Input placeholder="Ex: 5 anos" />
+              <Input name="tempoUso" placeholder="Ex: 5 anos" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Internações Prévias
               </label>
-              <Input type="number" placeholder="0" min={0} />
+              <Input name="internacoesPrevias" type="number" placeholder="0" min={0} defaultValue={0} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Comorbidades
               </label>
-              <Input placeholder="Ex: Depressão, Ansiedade" />
+              <Input name="comorbidades" placeholder="Ex: Depressão, Ansiedade" />
             </div>
             <div className="md:col-span-2 space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Alergias
               </label>
-              <Input placeholder="Alergias conhecidas" />
+              <Input name="alergias" placeholder="Alergias conhecidas" />
             </div>
           </CardContent>
         </Card>
@@ -190,28 +305,32 @@ export default function NovoPacientePage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Data de Admissão
+                Data de Admissão *
               </label>
-              <Input type="date" />
+              <Input name="dataAdmissao" type="date" required defaultValue={new Date().toISOString().split("T")[0]} />
+              {fieldError("dataAdmissao")}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Dias de Tratamento
+                Dias de Tratamento *
               </label>
-              <Input type="number" placeholder="90" min={1} />
+              <Input name="diasTratamento" type="number" placeholder="90" min={1} required defaultValue={90} />
+              {fieldError("diasTratamento")}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Quarto
               </label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <select
+                name="quartoId"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <option value="">Selecione</option>
-                <option value="Q-101">Q-101</option>
-                <option value="Q-102">Q-102</option>
-                <option value="Q-103">Q-103</option>
-                <option value="Q-201">Q-201</option>
-                <option value="Q-202">Q-202</option>
-                <option value="Q-203">Q-203</option>
+                {quartos.map((q) => (
+                  <option key={q.id} value={q.id}>
+                    {q.numero}
+                  </option>
+                ))}
               </select>
             </div>
           </CardContent>
@@ -230,39 +349,42 @@ export default function NovoPacientePage() {
               <label className="text-sm font-medium text-foreground">
                 Nome do Responsável
               </label>
-              <Input placeholder="Nome completo" />
+              <Input name="respNome" placeholder="Nome completo" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 CPF do Responsável
               </label>
-              <Input placeholder="000.000.000-00" />
+              <Input name="respCpf" placeholder="000.000.000-00" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Parentesco
               </label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <select
+                name="respParentesco"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <option value="">Selecione</option>
-                <option value="pai">Pai</option>
-                <option value="mae">Mãe</option>
-                <option value="conjuge">Cônjuge</option>
-                <option value="irmao">Irmão(ã)</option>
-                <option value="filho">Filho(a)</option>
-                <option value="outro">Outro</option>
+                <option value="Pai">Pai</option>
+                <option value="Mãe">Mãe</option>
+                <option value="Cônjuge">Cônjuge</option>
+                <option value="Irmão(ã)">Irmão(ã)</option>
+                <option value="Filho(a)">Filho(a)</option>
+                <option value="Outro">Outro</option>
               </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Telefone
               </label>
-              <Input placeholder="(00) 00000-0000" />
+              <Input name="respTelefone" placeholder="(00) 00000-0000" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Email
               </label>
-              <Input type="email" placeholder="email@exemplo.com" />
+              <Input name="respEmail" type="email" placeholder="email@exemplo.com" />
             </div>
           </CardContent>
         </Card>
@@ -276,21 +398,18 @@ export default function NovoPacientePage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Matrícula
-              </label>
-              <Input placeholder="Gerada automaticamente" disabled />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
                 Mensalidade (R$)
               </label>
-              <Input type="number" placeholder="0,00" min={0} step={0.01} />
+              <Input name="mensalidadeValor" type="number" placeholder="0.00" min={0} step={0.01} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Dia de Vencimento
               </label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <select
+                name="diaVencimento"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <option value="">Selecione</option>
                 <option value="5">Dia 5</option>
                 <option value="20">Dia 20</option>
@@ -304,7 +423,10 @@ export default function NovoPacientePage() {
           <Button variant="outline" asChild>
             <Link href="/pacientes">Cancelar</Link>
           </Button>
-          <Button type="submit">Salvar Paciente</Button>
+          <Button type="submit" disabled={loading}>
+            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Salvar Paciente
+          </Button>
         </div>
       </form>
     </div>

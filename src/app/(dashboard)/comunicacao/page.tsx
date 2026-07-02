@@ -1,137 +1,221 @@
 "use client";
 
 import * as React from "react";
-import { MessageSquare, Send, Phone, Check, CheckCheck, AlertCircle } from "lucide-react";
+import {
+  MessageSquare,
+  Send,
+  Phone,
+  Loader2,
+  X,
+  CheckCheck,
+  Check,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-simple";
 
-interface Mensagem {
+interface Comunicacao {
   id: string;
+  paciente: { id: string; nome: string } | null;
   destinatario: string;
-  pacienteRelacionado: string;
-  canal: "WhatsApp" | "Email" | "SMS";
+  canal: string;
   mensagem: string;
-  status: "Enviada" | "Entregue" | "Lida" | "Falha";
-  dataHora: string;
-  tipo: "Lembrete" | "Cobrança" | "Informativo" | "Manual";
+  status: string;
+  createdAt: string;
 }
 
-const mensagensMock: Mensagem[] = [
-  { id: "1", destinatario: "Maria Silva (mãe)", pacienteRelacionado: "Carlos Eduardo Silva", canal: "WhatsApp", mensagem: "Lembrete: consulta amanhã às 10h com Dr. Marcos", status: "Lida", dataHora: "01/07 08:00", tipo: "Lembrete" },
-  { id: "2", destinatario: "José Oliveira (pai)", pacienteRelacionado: "Marcos Antônio Oliveira", canal: "WhatsApp", mensagem: "Mensalidade de Julho disponível para pagamento via Pix", status: "Entregue", dataHora: "01/07 09:30", tipo: "Cobrança" },
-  { id: "3", destinatario: "Ana Ferreira (esposa)", pacienteRelacionado: "João Pedro Ferreira", canal: "WhatsApp", mensagem: "Atualização semanal: João está bem, participando das atividades", status: "Lida", dataHora: "30/06 14:00", tipo: "Informativo" },
-  { id: "4", destinatario: "Rosa Costa (mãe)", pacienteRelacionado: "Thiago Mendes Costa", canal: "WhatsApp", mensagem: "URGENTE: Mensalidade Junho em atraso. Favor regularizar.", status: "Enviada", dataHora: "30/06 10:00", tipo: "Cobrança" },
-  { id: "5", destinatario: "Pedro Santos (pai)", pacienteRelacionado: "Lucas Gabriel Santos", canal: "Email", mensagem: "Relatório mensal de evolução do tratamento", status: "Entregue", dataHora: "29/06 16:00", tipo: "Informativo" },
-  { id: "6", destinatario: "Maria Silva (mãe)", pacienteRelacionado: "Carlos Eduardo Silva", canal: "WhatsApp", mensagem: "Dia de visita: Domingo 06/07, das 14h às 17h", status: "Falha", dataHora: "29/06 11:00", tipo: "Informativo" },
-];
-
-const statusIcons: Record<string, React.ElementType> = {
-  Enviada: Check,
-  Entregue: CheckCheck,
-  Lida: CheckCheck,
-  Falha: AlertCircle,
+const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
+  ENVIADA: { icon: Check, color: "text-blue-500", label: "Enviada" },
+  ENTREGUE: { icon: CheckCheck, color: "text-blue-500", label: "Entregue" },
+  LIDA: { icon: CheckCheck, color: "text-emerald-500", label: "Lida" },
+  FALHA: { icon: AlertCircle, color: "text-red-500", label: "Falha" },
 };
 
-const statusColors: Record<string, string> = {
-  Enviada: "text-muted-foreground",
-  Entregue: "text-blue-600",
-  Lida: "text-emerald-600",
-  Falha: "text-red-600",
-};
-
-const tipoColors: Record<string, string> = {
-  Lembrete: "bg-blue-100 text-blue-700 border-blue-200",
-  Cobrança: "bg-amber-100 text-amber-700 border-amber-200",
-  Informativo: "bg-purple-100 text-purple-700 border-purple-200",
-  Manual: "bg-gray-100 text-gray-700 border-gray-200",
-};
+function formatDateTime(d: string) {
+  try {
+    return new Date(d).toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
+  } catch { return "—"; }
+}
 
 export default function ComunicacaoPage() {
   const { show } = useToast();
+  const [comunicacoes, setComunicacoes] = React.useState<Comunicacao[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [showForm, setShowForm] = React.useState(false);
+  const [sending, setSending] = React.useState(false);
+  const [pacientes, setPacientes] = React.useState<{ id: string; nome: string; telefone?: string }[]>([]);
+
+  const fetchComunicacoes = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/integracoes/botconversa");
+      const data = await res.json();
+      if (data.success) setComunicacoes(data.data);
+    } catch {
+      show("Erro ao carregar histórico", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [show]);
+
+  React.useEffect(() => { fetchComunicacoes(); }, [fetchComunicacoes]);
+
+  React.useEffect(() => {
+    fetch("/api/pacientes?pageSize=100")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setPacientes(d.data.map((p: any) => ({
+          id: p.id, nome: p.nome, telefone: p.responsaveis?.[0]?.telefone,
+        })));
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSending(true);
+    const form = new FormData(e.currentTarget);
+
+    const payload = {
+      action: "enviar-mensagem",
+      pacienteId: form.get("pacienteId") || undefined,
+      destinatario: form.get("destinatario"),
+      mensagem: form.get("mensagem"),
+    };
+
+    try {
+      const res = await fetch("/api/integracoes/botconversa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        show("Mensagem enviada!", "success");
+        setShowForm(false);
+        fetchComunicacoes();
+      } else {
+        show(data.error || "Erro ao enviar", "error");
+      }
+    } catch { show("Erro de conexão", "error"); }
+    finally { setSending(false); }
+  };
 
   return (
-    <div className="p-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Comunicação</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Comunicação</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Mensagens via WhatsApp (BotConversa) e outros canais
+            Envio de mensagens via WhatsApp (BotConversa)
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => show("Fluxos BotConversa em desenvolvimento", "info")}>
-            <Phone className="h-4 w-4 mr-2" />
-            Enviar Fluxo
-          </Button>
-          <Button onClick={() => show("Envio de mensagem em desenvolvimento", "info")}>
-            <Send className="h-4 w-4 mr-2" />
-            Nova Mensagem
-          </Button>
-        </div>
+        <Button onClick={() => setShowForm(true)}>
+          <Send className="h-4 w-4 mr-2" />Nova Mensagem
+        </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: "Enviadas Hoje", value: "12", color: "text-blue-600" },
-          { label: "Entregues", value: "10", color: "text-emerald-600" },
-          { label: "Lidas", value: "7", color: "text-purple-600" },
-          { label: "Falhas", value: "1", color: "text-red-600" },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-card border rounded-lg p-4 text-center">
-            <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Lista de mensagens */}
-      <div className="bg-card border rounded-lg divide-y">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="font-semibold">Histórico de Mensagens</h2>
-          <Input placeholder="Buscar..." className="max-w-xs" />
-        </div>
-        {mensagensMock.map((msg) => {
-          const StatusIcon = statusIcons[msg.status];
-          return (
-            <div key={msg.id} className="p-4 hover:bg-muted/30 transition">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <MessageSquare className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-sm">{msg.destinatario}</p>
-                      <Badge variant="outline" className={tipoColors[msg.tipo]}>
-                        {msg.tipo}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        via {msg.canal}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                      {msg.mensagem}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Paciente: {msg.pacienteRelacionado}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <StatusIcon className={`h-4 w-4 ${statusColors[msg.status]}`} />
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {msg.dataHora}
-                  </span>
-                </div>
-              </div>
+      {/* Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card border rounded-xl shadow-xl w-full max-w-lg">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Enviar Mensagem WhatsApp</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-          );
-        })}
-      </div>
+            <form onSubmit={handleSend} className="p-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Paciente (opcional)</label>
+                <select
+                  name="pacienteId"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Nenhum (envio direto)</option>
+                  {pacientes.map((p) => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Telefone *</label>
+                <Input name="destinatario" required placeholder="5548999990001" />
+                <p className="text-xs text-muted-foreground">Formato: DDI + DDD + Número (ex: 5548999990001)</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Mensagem *</label>
+                <textarea
+                  name="mensagem"
+                  required
+                  rows={4}
+                  placeholder="Digite sua mensagem..."
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y min-h-[100px]"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={sending}>
+                  {sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Send className="h-4 w-4 mr-2" />Enviar
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Histórico */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : comunicacoes.length === 0 ? (
+        <div className="text-center text-muted-foreground py-12">
+          <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-40" />
+          <p>Nenhuma mensagem enviada ainda.</p>
+          <p className="text-xs mt-1">Configure a BOTCONVERSA_API_KEY no .env para começar.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {comunicacoes.map((com) => {
+            const st = statusConfig[com.status] || statusConfig.ENVIADA;
+            const StatusIcon = st.icon;
+            return (
+              <Card key={com.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Phone className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-sm font-medium">{com.destinatario}</span>
+                        {com.paciente && (
+                          <Badge variant="outline" className="text-xs">
+                            {com.paciente.nome}
+                          </Badge>
+                        )}
+                        <StatusIcon className={`h-3.5 w-3.5 ${st.color}`} />
+                        <span className={`text-xs ${st.color}`}>{st.label}</span>
+                      </div>
+                      <p className="text-sm text-foreground/80 mt-1">{com.mensagem}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDateTime(com.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

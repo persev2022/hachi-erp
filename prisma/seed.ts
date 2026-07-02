@@ -11,6 +11,8 @@ async function main() {
   const medicoPassword = await bcrypt.hash("Medico@2026", 12);
   const secretariaPassword = await bcrypt.hash("Julia@2026", 12);
 
+  const genericPassword = await bcrypt.hash("Equipe@2026", 12);
+
   const admin = await prisma.user.upsert({
     where: { email: "admin@hachi.com" },
     update: {},
@@ -36,6 +38,44 @@ async function main() {
   });
   console.log(`  ✓ Médico: ${medico.email}`);
 
+  const psicologa = await prisma.user.upsert({
+    where: { email: "ana@hachi.com" },
+    update: {},
+    create: {
+      email: "ana@hachi.com",
+      password: genericPassword,
+      name: "Dra. Ana Paula",
+      role: "PSICOLOGO",
+      crp: "CRP/SC 08/54321",
+    },
+  });
+  console.log(`  ✓ Psicóloga: ${psicologa.email}`);
+
+  const enfermeira = await prisma.user.upsert({
+    where: { email: "paula@hachi.com" },
+    update: {},
+    create: {
+      email: "paula@hachi.com",
+      password: genericPassword,
+      name: "Enf. Paula Santos",
+      role: "ENFERMEIRO",
+      coren: "COREN/SC 123456",
+    },
+  });
+  console.log(`  ✓ Enfermeira: ${enfermeira.email}`);
+
+  const terapeuta = await prisma.user.upsert({
+    where: { email: "ricardo@hachi.com" },
+    update: {},
+    create: {
+      email: "ricardo@hachi.com",
+      password: genericPassword,
+      name: "Dr. Ricardo Lima",
+      role: "TERAPEUTA",
+    },
+  });
+  console.log(`  ✓ Terapeuta: ${terapeuta.email}`);
+
   const secretaria = await prisma.user.upsert({
     where: { email: "julia@hachi.com" },
     update: {},
@@ -47,6 +87,18 @@ async function main() {
     },
   });
   console.log(`  ✓ Secretária: ${secretaria.email}`);
+
+  const financeiro = await prisma.user.upsert({
+    where: { email: "financeiro@hachi.com" },
+    update: {},
+    create: {
+      email: "financeiro@hachi.com",
+      password: genericPassword,
+      name: "Carlos Financeiro",
+      role: "FINANCEIRO",
+    },
+  });
+  console.log(`  ✓ Financeiro: ${financeiro.email}`);
 
   // ─── Quartos ─────────────────────────────────────────────
   const quartos = [

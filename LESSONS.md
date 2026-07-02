@@ -25,6 +25,27 @@
 - RBAC granular via middleware Next.js + tabela de permissões no banco.
 - Audit log em toda operação de escrita no prontuário (quem, quando, o quê).
 - Dados clínicos nunca expostos em endpoints que perfis administrativos acessam.
+- **Rate limiting**: 5 tentativas/min no login por IP, 120 req/min global por IP.
+- **CORS**: allowlist de origens (localhost + domínio Vercel), rejeita origens desconhecidas.
+- **Token blacklist**: JWT revogado no logout via blacklist in-memory (Redis em produção).
+- **Cookie**: httpOnly + secure + sameSite=strict — nunca exposto em URL.
+- **Sem enumeração**: login retorna "Credenciais inválidas" tanto para email inexistente quanto para senha errada.
+- **PII mínimo**: todas as queries com `select` explícito, password hash nunca sai do server.
+- **CSP**: Content-Security-Policy com `frame-ancestors 'none'`, bloqueio de inline scripts em prod.
+- **SQL Injection impossível**: Prisma ORM — zero raw queries no projeto.
+
+### Documentos & Integrações
+- **docxtemplater** funciona no server-side Next.js — importar `fs` e `path` normalmente em API routes.
+- Para retornar binário (docx) no NextResponse, usar `new Uint8Array(buffer)` em vez de Buffer direto (TypeScript strict não aceita Buffer como BodyInit).
+- Templates .docx ficam em `src/lib/documents/templates/` — caminho relativo ao `process.cwd()`.
+- **numero-por-extenso** não tem tipos — criar `src/types/modules.d.ts` com declare module.
+- Webhook do BotConversa DEVE ser público (sem auth) — adicionar à lista de PUBLIC_PATHS no middleware.
+
+### Mobile/Responsividade
+- Sidebar responsiva: desktop usa `fixed w-64`, mobile usa drawer com `translate-x` + overlay.
+- Layout do dashboard usa `lg:pl-64` (não `pl-64` fixo) para não empurrar conteúdo no mobile.
+- Header mobile separado com hamburger — aparece apenas `lg:hidden`.
+- Todas as tabelas precisam de `overflow-x-auto` no container para mobile.
 
 ---
 
@@ -39,6 +60,8 @@
 - **Não misturar `use client` e `use server`** no mesmo arquivo — Next.js não permite.
 - **Esquecer o `"use client"` em componentes com hooks** — erro silencioso que crasheia apenas em produção.
 - **Importar componentes shadcn errado** — sempre de `@/components/ui/...`, nunca do node_modules.
+- **Params em App Router 15+**: `params` é uma Promise agora — usar `const { id } = await params;` em API routes dinâmicas.
+- **output: "export" incompatível com API routes** — remover para SSR quando usar API routes no Next.js.
 
 ### Banco de Dados
 - **Não rodar `prisma generate` após alterar schema** — tipos ficam desatualizados e TypeScript não reclama imediatamente.
@@ -53,20 +76,22 @@
 
 ## 🔁 Código Reutilizável
 
-### Padrão de API Route (Next.js App Router)
+### Padrão de API Route (Next.js App Router — Custom JWT)
 ```typescript
 // app/api/[resource]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSessionFromRequest } from "@/lib/auth";
+import { logAudit } from "@/lib/services/audit";
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSessionFromRequest(req);
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+  }
 
   const data = await prisma.resource.findMany();
-  return NextResponse.json(data);
+  return NextResponse.json({ success: true, data });
 }
 ```
 
@@ -104,23 +129,31 @@ export function ExampleForm() {
 }
 ```
 
-### Padrão de Middleware RBAC
+### Padrão de Middleware RBAC (Custom JWT)
 ```typescript
 // middleware.ts
-import { withAuth } from "next-auth/middleware";
+import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/auth";
 
-export default withAuth({
-  callbacks: {
-    authorized: ({ token, req }) => {
-      const path = req.nextUrl.pathname;
-      if (path.startsWith("/admin")) return token?.role === "ADMIN";
-      if (path.startsWith("/clinico")) return ["MEDICO", "PSICOLOGO", "ENFERMEIRO"].includes(token?.role);
-      return !!token;
-    },
-  },
-});
+const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/integracoes/botconversa/webhook", "/_next", "/images"];
 
-export const config = { matcher: ["/dashboard/:path*", "/admin/:path*", "/clinico/:path*"] };
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) return NextResponse.next();
+
+  const token = req.cookies.get("session-token")?.value;
+  if (!token) return NextResponse.redirect(new URL("/login", req.url));
+
+  const session = await verifyToken(token);
+  if (!session) {
+    const response = NextResponse.redirect(new URL("/login", req.url));
+    response.cookies.delete("session-token");
+    return response;
+  }
+  return NextResponse.next();
+}
+
+export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|images/).*)"] };
 ```
 
 ---
@@ -137,3 +170,39 @@ export const config = { matcher: ["/dashboard/:path*", "/admin/:path*", "/clinic
 | 2026-07-01 | ❌ | Next.js 15.1.0 tem CVE — atualizado para 16.2.10 |
 | 2026-07-01 | ✅ | Prisma generate funciona sem banco conectado (apenas para tipos) |
 | 2026-07-01 | ✅ | 15 sub-agentes criados + task board com 80+ tasks delegadas |
+| 2026-07-02 | ✅ | Sprint 1 completo: Auth JWT + Prisma + Pacientes CRUD + Middleware |
+| 2026-07-02 | ✅ | Sprint 2 completo: Prontuário, Agenda, Perfil paciente, Mobile sidebar |
+| 2026-07-02 | ✅ | Sprint 3 completo: Financeiro, Estoque, Quartos, Documentos (portados do scripts-adm) |
+| 2026-07-02 | ✅ | Sprint 4 completo: BotConversa (envio + webhook), Comunicação |
+| 2026-07-02 | ✅ | 22 API routes implementadas, 16 páginas funcionais |
+| 2026-07-02 | ✅ | Build passando com 0 erros — Next.js 15.5.20 |
+
+---
+
+## 🏗️ Estado Atual do Projeto (atualizado 02/07/2026)
+
+### APIs Implementadas (22 routes):
+- **Auth**: login, logout, me
+- **Pacientes**: CRUD completo com soft delete, Zod validation, audit log
+- **Prontuário**: evoluções (CRUD + assinatura), prescrições (CRUD + toggle)
+- **Agenda**: CRUD com conflito de horário, transições de status
+- **Financeiro**: movimentações CRUD + conta corrente por paciente
+- **Estoque**: CRUD + movimentação entrada/saída + alertas
+- **Quartos**: listagem + atualização de status
+- **Documentos**: geração via docxtemplater (5 tipos)
+- **Comunicação**: BotConversa envio + fluxos + webhook
+- **Users**: listagem por role (para selectors)
+
+### Páginas Funcionais (16):
+- Login, Dashboard, Pacientes (lista + perfil + editar + novo)
+- Prontuário, Agenda, Financeiro, Estoque, Quartos
+- Documentos, Comunicação, Relatórios, Configurações
+
+### O que falta para 100%:
+1. **RBAC granular na sidebar** (esconder itens por role)
+2. **Integrações Pix + NF-e**
+3. **Relatórios reais** (dashboard com KPIs do banco)
+4. **Testes automatizados**
+5. **2FA, criptografia de campos sensíveis**
+6. **Dark mode, busca global (Cmd+K)**
+7. **Portal da família**

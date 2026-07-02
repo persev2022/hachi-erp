@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, createToken } from "@/lib/auth";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 5 attempts per minute per IP
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`login:${ip}`, { windowMs: 60_000, max: 5 });
+
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Muitas tentativas. Aguarde 1 minuto." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      );
+    }
+
     const body = await req.json();
     const { email, password } = body;
 
@@ -19,6 +37,7 @@ export async function POST(req: NextRequest) {
       where: { email: email.toLowerCase().trim() },
     });
 
+    // Generic error for both "user not found" and "wrong password" — prevents enumeration
     if (!user || !user.active) {
       return NextResponse.json(
         { success: false, error: "Credenciais inválidas" },
@@ -26,7 +45,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify password
     const isValid = await verifyPassword(password, user.password);
     if (!isValid) {
       return NextResponse.json(
@@ -35,16 +53,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create JWT
+    // Create JWT token
     const token = await createToken({ userId: user.id, role: user.role });
 
-    // Set cookie
+    // Response with ONLY necessary user data — no sensitive fields
     const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
         role: user.role,
       },
     });
@@ -52,7 +69,7 @@ export async function POST(req: NextRequest) {
     response.cookies.set("session-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict", // Changed from "lax" to "strict" for CSRF protection
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });

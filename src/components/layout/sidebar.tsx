@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { useToast } from "@/components/ui/toast-simple";
 import {
   LayoutDashboard,
   Users,
@@ -17,39 +16,69 @@ import {
   Settings,
   MessageSquare,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
+import * as React from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-const navigation = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  roles?: string[]; // If undefined, visible to all authenticated users
+}
+
+const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Pacientes", href: "/pacientes", icon: Users },
-  { name: "Prontuário", href: "/prontuario", icon: FileHeart },
+  { name: "Pacientes", href: "/pacientes", icon: Users, roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
+  { name: "Prontuário", href: "/prontuario", icon: FileHeart, roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
   { name: "Agenda", href: "/agenda", icon: Calendar },
-  { name: "Financeiro", href: "/financeiro", icon: Wallet },
-  { name: "Estoque", href: "/estoque", icon: Package },
-  { name: "Quartos", href: "/quartos", icon: BedDouble },
-  { name: "Documentos", href: "/documentos", icon: FileText },
-  { name: "Comunicação", href: "/comunicacao", icon: MessageSquare },
-  { name: "Relatórios", href: "/relatorios", icon: BarChart3 },
-  { name: "Configurações", href: "/configuracoes", icon: Settings },
+  { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "FINANCEIRO"] },
+  { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "APOIO"] },
+  { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
+  { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "MEDICO", "SECRETARIA", "FINANCEIRO"] },
+  { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "SECRETARIA"] },
+  { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"] },
+  { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"] },
 ];
 
-export function Sidebar() {
-  const pathname = usePathname();
-  const { show } = useToast();
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
 
-  const handleLogout = () => {
+export function Sidebar({ open, onClose }: SidebarProps) {
+  const pathname = usePathname();
+  const [userRole, setUserRole] = React.useState<string>("ADMIN");
+
+  // Fetch user role once
+  React.useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.success && d.user?.role) setUserRole(d.user.role); })
+      .catch(() => {});
+  }, []);
+
+  const filteredNav = navigation.filter(
+    (item) => !item.roles || item.roles.includes(userRole)
+  );
+
+  const handleLogout = async () => {
     if (window.confirm("Deseja realmente sair do sistema?")) {
-      show("Logout realizado. Redirecionando...", "success");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1500);
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+      } catch {
+        // continue anyway
+      }
+      window.location.href = "/login";
     }
   };
 
-  return (
-    <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex flex-col">
+  const navContent = (
+    <>
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-border">
+      <div className="h-16 flex items-center justify-between px-6 border-b border-border">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/hachi-logo.svg" alt="Hachi" className="h-9 w-9" />
@@ -58,17 +87,26 @@ export function Sidebar() {
             ERP
           </span>
         </div>
+        {/* Close button - mobile only */}
+        <button
+          className="lg:hidden p-2 rounded-md hover:bg-muted"
+          onClick={onClose}
+          aria-label="Fechar menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         <ul className="space-y-1">
-          {navigation.map((item) => {
+          {filteredNav.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={onClose}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
                     isActive
@@ -86,7 +124,11 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-border">
+      <div className="p-3 border-t border-border space-y-1">
+        <div className="flex items-center justify-between px-3 py-1">
+          <span className="text-xs text-muted-foreground">Tema</span>
+          <ThemeToggle />
+        </div>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full"
@@ -95,6 +137,53 @@ export function Sidebar() {
           Sair
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex-col">
+        {navContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={cn(
+          "lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border flex flex-col transform transition-transform duration-200 ease-in-out",
+          open ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {navContent}
+      </aside>
+    </>
+  );
+}
+
+export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
+  return (
+    <header className="lg:hidden sticky top-0 z-30 h-14 bg-card border-b border-border flex items-center px-4 gap-3">
+      <button
+        onClick={onMenuClick}
+        className="p-2 rounded-md hover:bg-muted"
+        aria-label="Abrir menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+      <div className="flex items-center gap-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hachi-logo.svg" alt="Hachi" className="h-7 w-7" />
+        <span className="font-bold text-foreground">Hachi</span>
+      </div>
+    </header>
   );
 }

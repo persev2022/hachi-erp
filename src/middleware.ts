@@ -1,32 +1,122 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
+import { isTokenBlacklisted } from "@/lib/security/token-blacklist";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login", "/_next", "/images", "/favicon.ico"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/api/auth/login",
+  "/api/integracoes/botconversa/webhook",
+  "/_next",
+  "/images",
+  "/favicon.ico",
+];
+
+// CORS allowlist — add your production domain
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://hachi-erp.vercel.app",
+  process.env.NEXT_PUBLIC_APP_URL,
+].filter(Boolean) as string[];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow public paths
-  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+  // --- CORS for API routes ---
+  if (pathname.startsWith("/api/")) {
+    const origin = req.headers.get("origin") || "";
+    const isAllowed = !origin || ALLOWED_ORIGINS.includes(origin);
+
+    // Handle preflight
+    if (req.method === "OPTIONS") {
+      const res = new NextResponse(null, { status: 204 });
+      if (isAllowed && origin) {
+        res.headers.set("Access-Control-Allow-Origin", origin);
+        res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        res.headers.set("Access-Control-Allow-Credentials", "true");
+        res.headers.set("Access-Control-Max-Age", "86400");
+      }
+      return res;
+    }
+
+    // Block requests from non-allowed origins (only if origin header is present)
+    if (origin && !isAllowed) {
+      return NextResponse.json(
+        { success: false, error: "Origem não permitida" },
+        { status: 403 }
+      );
+    }
+
+    // Global API rate limit: 120 requests per minute per IP
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`api:${ip}`, { windowMs: 60_000, max: 120 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Limite de requisições excedido" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      );
+    }
   }
 
-  // Check session token
+  // Allow public paths
+  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
+    const response = NextResponse.next();
+    // Add CORS header for allowed API origins
+    if (pathname.startsWith("/api/")) {
+      const origin = req.headers.get("origin") || "";
+      if (origin && ALLOWED_ORIGINS.includes(origin)) {
+        response.headers.set("Access-Control-Allow-Origin", origin);
+        response.headers.set("Access-Control-Allow-Credentials", "true");
+      }
+    }
+    return response;
+  }
+
+  // Check session token (from cookie ONLY — never from URL)
   const token = req.cookies.get("session-token")?.value;
 
   if (!token) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  const session = await verifyToken(token);
-  if (!session) {
-    // Clear invalid cookie and redirect
-    const response = NextResponse.redirect(new URL("/login", req.url));
+  // Check if token was blacklisted (logout)
+  if (isTokenBlacklisted(token)) {
+    const response = pathname.startsWith("/api/")
+      ? NextResponse.json({ success: false, error: "Sessão expirada" }, { status: 401 })
+      : NextResponse.redirect(new URL("/login", req.url));
     response.cookies.delete("session-token");
     return response;
   }
 
-  return NextResponse.next();
+  const session = await verifyToken(token);
+  if (!session) {
+    const response = pathname.startsWith("/api/")
+      ? NextResponse.json({ success: false, error: "Token inválido" }, { status: 401 })
+      : NextResponse.redirect(new URL("/login", req.url));
+    response.cookies.delete("session-token");
+    return response;
+  }
+
+  // Pass through with CORS headers for API
+  const response = NextResponse.next();
+  if (pathname.startsWith("/api/")) {
+    const origin = req.headers.get("origin") || "";
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+      response.headers.set("Access-Control-Allow-Credentials", "true");
+    }
+  }
+  return response;
 }
 
 export const config = {
