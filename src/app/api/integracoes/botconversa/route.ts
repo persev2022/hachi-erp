@@ -48,7 +48,10 @@ export async function POST(req: NextRequest) {
           message: parsed.data.mensagem,
         });
       } catch (err: any) {
-        console.error("BotConversa enviar error:", err?.response?.data || err.message);
+        const errorDetail = err?.response?.data
+          ? JSON.stringify(err.response.data).slice(0, 200)
+          : err.message || "Erro desconhecido";
+        console.error("BotConversa enviar error:", errorDetail);
         // Save as failed
         await prisma.comunicacao.create({
           data: {
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
           },
         });
         return NextResponse.json(
-          { success: false, error: "Falha ao enviar via BotConversa. Mensagem salva como falha." },
+          { success: false, error: `Falha BotConversa: ${errorDetail}` },
           { status: 502 }
         );
       }
