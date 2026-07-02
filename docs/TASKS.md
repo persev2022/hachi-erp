@@ -78,7 +78,7 @@
 | 5.2 | Calendário visual (dia/semana/mês) | 02-Frontend | 15-Critic | ✅ |
 | 5.3 | Notificações de consulta (BotConversa) | 10-Communication | 06-Integrations | ✅ |
 | 5.4 | Escalas de funcionários | 09-Admin | 15-Critic | ✅ |
-| 5.5 | Controle de salas | 09-Admin | 14-Reviewer | ⬜ |
+| 5.5 | Controle de salas | 09-Admin | 14-Reviewer | ✅ |
 
 ---
 
@@ -93,7 +93,7 @@
 | 6.5 | Emissão de NFS-e | 08-Financial + 06-Integrations | 14-Reviewer | ✅ |
 | 6.6 | Tela de fluxo de caixa | 02-Frontend + 08-Financial | 15-Critic | ✅ |
 | 6.7 | Controle de inadimplência + alertas | 08-Financial | 10-Communication | ✅ |
-| 6.8 | Relatórios financeiros (DRE) | 11-Reports | 14-Reviewer | ⬜ |
+| 6.8 | Relatórios financeiros (DRE) | 11-Reports | 14-Reviewer | ✅ |
 
 ---
 
@@ -106,7 +106,7 @@
 | 7.3 | Check-in / check-out de pacientes | 09-Admin | 07-Clinical | ✅ |
 | 7.4 | API estoque (CRUD + alertas) | 09-Admin | 14-Reviewer | ✅ |
 | 7.5 | Tela de estoque com alertas visuais | 02-Frontend | 15-Critic | ✅ |
-| 7.6 | Controle de itens pessoais do paciente | 09-Admin | 14-Reviewer | ⬜ |
+| 7.6 | Controle de itens pessoais do paciente | 09-Admin | 14-Reviewer | ✅ |
 
 ---
 
@@ -146,7 +146,7 @@
 | 10.3 | Relatório clínico (adesão, evoluções) | 11-Reports + 07-Clinical | 14-Reviewer | ✅ |
 | 10.4 | Relatório financeiro consolidado | 11-Reports + 08-Financial | 14-Reviewer | ✅ |
 | 10.5 | Exportação PDF/Excel | 11-Reports | 12-Documents | ✅ |
-| 10.6 | Relatórios para órgãos públicos (SISNAD) | 11-Reports | 05-Security | ⬜ |
+| 10.6 | Relatórios para órgãos públicos (SISNAD) | 11-Reports | 05-Security | ✅ |
 
 ---
 
