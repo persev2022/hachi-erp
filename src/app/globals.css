@@ -81,10 +81,10 @@
     transform: scale(1);
   }
   50% {
-    transform: scale(1.03);
+    transform: scale(1.08);
   }
 }
 
 .animate-hachi-pulse {
-  animation: hachi-pulse 3s ease-in-out infinite;
+  animation: hachi-pulse 3.2s ease-in-out infinite;
 }
