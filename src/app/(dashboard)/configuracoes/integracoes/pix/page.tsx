@@ -104,18 +104,26 @@ export default function PixConfigPage() {
 
   async function handleTest() {
     if (!configured && !clientId) {
-      show("Salve as credenciais antes de testar", "warning");
+      show("Preencha ao menos o Client ID e Client Secret", "warning");
       return;
     }
 
     setTesting(true);
     try {
-      const res = await fetch("/api/integracoes/pix/test", { method: "POST" });
-      if (res.ok) {
-        show("Conexão com EFI/Pix OK!", "success");
+      const res = await fetch("/api/integracoes/pix/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: clientId || undefined,
+          clientSecret: clientSecret || undefined,
+          environment,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        show(data.message || "Conexão OK!", "success");
       } else {
-        const err = await res.json();
-        show(err.error || "Falha na conexão", "error");
+        show(data.error || "Falha na conexão", "error");
       }
     } catch {
       show("Erro ao testar conexão", "error");
