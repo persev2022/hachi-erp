@@ -48,7 +48,7 @@ const sections: ConfigSection[] = [
     description: "BotConversa, Pix, NF-e, e-SUS",
     icon: Plug,
     status: "Parcial",
-    items: ["BotConversa: Conectado ✓", "Pix BACEN: Pendente configuração", "NF-e: Pendente certificado", "e-SUS: Não configurado"],
+    items: ["BotConversa: Conectado ✓", "Pix Sicredi: Pendente certificado", "NF-e: Portal Nacional", "e-SUS: Via RAAS/PEC"],
   },
   {
     title: "Banco de Dados",
@@ -114,7 +114,7 @@ export default function ConfiguracoesPage() {
                 </Button>
               ) : section.title === "Notificações" ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/configuracoes/portal-familia">Portal Família</Link>
+                  <Link href="/configuracoes/esus">e-SUS</Link>
                 </Button>
               ) : section.title === "Banco de Dados" ? (
                 <Button variant="outline" size="sm" asChild>
