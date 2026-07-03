@@ -113,7 +113,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="text-center text-xs text-muted-foreground mt-6">
-          © 2025 Hachi — Todos os direitos reservados
+          © 2026 Hachi — Todos os direitos reservados
         </p>
       </CardContent>
     </Card>

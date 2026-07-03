@@ -46,7 +46,7 @@ export default function PortalFamiliaLayout({
       <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
       <footer className="border-t bg-card mt-8">
         <div className="max-w-4xl mx-auto px-4 py-4 text-center text-xs text-muted-foreground">
-          © 2025 Hachi — Portal da Família
+          © 2026 Hachi — Portal da Família
         </div>
       </footer>
     </div>
