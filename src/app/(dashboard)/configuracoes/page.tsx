@@ -114,6 +114,10 @@ export default function ConfiguracoesPage() {
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/configuracoes/integracoes">Configurar</Link>
                 </Button>
+              ) : section.title === "Notificações" ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/configuracoes/portal-familia">Portal Família</Link>
+                </Button>
               ) : (
                 <Button
                   variant="outline"

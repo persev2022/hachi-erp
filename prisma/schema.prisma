@@ -153,6 +153,7 @@ model Paciente {
   movimentacoes   MovimentacaoFinanceira[]
   quarto          Quarto?        @relation(fields: [quartoId], references: [id])
   comunicacoes    Comunicacao[]
+  familyTokens   FamilyToken[]
 
   @@index([nome])
   @@index([cpf])
@@ -463,4 +464,23 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 
   @@map("system_config")
+}
+
+// ═══════════════════════════════════════════════════════════
+// PORTAL DA FAMÍLIA
+// ═══════════════════════════════════════════════════════════
+
+model FamilyToken {
+  id            String    @id @default(uuid())
+  token         String    @unique
+  pacienteId    String
+  familiarNome  String
+  familiarPhone String?
+  active        Boolean   @default(true)
+  lastAccess    DateTime?
+  createdAt     DateTime  @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@map("family_tokens")
 }

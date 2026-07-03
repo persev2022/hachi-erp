@@ -5,6 +5,8 @@ import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 const PUBLIC_PATHS = [
   "/login",
+  "/portal-familia",
+  "/api/portal-familia",
   "/api/auth/login",
   "/api/integracoes/botconversa/webhook",
   "/api/integracoes/pix/webhook",

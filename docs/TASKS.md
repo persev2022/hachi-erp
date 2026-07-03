@@ -131,7 +131,7 @@
 | 9.1 | Integração BotConversa (envio de msgs) | 10-Communication + 06-Integrations | 05-Security | ✅ |
 | 9.2 | Templates de mensagem configuráveis | 10-Communication | 15-Critic | ✅ |
 | 9.3 | Fluxos automáticos (lembrete consulta, cobrança) | 10-Communication | 14-Reviewer | ✅ |
-| 9.4 | Portal da família (auth separada) | 10-Communication + 05-Security | 15-Critic | ⬜ |
+| 9.4 | Portal da família (auth separada) | 10-Communication + 05-Security | 15-Critic | ✅ |
 | 9.5 | Histórico de comunicações por paciente | 10-Communication | 14-Reviewer | ✅ |
 | 9.6 | Notificações internas (equipe) | 10-Communication | 02-Frontend | ✅ |
 
