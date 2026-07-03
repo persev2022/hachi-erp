@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Activity,
   Calendar,
@@ -23,6 +24,7 @@ import {
   Heart,
   Stethoscope,
   Brain,
+  QrCode,
 } from "lucide-react";
 
 interface DadosPortal {
@@ -77,6 +79,10 @@ export default function PortalFamiliaDashboard() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const [activeTab, setActiveTab] = React.useState<"resumo" | "evolucoes" | "agenda" | "financeiro">("resumo");
+  const [showPix, setShowPix] = React.useState(false);
+  const [pixData, setPixData] = React.useState<{ qrCode: string; pixCopiaECola: string; valorFormatado: string; beneficiario: string } | null>(null);
+  const [pixLoading, setPixLoading] = React.useState(false);
+  const [pixError, setPixError] = React.useState("");
 
   React.useEffect(() => {
     const token = localStorage.getItem("family-token");
@@ -408,8 +414,98 @@ export default function PortalFamiliaDashboard() {
               </p>
             </div>
           )}
+
+          {/* Pay button */}
+          <div className="pt-4">
+            <Button className="w-full" size="lg" onClick={handlePagarMensalidade}>
+              {pixLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <QrCode className="h-4 w-4 mr-2" />}
+              Pagar Mensalidade via Pix
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Pix QR Code Modal */}
+      {showPix && pixData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-card border rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4 text-center">
+            <h2 className="text-lg font-bold">Pagar Mensalidade</h2>
+            <p className="text-2xl font-bold text-primary">{pixData.valorFormatado}</p>
+            <p className="text-xs text-muted-foreground">Beneficiário: {pixData.beneficiario}</p>
+
+            {/* QR Code */}
+            <div className="flex justify-center py-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pixData.qrCode} alt="QR Code Pix" className="w-64 h-64 rounded-lg border" />
+            </div>
+
+            {/* Pix Copia e Cola */}
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">Ou copie o código Pix:</p>
+              <div className="relative">
+                <textarea
+                  readOnly
+                  value={pixData.pixCopiaECola}
+                  className="w-full text-[10px] font-mono bg-muted p-2 rounded-md border h-16 resize-none"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="absolute top-1 right-1 text-xs h-6 px-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(pixData.pixCopiaECola);
+                  }}
+                >
+                  Copiar
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Abra o app do seu banco, escolha Pix → QR Code ou Copia e Cola
+            </p>
+
+            <Button variant="outline" className="w-full" onClick={() => setShowPix(false)}>
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Pix error modal */}
+      {pixError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-card border rounded-xl shadow-xl w-full max-w-sm p-6 text-center space-y-3">
+            <p className="text-destructive font-medium">{pixError}</p>
+            <Button variant="outline" onClick={() => setPixError("")}>Fechar</Button>
+          </div>
         </div>
       )}
     </div>
   );
+
+  async function handlePagarMensalidade() {
+    const token = localStorage.getItem("family-token");
+    if (!token) return;
+
+    setPixLoading(true);
+    setPixError("");
+    try {
+      const res = await fetch("/api/portal-familia/pagar", {
+        method: "POST",
+        headers: { "X-Family-Token": token },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPixData(data.data);
+        setShowPix(true);
+      } else {
+        setPixError(data.error || "Erro ao gerar pagamento");
+      }
+    } catch {
+      setPixError("Erro de conexão");
+    } finally {
+      setPixLoading(false);
+    }
+  }
 }
