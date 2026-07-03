@@ -79,14 +79,14 @@
 @keyframes hachi-pulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(15, 118, 110, 0));
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.2);
   }
   50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 20px rgba(15, 118, 110, 0.3));
+    transform: scale(1.03);
+    box-shadow: 0 0 0 12px rgba(15, 118, 110, 0);
   }
 }
 
 .animate-hachi-pulse {
-  animation: hachi-pulse 2.5s ease-in-out infinite;
+  animation: hachi-pulse 3s ease-in-out infinite;
 }
