@@ -22,6 +22,8 @@ export default function RelatoriosPage() {
   const [kpis, setKpis] = React.useState<DashboardKpis | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [exporting, setExporting] = React.useState("");
+  const [periodo, setPeriodo] = React.useState("6");
+  const [finData, setFinData] = React.useState<any>(null);
 
   React.useEffect(() => {
     fetch("/api/relatorios/dashboard")
@@ -30,6 +32,13 @@ export default function RelatoriosPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  React.useEffect(() => {
+    fetch(`/api/relatorios/financeiro?meses=${periodo}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setFinData(d.data); })
+      .catch(() => {});
+  }, [periodo]);
 
   const handleExport = async (tipo: string) => {
     setExporting(tipo);
@@ -122,6 +131,53 @@ export default function RelatoriosPage() {
           ))}
         </CardContent>
       </Card>
+
+      {/* Financial chart with period filter */}
+      {finData && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Receita vs Despesa</CardTitle>
+              <select
+                value={periodo}
+                onChange={(e) => setPeriodo(e.target.value)}
+                className="text-xs border rounded px-2 py-1 bg-background"
+              >
+                <option value="3">3 meses</option>
+                <option value="6">6 meses</option>
+                <option value="12">12 meses</option>
+              </select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-48 flex items-end justify-between gap-1 px-2">
+              {finData.periodos.map((p: any) => {
+                const maxVal = Math.max(...finData.periodos.map((x: any) => Math.max(x.receitas, x.despesas)), 1);
+                return (
+                  <div key={p.periodo} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="w-full flex items-end gap-0.5 h-36">
+                      <div className="flex-1 bg-emerald-400 dark:bg-emerald-600 rounded-t transition-all" style={{ height: `${(p.receitas / maxVal) * 100}%` }} title={`R$ ${p.receitas.toFixed(0)}`} />
+                      <div className="flex-1 bg-red-300 dark:bg-red-500 rounded-t transition-all" style={{ height: `${(p.despesas / maxVal) * 100}%` }} title={`R$ ${p.despesas.toFixed(0)}`} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">{p.periodo}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-4 mt-3 justify-center text-xs">
+              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-emerald-400" />Receita</span>
+              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-red-300" />Despesa</span>
+            </div>
+            {finData.resumo && (
+              <div className="grid grid-cols-3 gap-3 mt-4 text-center text-xs">
+                <div><p className="font-bold text-emerald-600">R$ {finData.resumo.totalReceitas.toFixed(0)}</p><p className="text-muted-foreground">Total receitas</p></div>
+                <div><p className="font-bold text-red-600">R$ {finData.resumo.totalDespesas.toFixed(0)}</p><p className="text-muted-foreground">Total despesas</p></div>
+                <div><p className={`font-bold ${finData.resumo.resultado >= 0 ? "text-emerald-600" : "text-red-600"}`}>R$ {finData.resumo.resultado.toFixed(0)}</p><p className="text-muted-foreground">Resultado</p></div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Reports list */}
       <div>

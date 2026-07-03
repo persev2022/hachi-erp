@@ -90,6 +90,9 @@ export async function GET(
       );
     }
 
+    // Audit: record profile access
+    logAudit(session.userId, "READ", "Paciente", id, {}).catch(() => {});
+
     return NextResponse.json({ success: true, data: paciente });
   } catch (error) {
     console.error("GET /api/pacientes/[id] error:", error);

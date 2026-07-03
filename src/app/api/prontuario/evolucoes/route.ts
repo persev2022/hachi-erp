@@ -57,6 +57,11 @@ export async function GET(req: NextRequest) {
       take: pageSize,
     });
 
+    // Audit log: record prontuário access (LGPD compliance)
+    if (pacienteId) {
+      logAudit(session.userId, "READ", "Prontuario", pacienteId, { tipo: tipo || "ALL" }).catch(() => {});
+    }
+
     return NextResponse.json({
       success: true,
       data: evolucoes,
