@@ -227,6 +227,22 @@ async function main() {
     }
   }
 
+  // ─── Update quarto status for occupied rooms ─────────────
+  const occupiedQuartos = await prisma.paciente.findMany({
+    where: { status: "ATIVO", quartoId: { not: null }, deletedAt: null },
+    select: { quartoId: true },
+  });
+  
+  for (const p of occupiedQuartos) {
+    if (p.quartoId) {
+      await prisma.quarto.update({
+        where: { id: p.quartoId },
+        data: { status: "OCUPADO" },
+      });
+    }
+  }
+  console.log(`  ✓ ${occupiedQuartos.length} quartos marcados como OCUPADO`);
+
   console.log("\n✅ Seed completed!");
 }
 
