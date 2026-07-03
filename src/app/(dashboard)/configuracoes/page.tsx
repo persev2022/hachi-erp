@@ -114,7 +114,7 @@ export default function ConfiguracoesPage() {
                 </Button>
               ) : section.title === "Notificações" ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/configuracoes/esus">e-SUS</Link>
+                  <Link href="/configuracoes/portal-familia">Portal Família</Link>
                 </Button>
               ) : section.title === "Banco de Dados" ? (
                 <Button variant="outline" size="sm" asChild>

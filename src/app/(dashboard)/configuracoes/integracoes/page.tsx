@@ -33,13 +33,20 @@ const integrations = [
   },
   {
     key: "nfe" as const,
-    title: "NF-e (nfe.io)",
-    description: "Emissão de notas fiscais de serviço eletrônicas (NFS-e)",
+    title: "NFS-e Nacional",
+    description: "Emissão de notas fiscais via portal nacional ou intermediador",
     icon: FileText,
     href: "/configuracoes/integracoes/nfe",
     fields: ["API Key", "Company ID"],
   },
 ];
+
+// e-SUS is separate (no API integration — manual process)
+const esusCard = {
+  title: "e-SUS / SISAB",
+  description: "Envio de dados ao SUS via RAAS (processo manual com guia)",
+  href: "/configuracoes/esus",
+};
 
 export default function IntegracoesPage() {
   const { show } = useToast();
@@ -138,6 +145,32 @@ export default function IntegracoesPage() {
             </Card>
           );
         })}
+
+        {/* e-SUS card (separate — no API) */}
+        <Card className="flex flex-col border-dashed">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                Manual
+              </Badge>
+            </div>
+            <CardTitle className="text-lg mt-3">{esusCard.title}</CardTitle>
+            <CardDescription>{esusCard.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <p className="text-xs text-muted-foreground">
+              Sem integração via API — guia passo a passo para envio manual
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href={esusCard.href}>Ver Guia</Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
