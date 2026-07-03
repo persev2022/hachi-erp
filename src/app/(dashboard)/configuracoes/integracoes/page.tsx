@@ -25,7 +25,7 @@ const integrations = [
   },
   {
     key: "pix" as const,
-    title: "Pix (EFI/Gerencianet)",
+    title: "Pix (Sicredi)",
     description: "Cobranças instantâneas via Pix com geração de QR Code",
     icon: QrCode,
     href: "/configuracoes/integracoes/pix",

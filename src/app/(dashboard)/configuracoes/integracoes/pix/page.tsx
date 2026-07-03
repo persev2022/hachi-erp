@@ -141,9 +141,9 @@ export default function PixConfigPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Pix (EFI/Gerencianet)</h1>
+          <h1 className="text-2xl font-bold">Pix (Sicredi)</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Configurar integração de cobranças Pix
+            Configurar integração de cobranças Pix via Sicredi
           </p>
         </div>
       </div>
@@ -164,9 +164,9 @@ export default function PixConfigPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Credenciais EFI</CardTitle>
+          <CardTitle className="text-lg">Credenciais Sicredi</CardTitle>
           <CardDescription>
-            Configure as credenciais de acesso à API Pix da EFI (Gerencianet).
+            Configure as credenciais de acesso à API Pix do Sicredi.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -298,13 +298,13 @@ export default function PixConfigPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <ol className="list-decimal list-inside space-y-2">
-            <li>Acesse o painel da EFI em <strong>app.efipay.com.br</strong></li>
-            <li>Navegue até <strong>API → Aplicações</strong></li>
-            <li>Crie uma nova aplicação ou selecione uma existente</li>
-            <li>Copie o <strong>Client ID</strong> e <strong>Client Secret</strong></li>
-            <li>Na aba <strong>Certificados</strong>, gere o certificado .p12 para Pix</li>
-            <li>Faça download do certificado e faça upload aqui</li>
-            <li>Em <strong>Pix → Configurações</strong>, registre sua chave Pix</li>
+            <li>Acesse o portal <strong>developer.sicredi.com.br</strong> e crie uma conta</li>
+            <li>Navegue até o <strong>Catálogo de APIs</strong> e selecione a API Pix</li>
+            <li>Crie uma aplicação e obtenha <strong>Client ID</strong> e <strong>Client Secret</strong></li>
+            <li>Gere o certificado .p12 para mTLS no portal do Sicredi</li>
+            <li>Faça download do certificado e envie aqui</li>
+            <li>Cadastre sua <strong>Chave Pix</strong> na conta Sicredi (CPF, CNPJ, email ou aleatória)</li>
+            <li>Use o ambiente <strong>Sandbox</strong> primeiro para testes com a URL <code>api-parceiro.sicredi.com.br/sb</code></li>
           </ol>
           <p className="mt-4 p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
             ⚠️ Use o ambiente <strong>Sandbox</strong> para testes. Mude para <strong>Produção</strong> apenas
