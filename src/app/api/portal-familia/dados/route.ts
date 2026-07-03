@@ -38,6 +38,11 @@ export async function GET(req: NextRequest) {
     }
 
     const pacienteId = familyToken.paciente.id;
+    
+    // Calculate actual days in treatment
+    const diasEmTratamento = Math.floor(
+      (Date.now() - new Date(familyToken.paciente.dataAdmissao).getTime()) / 86400000
+    );
 
     // Last 5 evolutions — summary only, NO clinical content
     const evolucoes = await prisma.evolucao.findMany({
@@ -109,7 +114,7 @@ export async function GET(req: NextRequest) {
           nome: familyToken.paciente.nome,
           status: familyToken.paciente.status,
           dataAdmissao: familyToken.paciente.dataAdmissao,
-          diasTratamento: familyToken.paciente.diasTratamento,
+          diasTratamento: diasEmTratamento,
         },
         evolucoes: evolucoes.map((e) => ({
           tipo: e.tipo,

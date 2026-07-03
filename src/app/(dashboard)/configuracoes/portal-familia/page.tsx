@@ -74,11 +74,11 @@ export default function PortalFamiliaConfigPage() {
 
   const fetchPacientes = async () => {
     try {
-      const res = await fetch("/api/pacientes?limit=1000");
+      const res = await fetch("/api/pacientes?pageSize=100");
       const data = await res.json();
-      if (data.success && data.pacientes) {
+      if (data.success && data.data) {
         setPacientes(
-          data.pacientes.map((p: { id: string; nome: string }) => ({
+          data.data.map((p: { id: string; nome: string }) => ({
             id: p.id,
             nome: p.nome,
           }))
@@ -294,7 +294,7 @@ export default function PortalFamiliaConfigPage() {
       {/* Create token modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4">
+          <div className="bg-card rounded-lg shadow-xl w-full max-w-md p-6 m-4">
             <h2 className="text-lg font-semibold mb-4">Gerar Novo Token</h2>
 
             {createdToken ? (

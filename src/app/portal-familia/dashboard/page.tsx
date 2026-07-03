@@ -134,9 +134,9 @@ export default function PortalFamiliaDashboard() {
   return (
     <div className="space-y-6">
       {/* Patient header */}
-      <div className="bg-white rounded-lg border p-6 flex items-center justify-between">
+      <div className="bg-card rounded-lg border p-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold">
             {dados.paciente.nome}
           </h1>
           <div className="flex items-center gap-3 mt-2">

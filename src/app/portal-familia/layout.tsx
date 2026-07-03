@@ -21,8 +21,8 @@ export default function PortalFamiliaLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b shadow-sm">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b shadow-sm">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -31,7 +31,7 @@ export default function PortalFamiliaLayout({
               alt="Hachi"
               className="h-8 w-8 rounded object-contain"
             />
-            <span className="font-semibold text-lg text-gray-800">
+            <span className="font-semibold text-lg">
               Portal da Família
             </span>
           </div>
@@ -44,7 +44,7 @@ export default function PortalFamiliaLayout({
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
-      <footer className="border-t bg-white mt-8">
+      <footer className="border-t bg-card mt-8">
         <div className="max-w-4xl mx-auto px-4 py-4 text-center text-xs text-muted-foreground">
           © 2025 Hachi — Portal da Família
         </div>
