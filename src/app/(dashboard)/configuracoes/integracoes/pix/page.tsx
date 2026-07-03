@@ -233,7 +233,7 @@ export default function PixConfigPage() {
           {/* Certificado */}
           <div className="space-y-2">
             <label htmlFor="certificate" className="text-sm font-medium">
-              Certificado .p12
+              Certificado .p12 <span className="text-muted-foreground font-normal">(opcional no sandbox)</span>
             </label>
             <div className="flex items-center gap-3">
               <Input
@@ -301,14 +301,15 @@ export default function PixConfigPage() {
             <li>Acesse o portal <strong>developer.sicredi.com.br</strong> e crie uma conta</li>
             <li>Navegue até o <strong>Catálogo de APIs</strong> e selecione a API Pix</li>
             <li>Crie uma aplicação e obtenha <strong>Client ID</strong> e <strong>Client Secret</strong></li>
-            <li>Gere o certificado .p12 para mTLS no portal do Sicredi</li>
-            <li>Faça download do certificado e envie aqui</li>
             <li>Cadastre sua <strong>Chave Pix</strong> na conta Sicredi (CPF, CNPJ, email ou aleatória)</li>
-            <li>Use o ambiente <strong>Sandbox</strong> primeiro para testes com a URL <code>api-parceiro.sicredi.com.br/sb</code></li>
+            <li>Para <strong>Sandbox</strong>: o certificado é opcional — teste apenas com Client ID + Secret</li>
+            <li>Para <strong>Produção</strong>: solicite o certificado .p12 ao seu <strong>gerente de conta PJ</strong> na cooperativa Sicredi (Internet Banking → Pix → Configurações → API)</li>
           </ol>
-          <p className="mt-4 p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
-            ⚠️ Use o ambiente <strong>Sandbox</strong> para testes. Mude para <strong>Produção</strong> apenas
-            quando estiver pronto para receber pagamentos reais.
+          <p className="mt-4 p-3 bg-blue-50 text-blue-800 dark:bg-blue-950/30 dark:text-blue-200 rounded-md border border-blue-200">
+            ℹ️ O <strong>certificado mTLS (.p12)</strong> é gerado pela cooperativa Sicredi, não pelo portal de desenvolvedores. Contate seu gerente PJ para solicitar.
+          </p>
+          <p className="mt-2 p-3 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200 rounded-md border border-amber-200">
+            ⚠️ Use o ambiente <strong>Sandbox</strong> para testes (funciona sem certificado). Mude para <strong>Produção</strong> apenas após receber o certificado .p12 da cooperativa.
           </p>
         </CardContent>
       </Card>

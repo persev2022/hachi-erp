@@ -76,7 +76,10 @@ async function getConfig(): Promise<PixConfig> {
 }
 
 function createHttpsAgent(certBase64: string | null): https.Agent | undefined {
-  if (!certBase64) return undefined;
+  if (!certBase64) {
+    // Sem certificado — funciona no sandbox do Sicredi e em modo desenvolvimento
+    return undefined;
+  }
   try {
     const pfx = Buffer.from(certBase64, "base64");
     return new https.Agent({ pfx, passphrase: "" });
