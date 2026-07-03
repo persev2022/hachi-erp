@@ -183,9 +183,20 @@ export default function PacienteDetailPage() {
             {paciente.quarto && ` · Quarto ${paciente.quarto.numero}`}
           </p>
         </div>
-        <Button variant="outline" asChild className="shrink-0">
-          <Link href={`/pacientes/${id}/editar`}>Editar</Link>
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={async () => {
+            const res = await fetch(`/api/pacientes/${id}/exportar`);
+            if (res.ok) {
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a"); a.href = url; a.download = `dados_paciente.json`;
+              document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            }
+          }}>Exportar LGPD</Button>
+          <Button variant="outline" asChild>
+            <Link href={`/pacientes/${id}/editar`}>Editar</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}

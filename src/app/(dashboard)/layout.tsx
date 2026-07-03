@@ -5,6 +5,7 @@ import { Sidebar, MobileHeader } from "@/components/layout/sidebar";
 import { ToastProvider } from "@/components/ui/toast-simple";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CommandSearch } from "@/components/command-search";
+import { SessionTimeout } from "@/components/session-timeout";
 
 export default function DashboardLayout({
   children,
@@ -22,6 +23,7 @@ export default function DashboardLayout({
           <main className="lg:pl-64">{children}</main>
         </div>
         <CommandSearch />
+        <SessionTimeout />
       </ToastProvider>
     </ThemeProvider>
   );

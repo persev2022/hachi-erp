@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,11 @@ export default function LoginPage() {
           <Button type="submit" className="w-full mt-2" disabled={loading}>
             {loading ? "Entrando..." : "Entrar"}
           </Button>
+          <div className="text-center mt-3">
+            <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+              Esqueci minha senha
+            </Link>
+          </div>
         </form>
         <p className="text-center text-xs text-muted-foreground mt-6">
           © 2026 Hachi — Todos os direitos reservados
