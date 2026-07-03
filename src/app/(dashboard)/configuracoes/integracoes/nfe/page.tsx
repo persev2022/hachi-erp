@@ -236,21 +236,36 @@ export default function NfeConfigPage() {
       {/* Instructions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Como obter as credenciais</CardTitle>
+          <CardTitle className="text-lg">Como emitir NFS-e</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <ol className="list-decimal list-inside space-y-2">
-            <li>Crie uma conta em <strong>app.nfe.io</strong></li>
-            <li>Cadastre sua empresa com CNPJ e dados fiscais</li>
-            <li>Aguarde a aprovação do cadastro pela prefeitura</li>
-            <li>No painel, acesse <strong>Configurações → API</strong></li>
-            <li>Gere uma <strong>API Key</strong> e copie</li>
-            <li>Copie o <strong>Company ID</strong> da URL do painel (ex: /companies/<strong>abc123</strong>)</li>
-            <li>Configure o código de serviço conforme o município</li>
-          </ol>
-          <p className="mt-4 p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
-            ⚠️ Use o ambiente <strong>Sandbox</strong> para testes. Notas emitidas em produção são
-            reais e possuem validade fiscal.
+        <CardContent className="space-y-4 text-sm text-muted-foreground">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 rounded-md border border-blue-200">
+            <p className="font-medium mb-1">📌 Opção 1: Emissão via Portal Nacional (Grátis)</p>
+            <ol className="list-decimal list-inside space-y-1 mt-2">
+              <li>Acesse <strong>nfse.gov.br/EmissorNacional</strong></li>
+              <li>Faça login com <strong>conta gov.br</strong> (nível prata/ouro) ou certificado digital</li>
+              <li>Clique em &quot;Emitir NFS-e&quot;</li>
+              <li>Preencha dados do tomador, serviço e valor</li>
+              <li>Código do serviço para clínicas de reabilitação: <strong>8630-5/03</strong></li>
+              <li>Confira e emita</li>
+            </ol>
+            <p className="mt-2 text-xs">Sem custo adicional. O sistema gera os dados formatados para copiar.</p>
+          </div>
+
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 rounded-md border border-emerald-200">
+            <p className="font-medium mb-1">🔌 Opção 2: Emissão automática via intermediador</p>
+            <ol className="list-decimal list-inside space-y-1 mt-2">
+              <li>Contrate um intermediador: <strong>nfe.io</strong>, <strong>Focus NFe</strong> ou <strong>PlugNotas</strong></li>
+              <li>Obtenha a <strong>API Key</strong> e <strong>Company ID</strong> no painel do intermediador</li>
+              <li>Configure nos campos acima</li>
+              <li>A emissão será 100% automática pelo sistema</li>
+            </ol>
+            <p className="mt-2 text-xs">Custo: ~R$0.10 a R$0.50 por nota emitida.</p>
+          </div>
+
+          <p className="text-xs">
+            Sem as credenciais de intermediador configuradas, o sistema funciona no <strong>modo manual</strong>:
+            gera os dados formatados da nota para você copiar e emitir diretamente no portal nfse.gov.br.
           </p>
         </CardContent>
       </Card>
