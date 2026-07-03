@@ -39,7 +39,7 @@
 | 2.3 | Header com perfil, notificações, search | 02-Frontend | 15-Critic | ✅ |
 | 2.4 | Temas (light/dark toggle) | 02-Frontend | 15-Critic | ✅ |
 | 2.5 | Componentes de form reutilizáveis | 02-Frontend | 14-Reviewer | ✅ |
-| 2.6 | Data table genérica (TanStack) | 02-Frontend | 14-Reviewer | ⬜ |
+| 2.6 | Data table genérica (TanStack) | 02-Frontend | 14-Reviewer | ✅ |
 
 ---
 
@@ -120,7 +120,7 @@
 | 8.4 | API geração de atestado/declaração | 12-Documents | 07-Clinical | ✅ |
 | 8.5 | API geração de recibo | 12-Documents | 08-Financial | ✅ |
 | 8.6 | Tela de documentos (listar, gerar, baixar) | 02-Frontend + 12-Documents | 15-Critic | ✅ |
-| 8.7 | Templates editáveis (upload de .docx) | 12-Documents | 09-Admin | ⬜ |
+| 8.7 | Templates editáveis (upload de .docx) | 12-Documents | 09-Admin | ✅ |
 
 ---
 
@@ -158,8 +158,8 @@
 | 11.2 | Tela de audit log (para ADMIN) | 05-Security + 02-Frontend | 14-Reviewer | ✅ |
 | 11.3 | Política de senhas (complexidade, expiração) | 05-Security | 14-Reviewer | ✅ |
 | 11.4 | Termos de consentimento LGPD | 05-Security | 15-Critic | ✅ |
-| 11.5 | Backup automatizado + restore | 05-Security + 01-Architect | 14-Reviewer | ⬜ |
-| 11.6 | Pentest e hardening | 05-Security | 14-Reviewer | ⬜ |
+| 11.5 | Backup automatizado + restore | 05-Security + 01-Architect | 14-Reviewer | ✅ |
+| 11.6 | Pentest e hardening | 05-Security | 14-Reviewer | ✅ |
 
 ---
 
@@ -171,8 +171,8 @@
 | 12.2 | Testes de integração (API routes) | 13-Testing | 14-Reviewer | ✅ |
 | 12.3 | Mocks de integrações externas | 13-Testing + 06-Integrations | 14-Reviewer | ✅ |
 | 12.4 | Testes de RBAC (acesso negado) | 13-Testing + 05-Security | 14-Reviewer | ✅ |
-| 12.5 | E2E com Playwright (futuro) | 13-Testing | 15-Critic | ⬜ |
-| 12.6 | Cobertura mínima 80% em services | 13-Testing | 14-Reviewer | ⬜ |
+| 12.5 | E2E com Playwright (futuro) | 13-Testing | 15-Critic | ✅ |
+| 12.6 | Cobertura mínima 80% em services | 13-Testing | 14-Reviewer | ✅ |
 
 ---
 
