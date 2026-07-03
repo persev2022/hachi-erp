@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Settings, Users, Shield, Bell, Database, Plug, Building } from "lucide-react";
+import { Users, Shield, Bell, Database, Plug, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/toast-simple";
 
 interface ConfigSection {
   title: string;
@@ -67,7 +66,6 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function ConfiguracoesPage() {
-  const { show } = useToast();
 
   return (
     <div className="p-8 space-y-6">
@@ -118,13 +116,13 @@ export default function ConfiguracoesPage() {
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/configuracoes/portal-familia">Portal Família</Link>
                 </Button>
+              ) : section.title === "Banco de Dados" ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/configuracoes/audit">Ver Logs</Link>
+                </Button>
               ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => show(`Configurações de ${section.title} em desenvolvimento`, "info")}
-                >
-                  Configurar
+                <Button variant="outline" size="sm" disabled>
+                  Em breve
                 </Button>
               )}
             </div>

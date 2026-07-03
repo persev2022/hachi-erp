@@ -443,12 +443,71 @@ export default function PacienteDetailPage() {
       )}
 
       {activeTab === "financeiro" && (
-        <div className="text-center text-muted-foreground py-8">
-          <Wallet className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p>Módulo financeiro em desenvolvimento.</p>
-          <p className="text-xs mt-1">
-            Mensalidade: R$ {paciente.mensalidadeValor?.toFixed(2) || "—"} · Vencimento dia {paciente.diaVencimento || "—"}
-          </p>
+        <FinanceiroTab pacienteId={id} mensalidade={paciente.mensalidadeValor} vencimento={paciente.diaVencimento} />
+      )}
+    </div>
+  );
+}
+
+function FinanceiroTab({ pacienteId, mensalidade, vencimento }: { pacienteId: string; mensalidade?: number | null; vencimento?: number | null }) {
+  const [movs, setMovs] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch(`/api/financeiro?pacienteId=${pacienteId}&pageSize=50`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setMovs(d.data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [pacienteId]);
+
+  if (loading) return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+
+  const pagos = movs.filter((m) => m.status === "PAGO");
+  const pendentes = movs.filter((m) => m.status === "PENDENTE" || m.status === "ATRASADO");
+  const totalPago = pagos.reduce((s, m) => s + m.valor, 0);
+  const totalPendente = pendentes.reduce((s, m) => s + m.valor, 0);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-card border rounded-lg p-3 text-center">
+          <p className="text-xs text-muted-foreground">Mensalidade</p>
+          <p className="text-lg font-bold">R$ {mensalidade?.toFixed(2) || "—"}</p>
+        </div>
+        <div className="bg-card border rounded-lg p-3 text-center">
+          <p className="text-xs text-muted-foreground">Vencimento</p>
+          <p className="text-lg font-bold">Dia {vencimento || "—"}</p>
+        </div>
+        <div className="bg-card border rounded-lg p-3 text-center">
+          <p className="text-xs text-muted-foreground">Total Pago</p>
+          <p className="text-lg font-bold text-emerald-600">R$ {totalPago.toFixed(2)}</p>
+        </div>
+        <div className="bg-card border rounded-lg p-3 text-center">
+          <p className="text-xs text-muted-foreground">Pendente</p>
+          <p className="text-lg font-bold text-amber-600">R$ {totalPendente.toFixed(2)}</p>
+        </div>
+      </div>
+      {movs.length === 0 ? (
+        <p className="text-center text-muted-foreground py-4">Nenhuma movimentação financeira.</p>
+      ) : (
+        <div className="space-y-2">
+          {movs.slice(0, 20).map((m) => (
+            <div key={m.id} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div>
+                <p className="text-sm font-medium">{m.descricao}</p>
+                <p className="text-xs text-muted-foreground">{new Date(m.dataVencimento).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <div className="text-right">
+                <p className={`text-sm font-medium ${m.tipo === "RECEITA" ? "text-emerald-600" : "text-red-600"}`}>
+                  R$ {m.valor.toFixed(2)}
+                </p>
+                <Badge variant="outline" className={`text-xs ${m.status === "PAGO" ? "bg-emerald-50 text-emerald-700" : m.status === "ATRASADO" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>
+                  {m.status}
+                </Badge>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
