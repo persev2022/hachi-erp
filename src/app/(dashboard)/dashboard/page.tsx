@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
+  const fetchData = React.useCallback(() => {
     fetch("/api/relatorios/dashboard")
       .then((r) => r.json())
       .then((d) => { if (d.success) setData(d.data); })
@@ -45,10 +45,42 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  React.useEffect(() => {
+    fetchData();
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="p-4 md:p-6 space-y-6 md:space-y-8">
+        <div className="space-y-2">
+          <div className="h-8 w-48 animate-pulse bg-muted rounded" />
+          <div className="h-4 w-72 animate-pulse bg-muted rounded" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="bg-card border rounded-lg p-4 md:p-5 space-y-2">
+              <div className="h-3 w-20 animate-pulse bg-muted rounded" />
+              <div className="h-7 w-16 animate-pulse bg-muted rounded" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="bg-card border rounded-lg p-4 md:p-5 lg:col-span-2 space-y-3">
+            <div className="h-5 w-40 animate-pulse bg-muted rounded" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse bg-muted/50 rounded" />
+            ))}
+          </div>
+          <div className="bg-card border rounded-lg p-4 md:p-5 space-y-3">
+            <div className="h-5 w-24 animate-pulse bg-muted rounded" />
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="h-16 animate-pulse bg-muted/50 rounded" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

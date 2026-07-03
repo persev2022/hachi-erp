@@ -184,6 +184,34 @@ export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
         <img src="/images/hachi-logo.png" alt="Hachi" className="h-9 w-9 rounded-md object-contain" />
         <span className="font-bold text-foreground">Hachi</span>
       </div>
+      <UserAvatar />
     </header>
+  );
+}
+
+function UserAvatar() {
+  const [user, setUser] = React.useState<{ name: string; role: string } | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setUser(d.user); })
+      .catch(() => {});
+  }, []);
+
+  if (!user) return null;
+
+  const initials = user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+        {initials}
+      </div>
+      <div className="hidden sm:block">
+        <p className="text-xs font-medium leading-none">{user.name.split(" ")[0]}</p>
+        <p className="text-[10px] text-muted-foreground">{user.role}</p>
+      </div>
+    </div>
   );
 }
