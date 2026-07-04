@@ -20,6 +20,9 @@ import {
   Heart,
   CheckCircle2,
   RefreshCw,
+  FileText,
+  Download,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +34,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type Tab = "resumo" | "evolucoes" | "prescricoes" | "agenda" | "financeiro";
+type Tab = "resumo" | "evolucoes" | "prescricoes" | "documentos" | "agenda" | "financeiro";
 
 const statusColor: Record<string, string> = {
   ATIVO: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -159,6 +162,7 @@ export default function PacienteDetailPage() {
     { key: "resumo", label: "Resumo", icon: User },
     { key: "evolucoes", label: "Evoluções", icon: FileHeart },
     { key: "prescricoes", label: "Prescrições", icon: Pill },
+    { key: "documentos", label: "Documentos", icon: FileText },
     { key: "agenda", label: "Agenda", icon: Calendar },
     { key: "financeiro", label: "Financeiro", icon: Wallet },
   ];
@@ -439,6 +443,10 @@ export default function PacienteDetailPage() {
         </div>
       )}
 
+      {activeTab === "documentos" && (
+        <DocumentosTab pacienteId={id} pacienteNome={paciente.nome} />
+      )}
+
       {activeTab === "agenda" && (
         <div className="space-y-3">
           {paciente.agendamentos?.length === 0 ? (
@@ -471,6 +479,289 @@ export default function PacienteDetailPage() {
 
       {activeTab === "financeiro" && (
         <FinanceiroTab pacienteId={id} mensalidade={paciente.mensalidadeValor} vencimento={paciente.diaVencimento} />
+      )}
+    </div>
+  );
+}
+
+const documentTypeLabels: Record<string, string> = {
+  CONTRATO: "Contrato",
+  RECEITA_SIMPLES: "Receita Simples",
+  RECEITA_ESPECIAL: "Receita Especial",
+  ATESTADO: "Atestado/Declaração",
+  DECLARACAO: "Declaração",
+  RECIBO: "Recibo",
+  RELATORIO_MEDICO: "Relatório Médico",
+  RELATORIO_PSICOLOGICO: "Relatório Psicológico",
+  PTI: "Plano Terapêutico Individual",
+  TERMO_CONSENTIMENTO: "Termo de Consentimento",
+  OUTRO: "Outro",
+};
+
+const documentTypesForGeneration = [
+  { id: "CONTRATO", label: "Contrato" },
+  { id: "RECIBO", label: "Recibo" },
+  { id: "RECEITA_SIMPLES", label: "Receita Simples" },
+  { id: "RECEITA_ESPECIAL", label: "Receita Especial" },
+  { id: "ATESTADO", label: "Atestado/Declaração" },
+];
+
+function DocumentosTab({ pacienteId, pacienteNome }: { pacienteId: string; pacienteNome: string }) {
+  const [documentos, setDocumentos] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [generating, setGenerating] = React.useState(false);
+  const [showGerar, setShowGerar] = React.useState(false);
+  const [selectedType, setSelectedType] = React.useState("");
+  const [gerarErro, setGerarErro] = React.useState("");
+
+  React.useEffect(() => {
+    fetchDocumentos();
+  }, [pacienteId]);
+
+  async function fetchDocumentos() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/documentos?pacienteId=${pacienteId}`);
+      const data = await res.json();
+      if (data.success) setDocumentos(data.data);
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGerar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setGenerating(true);
+    setGerarErro("");
+
+    const form = new FormData(e.currentTarget);
+    const tipo = selectedType;
+    const payload: any = { tipo, pacienteId };
+
+    if (tipo === "RECIBO") {
+      const valor = form.get("valor");
+      if (valor) payload.valor = parseFloat(valor as string);
+      payload.motivo = form.get("motivo") || "Matrícula";
+      payload.nomePagante = form.get("nomePagante") || undefined;
+      payload.cpfPagante = form.get("cpfPagante") || undefined;
+    }
+    if (tipo === "RECEITA_ESPECIAL") {
+      payload.descricao = form.get("descricao") || undefined;
+    }
+    if (tipo === "ATESTADO") {
+      payload.dataInicio = form.get("dataInicio") || undefined;
+      payload.dataFim = form.get("dataFim") || undefined;
+    }
+
+    try {
+      const res = await fetch("/api/documentos/gerar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        setGerarErro(err.error || "Erro ao gerar documento");
+        return;
+      }
+
+      const blob = await res.blob();
+      const disposition = res.headers.get("content-disposition") || "";
+      const match = disposition.match(/filename="(.+?)"/);
+      const filename = match ? match[1] : `documento-${tipo.toLowerCase()}.docx`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setShowGerar(false);
+      setSelectedType("");
+      fetchDocumentos();
+    } catch {
+      setGerarErro("Erro de conexão");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header with generate button */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {documentos.length} documento{documentos.length !== 1 ? "s" : ""} registrado{documentos.length !== 1 ? "s" : ""}
+        </p>
+        <Button size="sm" onClick={() => setShowGerar(true)}>
+          <Plus className="h-4 w-4 mr-1" /> Gerar Documento
+        </Button>
+      </div>
+
+      {/* Document list */}
+      {documentos.length === 0 ? (
+        <div className="text-center py-8">
+          <FileText className="h-10 w-10 mx-auto text-muted-foreground/40" />
+          <p className="text-muted-foreground mt-2">Nenhum documento registrado.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Use o botão &quot;Gerar Documento&quot; para criar contratos, recibos e receitas.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {documentos.map((doc) => (
+            <Card key={doc.id}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{doc.titulo}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant="outline" className="text-xs">
+                          {documentTypeLabels[doc.tipo] || doc.tipo}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(doc.createdAt)}
+                        </span>
+                        {doc.assinado && (
+                          <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
+                            Assinado
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground uppercase">{doc.formato}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Generate modal */}
+      {showGerar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowGerar(false)}>
+          <div className="bg-background border rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Gerar Documento</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowGerar(false)}>✕</Button>
+            </div>
+
+            {!selectedType ? (
+              <div className="p-4 space-y-2">
+                <p className="text-sm text-muted-foreground mb-3">Selecione o tipo de documento:</p>
+                {documentTypesForGeneration.map((dt) => (
+                  <button
+                    key={dt.id}
+                    onClick={() => setSelectedType(dt.id)}
+                    className="w-full text-left p-3 rounded-lg border hover:border-primary hover:bg-primary/5 transition text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{dt.label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <form onSubmit={handleGerar} className="p-4 space-y-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline">{documentTypesForGeneration.find(d => d.id === selectedType)?.label}</Badge>
+                  <span className="text-muted-foreground">para {pacienteNome}</span>
+                </div>
+
+                {gerarErro && <p className="text-sm text-destructive">{gerarErro}</p>}
+
+                {/* RECIBO fields */}
+                {selectedType === "RECIBO" && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Valor (R$)</label>
+                        <input name="valor" type="number" step="0.01" placeholder="Ex: 1500"
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                        <p className="text-xs text-muted-foreground">Vazio = usa matrícula</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Motivo</label>
+                        <input name="motivo" placeholder="Matrícula" defaultValue="Matrícula"
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Nome Pagante</label>
+                        <input name="nomePagante" placeholder="Responsável financeiro"
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">CPF Pagante</label>
+                        <input name="cpfPagante" placeholder="Deixe vazio para responsável"
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* RECEITA ESPECIAL */}
+                {selectedType === "RECEITA_ESPECIAL" && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Descrição do medicamento</label>
+                    <textarea name="descricao" rows={3} placeholder="Ex: Clonazepam 2mg — tomar 1 comprimido à noite"
+                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" />
+                  </div>
+                )}
+
+                {/* ATESTADO */}
+                {selectedType === "ATESTADO" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Data início</label>
+                      <input name="dataInicio" type="date"
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                      <p className="text-xs text-muted-foreground">Vazio = admissão</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Data fim</label>
+                      <input name="dataFim" type="date"
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                      <p className="text-xs text-muted-foreground">Vazio = alta prevista</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setSelectedType("")}>
+                    ← Voltar
+                  </Button>
+                  <Button type="submit" size="sm" disabled={generating}>
+                    {generating && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                    <Download className="h-4 w-4 mr-1" />
+                    Gerar e Baixar
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
