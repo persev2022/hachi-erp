@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
-    if (!["ADMIN", "COORDENADOR", "FINANCEIRO", "SECRETARIA"].includes(session.role)) {
+    if (!["ADMIN", "FINANCEIRO", "SECRETARIA"].includes(session.role)) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 

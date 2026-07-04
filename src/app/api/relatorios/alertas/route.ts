@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const now = new Date();
 
     // --- Inadimplência (ADMIN, FINANCEIRO) ---
-    if (["ADMIN", "COORDENADOR", "FINANCEIRO"].includes(session.role)) {
+    if (["ADMIN", "FINANCEIRO"].includes(session.role)) {
       // Update overdue entries
       await prisma.movimentacaoFinanceira.updateMany({
         where: {

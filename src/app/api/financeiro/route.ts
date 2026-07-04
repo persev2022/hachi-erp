@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Only ADMIN, FINANCEIRO can access
-    if (!["ADMIN", "COORDENADOR", "FINANCEIRO", "SECRETARIA"].includes(session.role)) {
+    if (!["ADMIN", "FINANCEIRO", "SECRETARIA"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Acesso negado" },
         { status: 403 }
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
-    if (!["ADMIN", "COORDENADOR", "FINANCEIRO"].includes(session.role)) {
+    if (!["ADMIN", "FINANCEIRO"].includes(session.role)) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
