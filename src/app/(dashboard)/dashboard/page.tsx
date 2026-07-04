@@ -93,13 +93,13 @@ export default function DashboardPage() {
   const kpis = data?.kpis;
 
   const stats = [
-    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
-    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
-    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda", roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "MONITOR"] },
-    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"] },
-    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"] },
-    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
-    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque", roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "APOIO"] },
+    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
+    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
+    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "MONITOR"] },
+    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro", roles: ["ADMIN", "COORDENADOR", "FINANCEIRO"] },
+    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro", roles: ["ADMIN", "COORDENADOR", "FINANCEIRO"] },
+    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
+    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"] },
   ];
 
   const filteredStats = stats.filter((s) => !userRole || s.roles.includes(userRole));

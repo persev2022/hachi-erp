@@ -31,15 +31,15 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Pacientes", href: "/pacientes", icon: Users, roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
-  { name: "Prontuário", href: "/prontuario", icon: FileHeart, roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
+  { name: "Pacientes", href: "/pacientes", icon: Users, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
+  { name: "Prontuário", href: "/prontuario", icon: FileHeart, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
   { name: "Agenda", href: "/agenda", icon: Calendar },
-  { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "FINANCEIRO"] },
-  { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "APOIO"] },
-  { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
-  { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "MEDICO", "SECRETARIA", "FINANCEIRO"] },
-  { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "SECRETARIA"] },
-  { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"] },
+  { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "COORDENADOR", "FINANCEIRO"] },
+  { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"] },
+  { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
+  { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"] },
+  { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"] },
+  { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "COORDENADOR", "FINANCEIRO"] },
   { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"] },
 ];
 

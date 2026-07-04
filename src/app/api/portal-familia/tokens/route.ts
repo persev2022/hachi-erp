@@ -6,7 +6,7 @@ import { getSessionFromRequest } from "@/lib/auth";
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session || !["ADMIN", "SECRETARIA"].includes(session.role)) {
+    if (!session || !["ADMIN", "COORDENADOR", "SECRETARIA"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Acesso negado" },
         { status: 403 }
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session || !["ADMIN", "SECRETARIA"].includes(session.role)) {
+    if (!session || !["ADMIN", "COORDENADOR", "SECRETARIA"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Acesso negado" },
         { status: 403 }
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session || !["ADMIN", "SECRETARIA"].includes(session.role)) {
+    if (!session || !["ADMIN", "COORDENADOR", "SECRETARIA"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Acesso negado" },
         { status: 403 }

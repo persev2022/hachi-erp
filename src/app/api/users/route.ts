@@ -9,7 +9,7 @@ const createUserSchema = z.object({
   name: z.string().min(2, "Nome é obrigatório"),
   email: z.string().email("Email inválido"),
   password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
-  role: z.enum(["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO", "MONITOR", "APOIO"]),
+  role: z.enum(["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO", "MONITOR", "APOIO"]),
   phone: z.string().optional(),
   cpf: z.string().optional(),
   crm: z.string().optional(),

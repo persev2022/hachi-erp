@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
-    if (!["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO"].includes(session.role)) {
+    if (!["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO"].includes(session.role)) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 

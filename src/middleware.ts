@@ -119,15 +119,15 @@ export async function middleware(req: NextRequest) {
   if (!pathname.startsWith("/api/")) {
     const role = session.role || "APOIO";
     const routeRoles: Record<string, string[]> = {
-      "/financeiro": ["ADMIN", "FINANCEIRO"],
-      "/prontuario": ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"],
-      "/pacientes": ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"],
-      "/documentos": ["ADMIN", "MEDICO", "SECRETARIA", "FINANCEIRO"],
-      "/comunicacao": ["ADMIN", "SECRETARIA"],
-      "/relatorios": ["ADMIN", "FINANCEIRO"],
+      "/financeiro": ["ADMIN", "COORDENADOR", "FINANCEIRO"],
+      "/prontuario": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"],
+      "/pacientes": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"],
+      "/documentos": ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"],
+      "/comunicacao": ["ADMIN", "COORDENADOR", "SECRETARIA"],
+      "/relatorios": ["ADMIN", "COORDENADOR", "FINANCEIRO"],
       "/configuracoes": ["ADMIN"],
-      "/quartos": ["ADMIN", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
-      "/estoque": ["ADMIN", "ENFERMEIRO", "MONITOR", "APOIO"],
+      "/quartos": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
+      "/estoque": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"],
     };
 
     for (const [route, allowedRoles] of Object.entries(routeRoles)) {

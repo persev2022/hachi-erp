@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const now = new Date();
 
     // --- Inadimplência (ADMIN, FINANCEIRO) ---
-    if (["ADMIN", "FINANCEIRO"].includes(session.role)) {
+    if (["ADMIN", "COORDENADOR", "FINANCEIRO"].includes(session.role)) {
       // Update overdue entries
       await prisma.movimentacaoFinanceira.updateMany({
         where: {
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
     }
 
     // --- Estoque baixo (ADMIN, ENFERMEIRO) ---
-    if (["ADMIN", "ENFERMEIRO", "MONITOR"].includes(session.role)) {
+    if (["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR"].includes(session.role)) {
       const items = await prisma.itemEstoque.findMany();
       const baixos = items.filter((i) => i.quantidade <= i.minimo);
       for (const item of baixos.slice(0, 5)) {
@@ -61,9 +61,9 @@ export async function GET(req: NextRequest) {
     }
 
     // --- Evoluções não assinadas (profissionais clínicos) ---
-    if (["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"].includes(session.role)) {
+    if (["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"].includes(session.role)) {
       const where: any = { assinado: false };
-      if (session.role !== "ADMIN") where.profissionalId = session.userId;
+      if (!["ADMIN", "COORDENADOR"].includes(session.role)) where.profissionalId = session.userId;
 
       const pendentes = await prisma.evolucao.count({ where });
       if (pendentes > 0) {
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
       dataHora: { gte: now, lte: in30min },
       status: { in: ["AGENDADO", "CONFIRMADO"] },
     };
-    if (!["ADMIN", "SECRETARIA"].includes(session.role)) {
+    if (!["ADMIN", "COORDENADOR", "SECRETARIA"].includes(session.role)) {
       where.profissionalId = session.userId;
     }
 

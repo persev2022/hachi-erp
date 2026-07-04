@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
-    if (!["ADMIN", "SECRETARIA"].includes(session.role)) {
+    if (!["ADMIN", "COORDENADOR", "SECRETARIA"].includes(session.role)) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
