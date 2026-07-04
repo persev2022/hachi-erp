@@ -19,6 +19,7 @@ import {
   Brain,
   Heart,
   CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -276,7 +277,22 @@ export default function PacienteDetailPage() {
               <div><span className="text-muted-foreground">Admissão:</span> {formatDate(paciente.dataAdmissao)}</div>
               <div><span className="text-muted-foreground">Previsão alta:</span> {formatDate(paciente.dataAltaPrevista)}</div>
               <div><span className="text-muted-foreground">Dias de tratamento:</span> {paciente.diasTratamento} dias</div>
-              <div><span className="text-muted-foreground">Quarto:</span> {paciente.quarto?.numero || "Não atribuído"}</div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Quarto:</span>
+                <span>{paciente.quarto?.numero || "Não atribuído"}</span>
+                <MudarQuartoButton
+                  pacienteId={id}
+                  quartoAtualId={paciente.quartoId}
+                  quartoAtualNumero={paciente.quarto?.numero}
+                  onSuccess={(novoQuarto) => {
+                    setPaciente((prev: any) => ({
+                      ...prev,
+                      quartoId: novoQuarto.id,
+                      quarto: { ...prev?.quarto, numero: novoQuarto.numero, id: novoQuarto.id },
+                    }));
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -457,6 +473,150 @@ export default function PacienteDetailPage() {
         <FinanceiroTab pacienteId={id} mensalidade={paciente.mensalidadeValor} vencimento={paciente.diaVencimento} />
       )}
     </div>
+  );
+}
+
+function MudarQuartoButton({
+  pacienteId,
+  quartoAtualId,
+  quartoAtualNumero,
+  onSuccess,
+}: {
+  pacienteId: string;
+  quartoAtualId?: string | null;
+  quartoAtualNumero?: string | null;
+  onSuccess: (novoQuarto: { id: string; numero: string }) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [quartos, setQuartos] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [transferindo, setTransferindo] = React.useState(false);
+  const [erro, setErro] = React.useState("");
+
+  async function loadQuartos() {
+    setLoading(true);
+    setErro("");
+    try {
+      const res = await fetch("/api/quartos");
+      const data = await res.json();
+      if (data.success) {
+        setQuartos(data.data);
+      }
+    } catch {
+      setErro("Erro ao carregar quartos");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleOpen() {
+    setOpen(true);
+    loadQuartos();
+  }
+
+  async function handleTransferir(quartoDestinoId: string, quartoNumero: string) {
+    setTransferindo(true);
+    setErro("");
+    try {
+      const res = await fetch("/api/quartos/transferir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pacienteId, quartoDestinoId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setErro(data.error || "Erro ao transferir");
+        return;
+      }
+      onSuccess({ id: quartoDestinoId, numero: quartoNumero });
+      setOpen(false);
+    } catch {
+      setErro("Erro de conexão");
+    } finally {
+      setTransferindo(false);
+    }
+  }
+
+  return (
+    <>
+      <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={handleOpen}>
+        <RefreshCw className="h-3 w-3 mr-1" />
+        Mudar
+      </Button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setOpen(false)}>
+          <div
+            className="bg-background border rounded-lg shadow-lg w-full max-w-md mx-4 max-h-[70vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b">
+              <h3 className="font-semibold text-base">Mudar Quarto</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Atual: {quartoAtualNumero || "Sem quarto"} → Selecione o novo quarto
+              </p>
+              {erro && <p className="text-sm text-destructive mt-2">{erro}</p>}
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {loading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : quartos.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">Nenhum quarto cadastrado.</p>
+              ) : (
+                quartos.map((q) => {
+                  const isAtual = q.id === quartoAtualId;
+                  const ocupacao = q.pacientes?.length || 0;
+                  const disponivel = ocupacao < q.capacidade && q.status !== "MANUTENCAO" && q.status !== "LIMPEZA";
+                  const lotado = !disponivel && !isAtual;
+
+                  return (
+                    <button
+                      key={q.id}
+                      disabled={isAtual || lotado || transferindo}
+                      onClick={() => handleTransferir(q.id, q.numero)}
+                      className={`w-full text-left p-3 rounded-lg border transition text-sm ${
+                        isAtual
+                          ? "border-primary bg-primary/5 cursor-default"
+                          : lotado
+                          ? "border-muted bg-muted/30 opacity-50 cursor-not-allowed"
+                          : "border-border hover:border-primary hover:bg-primary/5 cursor-pointer"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <BedDouble className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Quarto {q.numero}</span>
+                          {isAtual && (
+                            <Badge variant="outline" className="text-xs bg-primary/10 text-primary">
+                              Atual
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {ocupacao}/{q.capacidade} ocupado{ocupacao !== 1 ? "s" : ""}
+                        </div>
+                      </div>
+                      {q.pacientes?.length > 0 && !isAtual && (
+                        <p className="text-xs text-muted-foreground mt-1 pl-6">
+                          {q.pacientes.map((p: any) => p.nome.split(" ")[0]).join(", ")}
+                        </p>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            <div className="p-4 border-t">
+              <Button variant="outline" className="w-full" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

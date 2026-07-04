@@ -37,15 +37,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
     }
 
-    // Verify destination room exists and is available
-    const quartoDestino = await prisma.quarto.findUnique({ where: { id: quartoDestinoId } });
+    // Verify destination room exists and has capacity
+    const quartoDestino = await prisma.quarto.findUnique({
+      where: { id: quartoDestinoId },
+      include: {
+        pacientes: { where: { status: "ATIVO", deletedAt: null } },
+      },
+    });
     if (!quartoDestino) {
       return NextResponse.json({ success: false, error: "Quarto destino não encontrado" }, { status: 404 });
     }
 
-    if (quartoDestino.status !== "DISPONIVEL") {
+    if (quartoDestino.status === "MANUTENCAO" || quartoDestino.status === "LIMPEZA") {
       return NextResponse.json(
-        { success: false, error: "Quarto destino não está disponível" },
+        { success: false, error: "Quarto destino está em manutenção/limpeza" },
+        { status: 400 }
+      );
+    }
+
+    // Check capacity (exclude current patient if they're already counted)
+    const currentOccupants = quartoDestino.pacientes.filter(p => p.id !== pacienteId).length;
+    if (currentOccupants >= quartoDestino.capacidade) {
+      return NextResponse.json(
+        { success: false, error: "Quarto destino está lotado" },
         { status: 400 }
       );
     }
