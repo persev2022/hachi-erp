@@ -22,6 +22,7 @@ interface User {
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Administrador",
+  COORDENADOR: "Coordenador Terapêutico",
   MEDICO: "Médico",
   PSICOLOGO: "Psicólogo",
   ENFERMEIRO: "Enfermeiro",
