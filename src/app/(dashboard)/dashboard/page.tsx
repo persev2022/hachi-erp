@@ -36,6 +36,7 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [userRole, setUserRole] = React.useState<string>("");
 
   const fetchData = React.useCallback(() => {
     fetch("/api/relatorios/dashboard")
@@ -47,6 +48,10 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     fetchData();
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.success && d.user?.role) setUserRole(d.user.role); })
+      .catch(() => {});
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
@@ -88,14 +93,16 @@ export default function DashboardPage() {
   const kpis = data?.kpis;
 
   const stats = [
-    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes" },
-    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos" },
-    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda" },
-    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro" },
-    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro" },
-    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario" },
-    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque" },
+    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
+    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
+    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda", roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "MONITOR"] },
+    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"] },
+    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"] },
+    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
+    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque", roles: ["ADMIN", "ENFERMEIRO", "MONITOR", "APOIO"] },
   ];
+
+  const filteredStats = stats.filter((s) => !userRole || s.roles.includes(userRole));
 
   return (
     <div className="p-4 md:p-6 space-y-6 md:space-y-8">
@@ -109,7 +116,7 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-        {stats.map((stat) => (
+        {filteredStats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}

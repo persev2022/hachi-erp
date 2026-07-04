@@ -115,6 +115,31 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
+  // ─── Route-level role protection (frontend pages) ───────────
+  if (!pathname.startsWith("/api/")) {
+    const role = session.role || "APOIO";
+    const routeRoles: Record<string, string[]> = {
+      "/financeiro": ["ADMIN", "FINANCEIRO"],
+      "/prontuario": ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"],
+      "/pacientes": ["ADMIN", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"],
+      "/documentos": ["ADMIN", "MEDICO", "SECRETARIA", "FINANCEIRO"],
+      "/comunicacao": ["ADMIN", "SECRETARIA"],
+      "/relatorios": ["ADMIN", "FINANCEIRO"],
+      "/configuracoes": ["ADMIN"],
+      "/quartos": ["ADMIN", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
+      "/estoque": ["ADMIN", "ENFERMEIRO", "MONITOR", "APOIO"],
+    };
+
+    for (const [route, allowedRoles] of Object.entries(routeRoles)) {
+      if (pathname === route || pathname.startsWith(route + "/")) {
+        if (!allowedRoles.includes(role)) {
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+        break;
+      }
+    }
+  }
+
   // Pass through with CORS headers for API
   const response = NextResponse.next();
   if (pathname.startsWith("/api/")) {
