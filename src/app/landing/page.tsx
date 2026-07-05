@@ -2,7 +2,52 @@
 
 import * as React from "react";
 
+// Hook: Mouse parallax tracking
+function useMouseParallax() {
+  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+
+  React.useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setPosition({ x, y });
+    }
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  return position;
+}
+
+// Hook: Scroll-based reveal
+function useScrollReveal() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, visible };
+}
+
 export default function LandingPage() {
+  const mouse = useMouseParallax();
+  const [scrollY, setScrollY] = React.useState(0);
+
+  React.useEffect(() => {
+    function handleScroll() { setScrollY(window.scrollY); }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-teal-400/30 selection:text-white overflow-x-hidden">
       {/* Custom Fonts via Google Fonts */}
@@ -12,6 +57,14 @@ export default function LandingPage() {
       <style jsx global>{`
         .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
         .font-body { font-family: 'Inter', system-ui, sans-serif; }
+        @keyframes float { 0%, 100% { transform: translateY(0px) rotateX(0deg); } 50% { transform: translateY(-12px) rotateX(2deg); } }
+        @keyframes orbit { 0% { transform: rotate(0deg) translateX(80px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(80px) rotate(-360deg); } }
+        @keyframes glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-orbit { animation: orbit 20s linear infinite; }
+        .animate-glow { animation: glow 3s ease-in-out infinite; }
+        .perspective { perspective: 1200px; }
+        .preserve-3d { transform-style: preserve-3d; }
       `}</style>
 
       {/* ═══ NAV ═══ */}
@@ -38,14 +91,49 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══ HERO ═══ */}
-      <section className="relative pt-32 pb-24 px-6">
-        {/* Geometric Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 -left-20 w-96 h-96 border border-white/5 rounded-full" />
-          <div className="absolute top-40 right-10 w-72 h-72 border border-teal-500/10 rotate-45" />
-          <div className="absolute bottom-20 left-1/4 w-48 h-48 bg-gradient-to-br from-teal-500/5 to-blue-500/5 rotate-12" />
-          <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
-          <div className="absolute top-1/2 left-1/4 w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse delay-700" />
+      <section className="relative pt-32 pb-24 px-6 perspective">
+        {/* 3D Parallax Geometric Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none preserve-3d">
+          {/* Layer 1 — far (slow parallax) */}
+          <div
+            className="absolute top-20 -left-20 w-96 h-96 border border-white/5 rounded-full transition-transform duration-700 ease-out"
+            style={{ transform: `translate3d(${mouse.x * 10}px, ${mouse.y * 10}px, -100px) translateY(${scrollY * 0.05}px)` }}
+          />
+          <div
+            className="absolute top-40 right-10 w-72 h-72 border border-teal-500/10 rotate-45 transition-transform duration-700 ease-out"
+            style={{ transform: `translate3d(${mouse.x * -15}px, ${mouse.y * -15}px, -80px) rotate(${45 + scrollY * 0.02}deg)` }}
+          />
+
+          {/* Layer 2 — mid (medium parallax) */}
+          <div
+            className="absolute bottom-20 left-1/4 w-48 h-48 bg-gradient-to-br from-teal-500/8 to-blue-500/5 rounded-lg transition-transform duration-500 ease-out"
+            style={{ transform: `translate3d(${mouse.x * 25}px, ${mouse.y * 20}px, -50px) rotate(${12 + mouse.x * 5}deg)` }}
+          />
+          <div
+            className="absolute top-1/4 right-1/4 w-32 h-32 border border-blue-500/10 rounded-xl transition-transform duration-500 ease-out"
+            style={{ transform: `translate3d(${mouse.x * -30}px, ${mouse.y * -25}px, -40px) rotate(${-15 + mouse.y * 8}deg)` }}
+          />
+
+          {/* Layer 3 — near (fast parallax, glowing dots) */}
+          <div
+            className="absolute top-1/3 right-1/3 w-3 h-3 bg-teal-400 rounded-full animate-glow transition-transform duration-300 ease-out"
+            style={{ transform: `translate3d(${mouse.x * 40}px, ${mouse.y * 40}px, 0px)` }}
+          />
+          <div
+            className="absolute top-1/2 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-glow transition-transform duration-300 ease-out"
+            style={{ transform: `translate3d(${mouse.x * -35}px, ${mouse.y * 35}px, 0px)`, animationDelay: "1s" }}
+          />
+          <div
+            className="absolute bottom-1/3 right-1/5 w-2.5 h-2.5 bg-purple-400 rounded-full animate-glow transition-transform duration-300 ease-out"
+            style={{ transform: `translate3d(${mouse.x * 50}px, ${mouse.y * -30}px, 10px)`, animationDelay: "2s" }}
+          />
+
+          {/* Orbiting element */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="animate-orbit">
+              <div className="w-4 h-4 bg-teal-400/20 rounded-full border border-teal-400/30" />
+            </div>
+          </div>
         </div>
 
         <div className="max-w-6xl mx-auto relative">
@@ -59,15 +147,15 @@ export default function LandingPage() {
 
           {/* Title — Constructivist asymmetry */}
           <div className="text-center">
-            <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95]">
+            <h1 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.1]">
               <span className="block">Gestão</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-teal-400 to-blue-400">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-teal-400 to-blue-400 mt-1">
                 Inteligente
               </span>
-              <span className="block text-white/40 text-3xl sm:text-4xl md:text-5xl mt-2 font-medium">
-                para Comunidades Terapêuticas
-              </span>
             </h1>
+            <p className="font-display font-medium text-xl sm:text-2xl md:text-3xl text-white/40 mt-4">
+              para Comunidades Terapêuticas
+            </p>
           </div>
 
           {/* Subtitle */}
@@ -87,8 +175,11 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Stats Bar — Constructivist geometric grid */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm">
+          {/* Stats Bar — 3D tilt on mouse */}
+          <div
+            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm transition-transform duration-500 ease-out"
+            style={{ transform: `perspective(1000px) rotateX(${mouse.y * -2}deg) rotateY(${mouse.x * 2}deg)` }}
+          >
             {[
               { value: "25k+", label: "Linhas de código" },
               { value: "57", label: "APIs integradas" },
@@ -105,12 +196,13 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ PROBLEM ═══ */}
+      <RevealSection>
       <section className="py-24 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-[1fr_1.2fr] gap-12 items-center">
             <div>
               <span className="font-body text-xs text-red-400 uppercase tracking-widest">O problema</span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 leading-tight">
+              <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 leading-snug">
                 Planilhas.<br />
                 Papéis.<br />
                 <span className="text-white/30">WhatsApp.</span>
@@ -138,8 +230,10 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </RevealSection>
 
       {/* ═══ PLATFORM / MODULES ═══ */}
+      <RevealSection>
       <section id="platform" className="py-24 px-6 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-teal-950/5 to-transparent pointer-events-none" />
         <div className="max-w-6xl mx-auto relative">
@@ -152,8 +246,8 @@ export default function LandingPage() {
 
           {/* Module Grid — Constructivist asymmetric */}
           <div id="modules" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Large card */}
-            <div className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-teal-500/10 to-blue-500/5 border border-teal-500/20 rounded-2xl p-8 md:p-10 relative overflow-hidden">
+            {/* Large card — 3D float */}
+            <div className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-teal-500/10 to-blue-500/5 border border-teal-500/20 rounded-2xl p-8 md:p-10 relative overflow-hidden animate-float">
               <div className="absolute top-0 right-0 w-48 h-48 bg-teal-400/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <span className="font-body text-xs text-teal-400 uppercase tracking-widest">Core</span>
               <h3 className="font-display font-bold text-2xl md:text-3xl mt-3">Prontuário Eletrônico</h3>
@@ -220,14 +314,16 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </RevealSection>
 
       {/* ═══ TECHNOLOGY ═══ */}
+      <RevealSection>
       <section id="tech" className="py-24 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
               <span className="font-body text-xs text-blue-400 uppercase tracking-widest">Arquitetura</span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 leading-tight">
+              <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 leading-snug">
                 Enterprise.<br />
                 Cloud Native.<br />
                 <span className="text-teal-400">Type-Safe.</span>
@@ -306,8 +402,10 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </RevealSection>
 
       {/* ═══ VALUE / PRICING ═══ */}
+      <RevealSection>
       <section id="value" className="py-24 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -364,6 +462,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </RevealSection>
 
       {/* ═══ CTA ═══ */}
       <section id="contact" className="py-24 px-6">
@@ -372,7 +471,7 @@ export default function LandingPage() {
           <div className="absolute -top-10 left-0 w-20 h-20 border border-teal-500/10 rotate-45 pointer-events-none" />
           <div className="absolute -bottom-10 right-0 w-16 h-16 border border-blue-500/10 rounded-full pointer-events-none" />
 
-          <h2 className="font-display font-bold text-3xl md:text-5xl leading-tight">
+          <h2 className="font-display font-bold text-3xl md:text-5xl leading-snug">
             Transforme a gestão<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-blue-400">da sua instituição.</span>
           </h2>
@@ -408,6 +507,23 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// Scroll-reveal wrapper component
+function RevealSection({ children }: { children: React.ReactNode }) {
+  const { ref, visible } = useScrollReveal();
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out ${
+        visible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-12"
+      }`}
+    >
+      {children}
     </div>
   );
 }
