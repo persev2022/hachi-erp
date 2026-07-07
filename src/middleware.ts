@@ -119,6 +119,8 @@ export async function middleware(req: NextRequest) {
   // ─── Route-level role protection (frontend pages) ───────────
   if (!pathname.startsWith("/api/")) {
     const role = session.role || "APOIO";
+    const tenantId = session.tenantId;
+
     const routeRoles: Record<string, string[]> = {
       "/financeiro": ["ADMIN", "FINANCEIRO"],
       "/prontuario": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"],
@@ -138,6 +140,20 @@ export async function middleware(req: NextRequest) {
         }
         break;
       }
+    }
+
+    // Pass tenantId to downstream via header (for server components, future use)
+    if (tenantId) {
+      const response = NextResponse.next();
+      response.headers.set("x-tenant-id", tenantId);
+      if (pathname.startsWith("/api/")) {
+        const origin = req.headers.get("origin") || "";
+        if (origin && ALLOWED_ORIGINS.includes(origin)) {
+          response.headers.set("Access-Control-Allow-Origin", origin);
+          response.headers.set("Access-Control-Allow-Credentials", "true");
+        }
+      }
+      return response;
     }
   }
 
