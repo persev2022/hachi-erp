@@ -206,3 +206,38 @@ export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|ima
 5. **2FA, criptografia de campos sensíveis**
 6. **Dark mode, busca global (Cmd+K)**
 7. **Portal da família**
+
+---
+
+## 🚀 Evolução Estratégica (Jul/2026)
+
+### Insight Principal
+- **O Hachi não é um software para CTs — é um ERP corporativo moderno verticalizado para esse mercado.**
+- ~80% do sistema é reutilizável para qualquer vertical (saúde, educação, hotelaria, gastronomia, serviços).
+- O posicionamento correto é **Business Operating System (Business OS)**, não "ERP para CT".
+
+### Decisões Estratégicas
+- **Multi-vertical**: a mesma base tecnológica pode servir 9+ mercados com adaptação mínima de módulos específicos.
+- **Multi-tenant primeiro**: antes de escalar verticais, implementar tenant_id e isolamento de dados.
+- **Feature flags**: módulos verticais devem ser ativáveis/desativáveis por tenant.
+- **Recovery é a primeira vertical validada** — usar como proof of concept para as próximas.
+
+### Hierarquia de Produto
+```
+Hachi Platform (Core Engine + Business OS)
+└── Hachi Recovery (primeira vertical, produção)
+└── Hachi Clinic (segunda vertical, planejada)
+└── Hachi Senior, Hotel, Restaurant... (futuras)
+```
+
+### O que NÃO fazer
+- Não vender como "software para CT" — isso limita o TAM (Total Addressable Market).
+- Não construir verticais do zero — sempre herdar do Core + Business Layer.
+- Não criar repos separados por vertical — monorepo com feature flags é mais eficiente.
+- Não ignorar o potencial SaaS — self-service onboarding é o caminho para escala.
+
+### Referências de Posicionamento
+- Salesforce: plataforma + verticais (Health Cloud, Financial Cloud, etc.)
+- SAP: Business Suite + Industry Solutions
+- ServiceNow: Platform + vertical workflows
+- A Hachi segue o mesmo padrão, em escala menor mas com a mesma filosofia.
