@@ -56,8 +56,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const [userRole, setUserRole] = React.useState<string>("ADMIN");
   const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
   const [tenantName, setTenantName] = React.useState<string | null>(null);
+  const [terminology, setTerminology] = React.useState<Record<string, string> | null>(null);
 
-  // Fetch user role and platform features once
+  // Fetch user role, platform features, and terminology once
   React.useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
@@ -75,12 +76,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         }
       })
       .catch(() => {});
+
+    fetch("/api/platform/terminology")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setTerminology(d.terminology); })
+      .catch(() => {});
   }, []);
 
+  // Apply terminology to nav items
+  function getNavLabel(item: NavItem): string {
+    if (!terminology) return item.name;
+    if (item.href === "/pacientes") return terminology.paciente ? `${terminology.paciente}s` : item.name;
+    if (item.href === "/prontuario") return terminology.evolucao ? `${terminology.evolucao}s` : item.name;
+    if (item.href === "/quartos") return terminology.quartos || item.name;
+    return item.name;
+  }
+
   const filteredNav = navigation.filter((item) => {
-    // Role check
     if (item.roles && !item.roles.includes(userRole)) return false;
-    // Feature flag check (if features loaded and item has a feature key)
     if (features && item.feature && !features[item.feature]) return false;
     return true;
   });
@@ -145,7 +158,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   )}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  {item.name}
+                  {getNavLabel(item)}
                 </Link>
               </li>
             );

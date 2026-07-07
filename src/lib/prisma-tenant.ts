@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 
 // Whether multi-tenant filtering is active globally
 // Set to true when ready to enforce isolation
-export const MULTI_TENANT_ACTIVE = false;
+export const MULTI_TENANT_ACTIVE = true;
 
 /**
  * Get a tenant-scoped Prisma client.
