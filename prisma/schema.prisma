@@ -37,16 +37,19 @@ model User {
   phone         String?
   active        Boolean   @default(true)
   twoFactorEnabled Boolean @default(false)
+  tenantId      String?   // Multi-tenant: nullable for backwards compatibility
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relações
+  tenant        Tenant?   @relation(fields: [tenantId], references: [id])
   sessions      Session[]
   auditLogs     AuditLog[]
   evolucoes     Evolucao[]
   prescricoes   Prescricao[]
   agendamentos  Agendamento[]   @relation("profissional")
 
+  @@index([tenantId])
   @@map("users")
 }
 
@@ -465,6 +468,27 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 
   @@map("system_config")
+}
+
+// ═══════════════════════════════════════════════════════════
+// MULTI-TENANT (Platform Evolution)
+// ═══════════════════════════════════════════════════════════
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String   // Nome da organização (ex: "CT Persev")
+  slug        String   @unique // Subdomain ou identifier (ex: "ct-persev")
+  vertical    String   @default("recovery") // recovery, clinic, senior, hotel, etc.
+  plan        String   @default("starter") // starter, professional, enterprise
+  active      Boolean  @default(true)
+  config      Json?    // Configurações específicas do tenant (branding, features, etc.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  users       User[]
+
+  @@map("tenants")
 }
 
 // ═══════════════════════════════════════════════════════════
