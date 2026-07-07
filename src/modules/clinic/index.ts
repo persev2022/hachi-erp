@@ -1,5 +1,5 @@
 /**
- * Hachi Clinic — Vertical Module (Planned)
+ * Hachi Clinic — Vertical Module
  *
  * For: Clínicas médicas, odontológicas, psicologia, fisioterapia
  *
@@ -36,9 +36,25 @@ export const CLINIC_MODULES = [
   "portalPaciente",
 ] as const;
 
-// What to rename/adapt from Recovery
+/**
+ * Terminology mapping: generic terms → clinic-specific terms.
+ * Used to adapt the UI language for the Clinic vertical.
+ */
+export const CLINIC_TERMINOLOGY = {
+  paciente: "Paciente",
+  evolucao: "Atendimento",
+  admissao: "Cadastro",
+  alta: "Encerramento",
+  quarto: "Sala",
+  quartos: "Salas",
+  diasTratamento: "Sessões previstas",
+  portalFamilia: "Portal do Paciente",
+  acolhido: "Paciente",
+};
+
+// What to rename/adapt from Recovery (legacy, kept for backwards compat)
 export const ADAPTATIONS = {
-  "Paciente": "Paciente", // same
+  "Paciente": "Paciente",
   "Quarto": "Sala",
   "Portal da Família": "Portal do Paciente",
   "Evolução": "Atendimento",
