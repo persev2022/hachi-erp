@@ -1,32 +1,82 @@
 /**
  * Tenant-aware Prisma client utilities.
  *
- * Usage in API routes:
- *   const session = await getSessionFromRequest(req);
- *   const tenantId = session?.tenantId;
- *   // For now, tenantId is informational only.
- *   // When multi-tenant is fully active, use getTenantPrisma(tenantId) for filtered queries.
- *
- * This file provides the foundation for Phase 2 activation.
- * Currently: exports helpers but does NOT modify global prisma behavior.
+ * Phase 2: Active infrastructure — provides tenant-scoped queries.
+ * The global prisma client remains unaffected (no breaking changes).
+ * Use `getTenantPrisma(tenantId)` in routes that need tenant isolation.
  */
 
 import { prisma } from "@/lib/prisma";
 
+// Whether multi-tenant filtering is active globally
+// Set to true when ready to enforce isolation
+export const MULTI_TENANT_ACTIVE = false;
+
 /**
- * Get a tenant-scoped query helper.
- * For now, returns the standard prisma client.
- * In Phase 2, this will return an extended client with automatic where filters.
+ * Get a tenant-scoped Prisma client.
+ * When MULTI_TENANT_ACTIVE is false, returns standard prisma (no filtering).
+ * When activated, adds tenantId to all applicable where clauses.
  */
-export function getTenantPrisma(_tenantId?: string | null) {
-  // Phase 1: return standard prisma (no filtering)
-  // Phase 2: will use Prisma.$extends to add automatic tenantId filter
-  return prisma;
+export function getTenantPrisma(tenantId?: string | null) {
+  if (!MULTI_TENANT_ACTIVE || !tenantId) {
+    return prisma;
+  }
+
+  // Extended client with automatic tenant filter
+  return prisma.$extends({
+    query: {
+      paciente: {
+        findMany({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+        findFirst({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+        count({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+      },
+      quarto: {
+        findMany({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+      },
+      movimentacaoFinanceira: {
+        findMany({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+        count({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+        aggregate({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+      },
+      itemEstoque: {
+        findMany({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+      },
+      comunicacao: {
+        findMany({ args, query }) {
+          args.where = { ...args.where, tenantId };
+          return query(args);
+        },
+      },
+    },
+  });
 }
 
 /**
- * Helper to add tenantId to a create payload if available.
- * Use this when creating records to future-proof them for multi-tenant.
+ * Helper to include tenantId in create operations.
  */
 export function withTenant<T extends Record<string, unknown>>(
   data: T,
@@ -37,14 +87,13 @@ export function withTenant<T extends Record<string, unknown>>(
 }
 
 /**
- * Helper to add tenantId filter to a where clause if available.
- * For Phase 2 activation — currently a pass-through.
+ * Helper to add tenantId filter to where clauses.
+ * Active when MULTI_TENANT_ACTIVE is true.
  */
 export function withTenantFilter<T extends Record<string, unknown>>(
   where: T,
-  _tenantId?: string | null
+  tenantId?: string | null
 ): T {
-  // Phase 1: no-op (don't filter by tenant yet)
-  // Phase 2: return { ...where, tenantId } when activated
-  return where;
+  if (!MULTI_TENANT_ACTIVE || !tenantId) return where;
+  return { ...where, tenantId };
 }

@@ -144,6 +144,9 @@ model Paciente {
   mensalidadeValor Float?
   diaVencimento   Int?          // 5 ou 20
 
+  // Multi-tenant
+  tenantId        String?
+
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   deletedAt       DateTime?      // Soft delete
@@ -162,6 +165,7 @@ model Paciente {
   @@index([nome])
   @@index([cpf])
   @@index([status])
+  @@index([tenantId])
   @@map("pacientes")
 }
 
@@ -295,11 +299,13 @@ model Quarto {
   status      StatusQuarto @default(DISPONIVEL)
   tipo        String?      // Individual, Duplo, Enfermaria
   observacoes String?
+  tenantId    String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   pacientes Paciente[]
 
+  @@index([tenantId])
   @@map("quartos")
 }
 
@@ -345,6 +351,7 @@ model MovimentacaoFinanceira {
   pixTxId       String?              // ID da transação Pix
   nfeNumero     String?              // Número da NF-e emitida
   observacoes   String?
+  tenantId      String?
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 
@@ -352,6 +359,7 @@ model MovimentacaoFinanceira {
 
   @@index([pacienteId, dataVencimento])
   @@index([status])
+  @@index([tenantId])
   @@map("movimentacoes_financeiras")
 }
 
@@ -417,11 +425,13 @@ model Comunicacao {
   mensagem      String
   status        StatusMensagem   @default(ENVIADA)
   botconversaId String?          // ID no BotConversa
+  tenantId      String?
   createdAt     DateTime         @default(now())
 
   paciente Paciente? @relation(fields: [pacienteId], references: [id])
 
   @@index([pacienteId, createdAt])
+  @@index([tenantId])
   @@map("comunicacoes")
 }
 
@@ -450,11 +460,13 @@ model ItemEstoque {
   validade      DateTime?
   localizacao   String?
   fornecedor    String?
+  tenantId      String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   @@index([categoria])
   @@index([validade])
+  @@index([tenantId])
   @@map("itens_estoque")
 }
 
