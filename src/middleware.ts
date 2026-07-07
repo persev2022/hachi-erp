@@ -122,6 +122,7 @@ export async function middleware(req: NextRequest) {
     const tenantId = session.tenantId;
 
     const routeRoles: Record<string, string[]> = {
+      "/admin-platform": ["ADMIN"],
       "/financeiro": ["ADMIN", "FINANCEIRO"],
       "/prontuario": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"],
       "/pacientes": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"],
