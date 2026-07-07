@@ -48,12 +48,12 @@
 | # | Task | Módulo | Status |
 |---|------|--------|--------|
 | 3.1 | CRM básico (cadastro, histórico, segmentação) | Novo módulo | ⬜ |
-| 3.2 | Automação de workflows (gatilhos por status/evento) | Novo módulo | ⬜ |
+| 3.2 | Automação de workflows (gatilhos por status/evento) | Novo módulo | ✅ |
 | 3.3 | Cobrança recorrente (billing engine) | Evolução do financeiro | ⬜ |
-| 3.4 | API pública documentada (OpenAPI/Swagger) | Integradores | ⬜ |
-| 3.5 | Webhook system (eventos de plataforma) | Para integrações externas | ⬜ |
+| 3.4 | API pública documentada (OpenAPI/Swagger) | Integradores | ✅ |
+| 3.5 | Webhook system (eventos de plataforma) | Para integrações externas | ✅ |
 | 3.6 | Sistema de notificações multi-canal | Push, email, WhatsApp, interno | ⬜ |
-| 3.7 | Painel de admin do tenant (onboarding, config) | Self-service | ⬜ |
+| 3.7 | Painel de admin do tenant (onboarding, config) | Self-service | ✅ |
 
 ---
 
