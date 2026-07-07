@@ -35,6 +35,17 @@ interface PlatformStats {
   verticals: Record<string, number>;
 }
 
+interface HealthData {
+  status: string;
+  database: string;
+  tenants: { total: number; active: number };
+  users: { total: number };
+  uptime: number;
+  memory: { heapUsed: number; heapTotal: number; rss: number };
+  version: string;
+  timestamp: string;
+}
+
 const verticalLabels: Record<string, string> = {
   recovery: "Recovery",
   clinic: "Clinic",
@@ -69,10 +80,25 @@ export default function SuperAdminPage() {
   const [showCreate, setShowCreate] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [health, setHealth] = React.useState<HealthData | null>(null);
+  const [healthLoading, setHealthLoading] = React.useState(true);
 
   React.useEffect(() => {
     fetchTenants();
+    fetchHealth();
   }, []);
+
+  async function fetchHealth() {
+    try {
+      const res = await fetch("/api/platform/health");
+      const data = await res.json();
+      if (data.success) setHealth(data.data);
+    } catch {
+      // silent
+    } finally {
+      setHealthLoading(false);
+    }
+  }
 
   async function fetchTenants() {
     try {
@@ -222,7 +248,7 @@ export default function SuperAdminPage() {
           </div>
           <div className="divide-y divide-gray-50">
             {tenants.map((tenant) => (
-              <div key={tenant.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
+              <Link key={tenant.id} href={`/admin-platform/${tenant.id}`} className="block px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
                     <Building2 className="h-5 w-5 text-gray-500" />
@@ -246,11 +272,11 @@ export default function SuperAdminPage() {
                   <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                     {planLabels[tenant.plan] || tenant.plan}
                   </span>
-                  <button className="p-1.5 rounded-lg hover:bg-gray-100 transition">
+                  <span className="p-1.5 rounded-lg hover:bg-gray-100 transition">
                     <Settings className="h-4 w-4 text-gray-400" />
-                  </button>
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -268,6 +294,60 @@ export default function SuperAdminPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Platform Health */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Server className="h-5 w-5 text-gray-400" />
+            <h2 className="font-semibold text-gray-900">Platform Status</h2>
+            {!healthLoading && health && (
+              <span className={`ml-auto inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                health.status === "healthy"
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : health.status === "degraded"
+                  ? "bg-yellow-50 text-yellow-700 border border-yellow-200"
+                  : "bg-red-50 text-red-700 border border-red-200"
+              }`}>
+                <span className={`h-2 w-2 rounded-full ${
+                  health.status === "healthy" ? "bg-green-500" : health.status === "degraded" ? "bg-yellow-500" : "bg-red-500"
+                }`} />
+                {health.status === "healthy" ? "Healthy" : health.status === "degraded" ? "Degraded" : "Error"}
+              </span>
+            )}
+          </div>
+          {healthLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+          ) : health ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="border border-gray-100 rounded-lg p-3">
+                <p className="text-xs text-gray-500">Database</p>
+                <p className={`text-sm font-medium ${health.database === "connected" ? "text-green-700" : "text-red-700"}`}>
+                  {health.database === "connected" ? "Connected" : "Disconnected"}
+                </p>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-3">
+                <p className="text-xs text-gray-500">Uptime</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {Math.floor(health.uptime / 3600)}h {Math.floor((health.uptime % 3600) / 60)}m
+                </p>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-3">
+                <p className="text-xs text-gray-500">Memory (Heap)</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {health.memory.heapUsed}MB / {health.memory.heapTotal}MB
+                </p>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-3">
+                <p className="text-xs text-gray-500">Version</p>
+                <p className="text-sm font-medium text-gray-900">{health.version}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 text-center py-4">Não foi possível carregar status</p>
+          )}
         </div>
       </main>
 
