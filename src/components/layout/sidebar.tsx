@@ -18,6 +18,7 @@ import {
   LogOut,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -42,6 +43,7 @@ const navigation: NavItem[] = [
   { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "comunicacao" },
   { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"], feature: "relatorios" },
   { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"], feature: "configuracoes" },
+  { name: "Platform", href: "/admin-platform", icon: Shield, roles: ["ADMIN"] },
 ];
 
 interface SidebarProps {
@@ -53,6 +55,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [userRole, setUserRole] = React.useState<string>("ADMIN");
   const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
+  const [tenantName, setTenantName] = React.useState<string | null>(null);
 
   // Fetch user role and platform features once
   React.useEffect(() => {
@@ -63,7 +66,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
     fetch("/api/platform")
       .then((r) => r.json())
-      .then((d) => { if (d.success) setFeatures(d.platform.features); })
+      .then((d) => {
+        if (d.success) {
+          setFeatures(d.platform.features);
+          if (d.platform.tenant?.name && d.platform.tenant.name !== "Hachi") {
+            setTenantName(d.platform.tenant.name);
+          }
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -93,10 +103,19 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/hachi-logo.png" alt="Hachi" className="h-11 w-11 rounded-md object-contain" />
-          <span className="font-bold text-lg text-foreground">Hachi</span>
-          <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
-            ERP
-          </span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1">
+              <span className="font-bold text-lg text-foreground">Hachi</span>
+              <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
+                ERP
+              </span>
+            </div>
+            {tenantName && (
+              <span className="text-[10px] text-muted-foreground leading-tight truncate max-w-[140px]">
+                {tenantName}
+              </span>
+            )}
+          </div>
         </div>
         {/* Close button - mobile only */}
         <button
