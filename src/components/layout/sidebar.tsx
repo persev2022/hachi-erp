@@ -120,7 +120,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <div className="flex items-center gap-1">
               <span className="font-bold text-lg text-foreground">Hachi</span>
               <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
-                ERP
+                Platform
               </span>
             </div>
             {tenantName && (

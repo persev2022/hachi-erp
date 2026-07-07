@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ERP Enterprise para Comunidades Terapêuticas | Plataforma Completa de Gestão",
+  title: "Hachi Platform — Business Operating System",
   description:
-    "A plataforma mais completa para gestão de comunidades terapêuticas, clínicas de reabilitação e centros terapêuticos. Prontuário eletrônico, gestão financeira, portal da família, LGPD e muito mais.",
+    "Uma plataforma. Infinitas verticais de negócio. Prontuário, financeiro, agenda, CRM, automação e inteligência em um único sistema multi-tenant.",
   keywords: [
-    "ERP Saúde",
-    "ERP Comunidade Terapêutica",
+    "Hachi Platform",
+    "Business Operating System",
+    "ERP Multi-vertical",
+    "SaaS",
+    "Gestão Empresarial",
+    "Multi-tenant",
     "Prontuário Eletrônico",
-    "Sistema para Clínica",
-    "LGPD",
-    "Portal da Família",
-    "ERP Hospitalar",
+    "CRM",
   ],
 };
 

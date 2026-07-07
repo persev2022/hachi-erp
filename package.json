@@ -1,8 +1,8 @@
 {
-  "name": "hachi-erp",
+  "name": "hachi-platform",
   "version": "0.2.0",
   "private": true,
-  "description": "Hachi ERP — Sistema integrado para clínicas de reabilitação em dependência química",
+  "description": "Hachi Platform — Sistema integrado para clínicas de reabilitação em dependência química",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",

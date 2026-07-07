@@ -1,80 +1,103 @@
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Hachi Services — Gestão para Prestadores de Serviço",
-  description: "Projetos, contratos, timesheet e portal do cliente em uma plataforma.",
-};
+import Link from "next/link";
+import {
+  FileText, ScrollText, Users, Calendar, Globe, Zap
+} from "lucide-react";
 
 const features = [
-  { icon: "📁", title: "Gestão de Projetos", desc: "Tarefas, prazos e entregas organizadas" },
-  { icon: "📄", title: "Contratos e Propostas", desc: "Criação, aprovação e acompanhamento" },
-  { icon: "⏱️", title: "Timesheet", desc: "Registro de horas por projeto e atividade" },
-  { icon: "👤", title: "Portal do Cliente", desc: "Acompanhamento de entregas e comunicação" },
-  { icon: "💰", title: "Financeiro", desc: "Faturamento recorrente, NFS-e e controle" },
-  { icon: "📊", title: "Indicadores", desc: "Rentabilidade por projeto e por cliente" },
+  { name: "Propostas Comerciais", desc: "Geração de propostas profissionais com templates e assinatura digital.", icon: FileText },
+  { name: "Contratos", desc: "Gestão de contratos com vencimentos, renovações e alertas automáticos.", icon: ScrollText },
+  { name: "CRM de Clientes", desc: "Pipeline comercial, follow-up, histórico de interações e scoring.", icon: Users },
+  { name: "Agenda de Serviços", desc: "Agendamento de visitas, atendimentos e alocação de equipe.", icon: Calendar },
+  { name: "Portal do Cliente", desc: "Acesso do cliente a propostas, contratos, chamados e faturas.", icon: Globe },
+  { name: "Automação de Processos", desc: "Workflows automatizados para onboarding, cobrança e follow-up.", icon: Zap },
 ];
 
-export default function ServicesLandingPage() {
+const coreModules = ["Financeiro", "Agenda", "CRM", "Documentos", "Estoque", "Comunicação", "Relatórios", "Automação"];
+
+export default function ServicesLanding() {
   return (
-    <main className="min-h-screen bg-white font-sans">
-      <header className="border-b border-gray-100 px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="text-xl font-bold tracking-tight text-gray-900" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
-            Hachi<span className="text-gray-600">Services</span>
-          </span>
-          <a href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">Entrar</a>
+    <div className="min-h-screen bg-white text-gray-900">
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+      <style jsx global>{`
+        .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
+        .font-body { font-family: 'Inter', system-ui, sans-serif; }
+      `}</style>
+
+      {/* Header */}
+      <header className="border-b border-gray-100 bg-white">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/landing" className="font-display font-bold text-xl text-gray-900">
+            <span className="text-slate-600">Hachi</span> Services
+          </Link>
+          <Link href="/onboarding" className="bg-slate-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-lg hover:bg-slate-700 transition">
+            Começar Agora
+          </Link>
         </div>
       </header>
 
-      <section className="px-6 py-20 text-center">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
-            Gestão Inteligente para Prestadores de Serviço
+      {/* Hero */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900">
+            Gestão profissional para <span className="text-slate-600">Prestadores de Serviço</span>
           </h1>
-          <p className="mt-6 text-lg text-gray-600" style={{ fontFamily: "Inter, sans-serif" }}>
-            Projetos, contratos, timesheet e portal do cliente em uma plataforma.
+          <p className="mt-4 font-body text-lg text-gray-600 max-w-2xl mx-auto">
+            Propostas, contratos, CRM e portal do cliente em uma plataforma completa para consultorias, agências e prestadores de serviço.
           </p>
-          <a href="mailto:contato@hachiplatform.com?subject=Demonstração Hachi Services" className="mt-8 inline-block rounded-lg bg-gray-800 px-8 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-900 transition-colors">
-            Solicitar Demonstração
-          </a>
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-slate-600 text-white font-display font-semibold px-8 py-4 rounded-xl hover:bg-slate-700 transition">
+            Começar Agora
+          </Link>
         </div>
       </section>
 
-      <section className="border-t border-gray-100 bg-gray-50 px-6 py-16">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mb-12 text-center text-2xl font-bold text-gray-900" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
-            Tudo que sua empresa precisa
-          </h2>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title} className="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
-                <span className="text-2xl">{f.icon}</span>
-                <h3 className="mt-3 text-lg font-semibold text-gray-900">{f.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">{f.desc}</p>
-              </div>
+      {/* Features */}
+      <section className="py-16 px-6 bg-gray-50 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-display font-bold text-2xl md:text-3xl text-center text-gray-900 mb-12">Recursos Específicos</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div key={f.name} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-slate-300 transition">
+                  <Icon className="h-8 w-8 text-slate-600 mb-3" />
+                  <h3 className="font-display font-semibold text-base text-gray-900">{f.name}</h3>
+                  <p className="font-body text-sm text-gray-500 mt-2">{f.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Modules */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="font-display font-bold text-2xl text-gray-900 mb-6">Incluído do Core</h2>
+          <div className="flex flex-wrap justify-center gap-3">
+            {coreModules.map((m) => (
+              <span key={m} className="font-body text-sm bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-full">{m}</span>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-6 py-16 text-center">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
-            Pronto para profissionalizar sua gestão?
-          </h2>
-          <p className="mt-3 text-gray-600">Agende uma demonstração gratuita e veja como a Hachi pode transformar seus projetos.</p>
-          <a href="mailto:contato@hachiplatform.com?subject=Demonstração Hachi Services" className="mt-6 inline-block rounded-lg bg-gray-800 px-8 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-900 transition-colors">
-            Solicitar Demonstração
-          </a>
+      {/* CTA */}
+      <section className="py-16 px-6 bg-slate-600">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="font-display font-bold text-2xl md:text-3xl text-white">Pronto para profissionalizar sua operação?</h2>
+          <Link href="/onboarding" className="mt-6 inline-flex items-center gap-2 bg-white text-slate-700 font-display font-bold px-8 py-4 rounded-xl hover:bg-slate-50 transition">
+            Começar Agora
+          </Link>
         </div>
       </section>
 
-      <footer className="border-t border-gray-100 px-6 py-8">
-        <div className="mx-auto max-w-5xl text-center text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} Hachi Platform. Todos os direitos reservados.</p>
-          <p className="mt-1">Hachi Services é um produto da plataforma Hachi.</p>
-        </div>
+      {/* Footer */}
+      <footer className="py-6 px-6 border-t border-gray-100 bg-white text-center">
+        <p className="font-body text-sm text-gray-500">Powered by Hachi Platform</p>
       </footer>
-    </main>
+    </div>
   );
 }

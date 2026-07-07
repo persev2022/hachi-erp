@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import {
-  Monitor, ClipboardList, LayoutGrid, Truck, QrCode, Package
+  FileHeart, Calendar, Users, Activity, ClipboardList, Video
 } from "lucide-react";
 
 const features = [
-  { name: "PDV", desc: "Ponto de venda completo com split de pagamentos e integração fiscal.", icon: Monitor },
-  { name: "Comandas Digitais", desc: "Comandas eletrônicas por mesa, balcão ou delivery com status em tempo real.", icon: ClipboardList },
-  { name: "KDS (Kitchen Display)", desc: "Painel de produção para cozinha com priorização e tempos.", icon: LayoutGrid },
-  { name: "Delivery Integrado", desc: "Gestão de pedidos delivery com rastreamento e integração iFood/Rappi.", icon: Truck },
-  { name: "Cardápio Digital", desc: "QR Code para cardápio digital com fotos, preços e pedido na mesa.", icon: QrCode },
-  { name: "Estoque de Insumos", desc: "Controle de matéria-prima, fichas técnicas e custo por prato.", icon: Package },
+  { name: "Prontuário Terapêutico", desc: "Registro multidisciplinar com evoluções, PTI e timeline completa.", icon: FileHeart },
+  { name: "Agenda Terapêutica", desc: "Sessões individuais e em grupo, escalas de equipe e lembretes.", icon: Calendar },
+  { name: "Portal da Família", desc: "Acompanhamento do tratamento e comunicação segura com familiares.", icon: Users },
+  { name: "Monitoramento Clínico", desc: "Sinais vitais, medicação, intercorrências e alertas automáticos.", icon: Activity },
+  { name: "Plano Terapêutico Individual", desc: "PTI com metas, fases do tratamento e avaliações periódicas.", icon: ClipboardList },
+  { name: "Teleconsulta", desc: "Atendimento remoto integrado com prontuário e agenda.", icon: Video },
 ];
 
 const coreModules = ["Financeiro", "Agenda", "CRM", "Documentos", "Estoque", "Comunicação", "Relatórios", "Automação"];
 
-export default function RestaurantLanding() {
+export default function RecoveryLanding() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -30,9 +30,9 @@ export default function RestaurantLanding() {
       <header className="border-b border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/landing" className="font-display font-bold text-xl text-gray-900">
-            <span className="text-amber-600">Hachi</span> Restaurant
+            <span className="text-teal-600">Hachi</span> Recovery
           </Link>
-          <Link href="/onboarding" className="bg-amber-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-lg hover:bg-amber-700 transition">
+          <Link href="/onboarding" className="bg-teal-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-lg hover:bg-teal-700 transition">
             Começar Agora
           </Link>
         </div>
@@ -42,12 +42,12 @@ export default function RestaurantLanding() {
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="font-display font-bold text-4xl md:text-5xl text-gray-900">
-            Operação completa para <span className="text-amber-600">Gastronomia e Delivery</span>
+            Gestão completa para <span className="text-teal-600">Comunidades Terapêuticas</span>
           </h1>
           <p className="mt-4 font-body text-lg text-gray-600 max-w-2xl mx-auto">
-            PDV, comandas, KDS, delivery e cardápio digital em uma plataforma integrada para restaurantes, bares e dark kitchens.
+            Prontuário eletrônico, plano terapêutico individual, portal da família e compliance em uma plataforma cloud-native para CTs e centros de reabilitação.
           </p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-amber-600 text-white font-display font-semibold px-8 py-4 rounded-xl hover:bg-amber-700 transition">
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-teal-600 text-white font-display font-semibold px-8 py-4 rounded-xl hover:bg-teal-700 transition">
             Começar Agora
           </Link>
         </div>
@@ -61,8 +61,8 @@ export default function RestaurantLanding() {
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.name} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-amber-300 transition">
-                  <Icon className="h-8 w-8 text-amber-600 mb-3" />
+                <div key={f.name} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-teal-300 transition">
+                  <Icon className="h-8 w-8 text-teal-600 mb-3" />
                   <h3 className="font-display font-semibold text-base text-gray-900">{f.name}</h3>
                   <p className="font-body text-sm text-gray-500 mt-2">{f.desc}</p>
                 </div>
@@ -85,10 +85,10 @@ export default function RestaurantLanding() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-6 bg-amber-600">
+      <section className="py-16 px-6 bg-teal-600">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-display font-bold text-2xl md:text-3xl text-white">Pronto para otimizar sua operação gastronômica?</h2>
-          <Link href="/onboarding" className="mt-6 inline-flex items-center gap-2 bg-white text-amber-700 font-display font-bold px-8 py-4 rounded-xl hover:bg-amber-50 transition">
+          <h2 className="font-display font-bold text-2xl md:text-3xl text-white">Pronto para transformar sua CT?</h2>
+          <Link href="/onboarding" className="mt-6 inline-flex items-center gap-2 bg-white text-teal-700 font-display font-bold px-8 py-4 rounded-xl hover:bg-teal-50 transition">
             Começar Agora
           </Link>
         </div>
