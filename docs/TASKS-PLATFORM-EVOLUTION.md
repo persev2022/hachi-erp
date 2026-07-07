@@ -61,13 +61,13 @@
 
 | # | Task | Descrição | Status |
 |---|------|-----------|--------|
-| 4.1 | Módulo prontuário clínico genérico | Adaptado de Recovery | ⬜ |
-| 4.2 | Agenda de profissionais com convênios | Slots por convênio | ⬜ |
+| 4.1 | Módulo prontuário clínico genérico | Adaptado de Recovery | ✅ (Anamnese) |
+| 4.2 | Agenda de profissionais com convênios | Slots por convênio | ✅ |
 | 4.3 | Faturamento TISS (convênios) | Guias, autorizações | ⬜ |
 | 4.4 | Módulo de exames e resultados | Upload + visualização | ⬜ |
-| 4.5 | Landing page Hachi Clinic | Novo /landing/clinic | ⬜ |
-| 4.6 | Feature flags para Clinic | Ativar módulos específicos | ⬜ |
-| 4.7 | Primeiro cliente piloto Clinic | Validação real | ⬜ |
+| 4.5 | Landing page Hachi Clinic | Novo /landing/clinic | ✅ |
+| 4.6 | Feature flags para Clinic | Ativar módulos específicos | ✅ |
+| 4.7 | Primeiro cliente piloto Clinic | Validação real | ⬜ (demo tenant criado) |
 
 ---
 
