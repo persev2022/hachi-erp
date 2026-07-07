@@ -27,20 +27,21 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles?: string[]; // If undefined, visible to all authenticated users
+  feature?: string; // Feature flag key — if set, item only shows when feature is enabled
 }
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Pacientes", href: "/pacientes", icon: Users, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
-  { name: "Prontuário", href: "/prontuario", icon: FileHeart, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
-  { name: "Agenda", href: "/agenda", icon: Calendar },
-  { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "FINANCEIRO"] },
-  { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"] },
-  { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
-  { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"] },
-  { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"] },
-  { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"] },
-  { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"] },
+  { name: "Prontuário", href: "/prontuario", icon: FileHeart, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"], feature: "prontuario" },
+  { name: "Agenda", href: "/agenda", icon: Calendar, feature: "agenda" },
+  { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
+  { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"], feature: "estoque" },
+  { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
+  { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"], feature: "documentos" },
+  { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "comunicacao" },
+  { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"], feature: "relatorios" },
+  { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"], feature: "configuracoes" },
 ];
 
 interface SidebarProps {
@@ -51,18 +52,28 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [userRole, setUserRole] = React.useState<string>("ADMIN");
+  const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
 
-  // Fetch user role once
+  // Fetch user role and platform features once
   React.useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => { if (d.success && d.user?.role) setUserRole(d.user.role); })
       .catch(() => {});
+
+    fetch("/api/platform")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setFeatures(d.platform.features); })
+      .catch(() => {});
   }, []);
 
-  const filteredNav = navigation.filter(
-    (item) => !item.roles || item.roles.includes(userRole)
-  );
+  const filteredNav = navigation.filter((item) => {
+    // Role check
+    if (item.roles && !item.roles.includes(userRole)) return false;
+    // Feature flag check (if features loaded and item has a feature key)
+    if (features && item.feature && !features[item.feature]) return false;
+    return true;
+  });
 
   const handleLogout = async () => {
     if (window.confirm("Deseja realmente sair do sistema?")) {
