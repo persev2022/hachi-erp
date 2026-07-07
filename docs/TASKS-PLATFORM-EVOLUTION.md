@@ -21,11 +21,11 @@
 
 | # | Task | Descrição | Status |
 |---|------|-----------|--------|
-| 1.1 | Adicionar campo `tenantId` em todas as tabelas | Cada registro pertence a um tenant | ⬜ |
-| 1.2 | Criar tabela `Tenant` (id, nome, slug, plano, config) | Cadastro de organizações | ⬜ |
+| 1.1 | Adicionar campo `tenantId` em todas as tabelas | Cada registro pertence a um tenant | ✅ (User) |
+| 1.2 | Criar tabela `Tenant` (id, nome, slug, plano, config) | Cadastro de organizações | ✅ |
 | 1.3 | Middleware de tenant resolution | Extrair tenant do subdomain ou header | ⬜ |
 | 1.4 | Filtro automático por tenant em todas as queries Prisma | Prisma middleware ou extension | ⬜ |
-| 1.5 | Seed multi-tenant (CT Persev como primeiro tenant) | Migrar dados existentes | ⬜ |
+| 1.5 | Seed multi-tenant (CT Persev como primeiro tenant) | Migrar dados existentes | ✅ |
 | 1.6 | Testes de isolamento de dados entre tenants | Garantir que tenant A não vê dados de B | ⬜ |
 
 ---
@@ -34,12 +34,12 @@
 
 | # | Task | Descrição | Status |
 |---|------|-----------|--------|
-| 2.1 | Criar sistema de Feature Flags por tenant | Tabela `TenantFeatures` ou config JSON | ⬜ |
+| 2.1 | Criar sistema de Feature Flags por tenant | Tabela `TenantFeatures` ou config JSON | ✅ |
 | 2.2 | Separar código Recovery-specific em `/modules/recovery/` | Evoluções, PTI, SISNAD, Portal Família | ⬜ |
 | 2.3 | Manter Core genérico em `/lib/` e `/app/` | Financeiro, Agenda, Docs, Auth, RBAC | ⬜ |
-| 2.4 | Sidebar dinâmica baseada em features do tenant | Menu se adapta à vertical | ⬜ |
+| 2.4 | Sidebar dinâmica baseada em features do tenant | Menu se adapta à vertical | ✅ |
 | 2.5 | Dashboard dinâmico baseado em features | KPIs mudam conforme vertical | ⬜ |
-| 2.6 | Documentar API de feature flags | Quais flags existem, quais módulos controlam | ⬜ |
+| 2.6 | Documentar API de feature flags | Quais flags existem, quais módulos controlam | ✅ |
 
 ---
 
