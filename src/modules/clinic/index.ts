@@ -21,6 +21,13 @@
  * - Status EVADIDO
  */
 
+// Re-export clinic-specific modules
+export { CLINIC_APPOINTMENT_TYPES, CONVENIOS, getAppointmentType, getConvenio } from "./appointments";
+export type { AppointmentType, Convenio, ClinicAppointment, BaseAppointment } from "./appointments";
+
+export { ANAMNESE_TEMPLATE, createBlankAnamnese, validateAnamnese } from "./anamnese";
+export type { Anamnese, AnamneseHabitos } from "./anamnese";
+
 export const VERTICAL_ID = "clinic";
 export const VERTICAL_NAME = "Hachi Clinic";
 export const VERTICAL_DESCRIPTION = "Clínicas Médicas e Consultórios";
