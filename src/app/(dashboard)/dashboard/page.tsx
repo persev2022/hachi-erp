@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [userRole, setUserRole] = React.useState<string>("");
+  const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
 
   const fetchData = React.useCallback(() => {
     fetch("/api/relatorios/dashboard")
@@ -51,6 +52,10 @@ export default function DashboardPage() {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => { if (d.success && d.user?.role) setUserRole(d.user.role); })
+      .catch(() => {});
+    fetch("/api/platform")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setFeatures(d.platform.features); })
       .catch(() => {});
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchData, 30000);
@@ -93,16 +98,20 @@ export default function DashboardPage() {
   const kpis = data?.kpis;
 
   const stats = [
-    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
-    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"] },
-    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "MONITOR"] },
-    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"] },
-    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"] },
-    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"] },
-    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"] },
+    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"], feature: undefined },
+    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
+    { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "MONITOR"], feature: "agenda" },
+    { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
+    { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
+    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"], feature: "prontuario" },
+    { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"], feature: "estoque" },
   ];
 
-  const filteredStats = stats.filter((s) => !userRole || s.roles.includes(userRole));
+  const filteredStats = stats.filter((s) => {
+    if (userRole && !s.roles.includes(userRole)) return false;
+    if (features && s.feature && !features[s.feature]) return false;
+    return true;
+  });
 
   return (
     <div className="p-4 md:p-6 space-y-6 md:space-y-8">
