@@ -32,9 +32,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find user by email
+    // Find user by email (include tenantId)
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
+      select: { id: true, email: true, name: true, role: true, password: true, active: true, tenantId: true },
     });
 
     // Generic error for both "user not found" and "wrong password" — prevents enumeration
@@ -53,8 +54,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create JWT token
-    const token = await createToken({ userId: user.id, role: user.role });
+    // Create JWT token (includes tenantId for multi-tenant support)
+    const token = await createToken({ userId: user.id, role: user.role, tenantId: user.tenantId });
 
     // Response with ONLY necessary user data — no sensitive fields
     const response = NextResponse.json({

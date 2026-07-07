@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
         coren: true,
         phone: true,
         active: true,
+        tenantId: true,
         createdAt: true,
       },
     });

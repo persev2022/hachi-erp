@@ -11,24 +11,30 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-export async function createToken(payload: { userId: string; role: string }): Promise<string> {
-  return new SignJWT(payload)
+export interface SessionPayload {
+  userId: string;
+  role: string;
+  tenantId?: string | null;
+}
+
+export async function createToken(payload: SessionPayload): Promise<string> {
+  return new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(SECRET);
 }
 
-export async function verifyToken(token: string): Promise<{ userId: string; role: string } | null> {
+export async function verifyToken(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, SECRET);
-    return payload as unknown as { userId: string; role: string };
+    return payload as unknown as SessionPayload;
   } catch {
     return null;
   }
 }
 
-export async function getSessionFromRequest(req: Request): Promise<{ userId: string; role: string } | null> {
+export async function getSessionFromRequest(req: Request): Promise<SessionPayload | null> {
   // Try cookie first
   const cookieHeader = req.headers.get("cookie") || "";
   const cookies = Object.fromEntries(
