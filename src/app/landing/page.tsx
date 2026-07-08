@@ -1,164 +1,121 @@
-"use client";
-
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   Activity, Calendar, Users, FileText, Package, MessageSquare,
   BarChart3, Zap, Globe, Shield, Heart, Building2, Home,
-  Hotel, UtensilsCrossed, GraduationCap, Stethoscope, Briefcase
+  Hotel, UtensilsCrossed, GraduationCap, Stethoscope, Briefcase,
+  ArrowRight, CheckCircle2, Layers, Settings, TrendingUp
 } from "lucide-react";
 
-const verticals = [
-  { name: "Recovery", desc: "CTs e Reabilitação", color: "teal", icon: Activity, href: "/landing/recovery" },
-  { name: "Clinic", desc: "Clínicas Médicas", color: "blue", icon: Heart, href: "/landing/clinic" },
-  { name: "Senior", desc: "ILPIs e Casas de Repouso", color: "rose", icon: Home, href: "/landing/senior" },
-  { name: "Hotel", desc: "Hotelaria e Turismo", color: "purple", icon: Hotel, href: "/landing/hotel" },
-  { name: "Restaurant", desc: "Gastronomia e Delivery", color: "amber", icon: UtensilsCrossed, href: "/landing/restaurant" },
-  { name: "Education", desc: "Escolas e Cursos", color: "indigo", icon: GraduationCap, href: "/landing/education" },
-  { name: "Vet", desc: "Veterinária", color: "green", icon: Stethoscope, href: "/landing/vet" },
-  { name: "Services", desc: "Prestadores de Serviço", color: "gray", icon: Briefcase, href: "/landing/services" },
-];
-
-const colorMap: Record<string, string> = {
-  teal: "bg-teal-50 border-teal-200 text-teal-700",
-  blue: "bg-blue-50 border-blue-200 text-blue-700",
-  rose: "bg-rose-50 border-rose-200 text-rose-700",
-  purple: "bg-purple-50 border-purple-200 text-purple-700",
-  amber: "bg-amber-50 border-amber-200 text-amber-700",
-  indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
-  green: "bg-green-50 border-green-200 text-green-700",
-  gray: "bg-gray-50 border-gray-200 text-gray-700",
+export const metadata: Metadata = {
+  title: "Hachi Platform — Sistema Operacional para Negócios",
+  description: "Plataforma multi-vertical: prontuário, financeiro, agenda, CRM e automação. 8 verticais em um sistema.",
 };
 
+const verticals = [
+  { name: "Recovery", desc: "Comunidades Terapêuticas", icon: Activity, href: "/landing/recovery", style: "bg-teal-50 border-teal-200 text-teal-700" },
+  { name: "Clinic", desc: "Clínicas Médicas", icon: Heart, href: "/landing/clinic", style: "bg-blue-50 border-blue-200 text-blue-700" },
+  { name: "Senior", desc: "ILPIs e Casas de Repouso", icon: Home, href: "/landing/senior", style: "bg-rose-50 border-rose-200 text-rose-700" },
+  { name: "Hotel", desc: "Hotelaria e Turismo", icon: Hotel, href: "/landing/hotel", style: "bg-purple-50 border-purple-200 text-purple-700" },
+  { name: "Restaurant", desc: "Gastronomia e Delivery", icon: UtensilsCrossed, href: "/landing/restaurant", style: "bg-amber-50 border-amber-200 text-amber-700" },
+  { name: "Education", desc: "Escolas e Cursos", icon: GraduationCap, href: "/landing/education", style: "bg-indigo-50 border-indigo-200 text-indigo-700" },
+  { name: "Vet", desc: "Veterinária e Pet", icon: Stethoscope, href: "/landing/vet", style: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+  { name: "Services", desc: "Prestadores de Serviço", icon: Briefcase, href: "/landing/services", style: "bg-slate-50 border-slate-200 text-slate-700" },
+];
+
 const modules = [
-  { name: "Financeiro", icon: BarChart3 },
-  { name: "Agenda", icon: Calendar },
-  { name: "CRM", icon: Users },
-  { name: "Documentos", icon: FileText },
-  { name: "Estoque", icon: Package },
-  { name: "Comunicação (WhatsApp)", icon: MessageSquare },
-  { name: "Relatórios (BI)", icon: BarChart3 },
-  { name: "Automação", icon: Zap },
-  { name: "Portal", icon: Globe },
-  { name: "Segurança (LGPD)", icon: Shield },
+  { name: "Financeiro", icon: BarChart3 }, { name: "Agenda", icon: Calendar },
+  { name: "CRM", icon: Users }, { name: "Documentos", icon: FileText },
+  { name: "Estoque", icon: Package }, { name: "WhatsApp", icon: MessageSquare },
+  { name: "Relatórios", icon: BarChart3 }, { name: "Automação", icon: Zap },
+  { name: "Portal", icon: Globe }, { name: "LGPD", icon: Shield },
+];
+
+const pillars = [
+  { title: "Operar", desc: "Prontuário, agenda, estoque e operação diária simplificados.", icon: Settings },
+  { title: "Controlar", desc: "Financeiro, relatórios e indicadores em tempo real.", icon: BarChart3 },
+  { title: "Integrar", desc: "WhatsApp, Pix, NFS-e e APIs conectados nativamente.", icon: Layers },
+  { title: "Evoluir", desc: "Automação, BI e inteligência para crescer sem complexidade.", icon: TrendingUp },
 ];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-      <style jsx global>{`
-        .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
-        .font-body { font-family: 'Inter', system-ui, sans-serif; }
-      `}</style>
-
+    <div className="min-h-screen bg-white text-gray-900 font-[Inter,system-ui,sans-serif]">
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-teal-600" />
-            <span className="font-display font-bold text-xl text-gray-900">Hachi Platform</span>
+            <Building2 className="h-7 w-7 text-teal-600" />
+            <span className="font-bold text-xl font-[Space_Grotesk,system-ui,sans-serif]">Hachi</span>
+            <span className="hidden sm:inline text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">Platform</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-body font-medium text-gray-600">
-            <a href="#verticals" className="hover:text-gray-900 transition">Verticais</a>
-            <a href="#modules" className="hover:text-gray-900 transition">Módulos</a>
-            <a href="#tech" className="hover:text-gray-900 transition">Tecnologia</a>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="hidden sm:inline text-sm font-medium text-gray-600 hover:text-gray-900 transition">Entrar</Link>
+            <Link href="/onboarding" className="bg-teal-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-teal-700 transition font-[Space_Grotesk,system-ui,sans-serif]">
+              Começar grátis
+            </Link>
           </div>
-          <Link href="/onboarding" className="bg-teal-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-lg hover:bg-teal-700 transition">
-            Começar Agora
-          </Link>
         </div>
       </nav>
 
       {/* HERO */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 px-4 py-2 rounded-full mb-8">
-            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
-            <span className="font-body text-xs font-semibold text-teal-800 uppercase tracking-wider">Business Operating System</span>
-          </div>
-
-          <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl tracking-tight leading-[1.1] text-gray-900">
-            Hachi Platform
+          <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.1] text-gray-900 font-[Space_Grotesk,system-ui,sans-serif]">
+            One Platform.<br className="hidden sm:block" /> Infinite Verticals.
           </h1>
-          <p className="font-display font-medium text-xl sm:text-2xl text-gray-400 mt-3">
-            Business Operating System
+          <p className="mt-5 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            O sistema operacional para negócios que precisam operar, controlar, integrar e evoluir.
           </p>
-
-          <p className="mt-6 font-body text-base md:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Uma plataforma. Infinitas verticais de negócio. Prontuário, financeiro, agenda, CRM, automação e inteligência em um único sistema multi-tenant.
-          </p>
-
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/onboarding" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-teal-600 text-white font-display font-semibold px-8 py-4 rounded-xl hover:bg-teal-700 transition shadow-lg shadow-teal-600/20">
-              Começar Agora
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            <Link href="/onboarding" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-teal-600 text-white font-semibold px-8 py-4 rounded-xl hover:bg-teal-700 transition shadow-lg shadow-teal-600/20 font-[Space_Grotesk,system-ui,sans-serif]">
+              Começar grátis <ArrowRight className="w-4 h-4" />
             </Link>
-            <a href="#verticals" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 font-display font-medium px-8 py-4 rounded-xl hover:border-teal-300 hover:text-teal-700 transition">
+            <a href="#verticals" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 font-medium px-8 py-4 rounded-xl hover:border-teal-300 transition font-[Space_Grotesk,system-ui,sans-serif]">
               Ver Verticais
             </a>
           </div>
-
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
+          {/* Social Proof */}
+          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
             {[
-              { value: "25k+", label: "Linhas de código" },
+              { value: "25.000+", label: "Linhas de código" },
               { value: "104", label: "Páginas" },
               { value: "8", label: "Verticais" },
               { value: "99.9%", label: "Uptime" },
             ].map((s, i) => (
-              <div key={s.label} className={`p-6 md:p-8 text-center ${i > 0 ? "border-l border-gray-200" : ""}`}>
-                <div className="font-display font-bold text-2xl md:text-3xl text-gray-900">{s.value}</div>
-                <div className="font-body text-xs font-medium text-gray-500 mt-1 uppercase tracking-wider">{s.label}</div>
+              <div key={s.label} className={`p-5 md:p-7 text-center ${i > 0 ? "border-l border-gray-200" : ""}`}>
+                <div className="font-bold text-2xl text-gray-900 font-[Space_Grotesk,system-ui,sans-serif]">{s.value}</div>
+                <div className="text-xs font-medium text-gray-500 mt-1 uppercase tracking-wider">{s.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* VERTICALS */}
-      <section id="verticals" className="py-20 px-6 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="font-body text-xs font-semibold text-teal-700 uppercase tracking-wider">Verticais</span>
-            <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 text-gray-900">8 verticais. Uma plataforma.</h2>
-            <p className="font-body text-base text-gray-500 mt-3 max-w-xl mx-auto">Cada vertical adapta a plataforma às necessidades específicas do seu negócio.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {verticals.map((v) => {
-              const Icon = v.icon;
-              return (
-                <Link
-                  key={v.name}
-                  href={v.href}
-                  className={`border rounded-2xl p-6 hover:shadow-md transition-all ${colorMap[v.color]}`}
-                >
-                  <Icon className="h-8 w-8 mb-3" />
-                  <h3 className="font-display font-semibold text-lg">{`Hachi ${v.name}`}</h3>
-                  <p className="font-body text-sm mt-1 opacity-80">{v.desc}</p>
-                </Link>
-              );
-            })}
-          </div>
+      {/* PROBLEM */}
+      <section className="py-20 px-6 bg-gray-900">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="font-bold text-3xl md:text-4xl text-white font-[Space_Grotesk,system-ui,sans-serif]">
+            Seu negócio ainda funciona com planilhas e WhatsApp?
+          </h2>
+          <p className="mt-4 text-base text-gray-400 max-w-2xl mx-auto">
+            Dados espalhados, retrabalho, cobranças manuais e zero visibilidade. Enquanto isso, seus concorrentes operam com sistemas integrados.
+          </p>
         </div>
       </section>
 
-      {/* CORE MODULES */}
-      <section id="modules" className="py-20 px-6">
+      {/* PILLARS */}
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="font-body text-xs font-semibold text-teal-700 uppercase tracking-wider">Módulos Core</span>
-            <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 text-gray-900">Módulos compartilhados por todas as verticais</h2>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {modules.map((m) => {
-              const Icon = m.icon;
+          <h2 className="font-bold text-3xl md:text-4xl text-gray-900 text-center mb-14 font-[Space_Grotesk,system-ui,sans-serif]">4 Pilares. Uma Plataforma.</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {pillars.map((p) => {
+              const Icon = p.icon;
               return (
-                <div key={m.name} className="bg-white border border-gray-200 rounded-xl p-5 text-center hover:border-teal-300 transition">
-                  <Icon className="h-6 w-6 text-teal-600 mx-auto mb-2" />
-                  <p className="font-body text-sm font-medium text-gray-700">{m.name}</p>
+                <div key={p.title} className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition">
+                  <Icon className="h-8 w-8 text-teal-600 mb-3" />
+                  <h3 className="font-semibold text-lg text-gray-900 font-[Space_Grotesk,system-ui,sans-serif]">{p.title}</h3>
+                  <p className="text-sm text-gray-500 mt-2">{p.desc}</p>
                 </div>
               );
             })}
@@ -166,43 +123,97 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TECHNOLOGY */}
-      <section id="tech" className="py-20 px-6 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-5xl mx-auto text-center">
-          <span className="font-body text-xs font-semibold text-indigo-700 uppercase tracking-wider">Stack</span>
-          <h2 className="font-display font-bold text-3xl md:text-4xl mt-3 text-gray-900">Tecnologia de ponta</h2>
-          <p className="font-body text-base text-gray-500 mt-3 max-w-xl mx-auto">Arquitetura enterprise, cloud-native, type-safe end-to-end.</p>
+      {/* VERTICALS */}
+      <section id="verticals" className="py-20 px-6 bg-gray-50 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-3xl md:text-4xl text-gray-900 text-center mb-14 font-[Space_Grotesk,system-ui,sans-serif]">8 verticais. Seu negócio encaixa em uma delas.</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {verticals.map((v) => {
+              const Icon = v.icon;
+              return (
+                <Link key={v.name} href={v.href} className={`border rounded-2xl p-6 hover:shadow-md transition-all ${v.style}`}>
+                  <Icon className="h-8 w-8 mb-3" />
+                  <h3 className="font-semibold text-lg font-[Space_Grotesk,system-ui,sans-serif]">{`Hachi ${v.name}`}</h3>
+                  <p className="text-sm mt-1 opacity-80">{v.desc}</p>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            {["Next.js 15", "React 19", "TypeScript", "PostgreSQL", "Prisma", "JWT", "AES-256", "Edge Computing"].map((t) => (
-              <span key={t} className="font-body text-sm font-semibold bg-gray-900 text-white px-4 py-2 rounded-lg">{t}</span>
+      {/* MODULES */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-3xl md:text-4xl text-gray-900 text-center mb-4 font-[Space_Grotesk,system-ui,sans-serif]">10 módulos compartilhados</h2>
+          <p className="text-base text-gray-500 text-center mb-14">Todas as verticais incluem esses módulos core.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {modules.map((m) => {
+              const Icon = m.icon;
+              return (
+                <div key={m.name} className="bg-white border border-gray-200 rounded-xl p-5 text-center hover:border-teal-300 transition">
+                  <Icon className="h-6 w-6 text-teal-600 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-gray-700">{m.name}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section className="py-20 px-6 bg-gray-50 border-t border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="font-bold text-3xl md:text-4xl text-gray-900 text-center mb-14 font-[Space_Grotesk,system-ui,sans-serif]">Planos que crescem com você</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { name: "Starter", price: "R$299", features: ["1 vertical", "5 usuários", "Módulos core", "Suporte email"] },
+              { name: "Professional", price: "R$599", features: ["2 verticais", "15 usuários", "Automação", "Suporte prioritário"], featured: true },
+              { name: "Enterprise", price: "R$1.499", features: ["Verticais ilimitadas", "Usuários ilimitados", "API completa", "Gerente dedicado"] },
+            ].map((plan) => (
+              <div key={plan.name} className={`rounded-2xl p-8 ${plan.featured ? "bg-teal-600 text-white ring-2 ring-teal-600 scale-105" : "bg-white border border-gray-200"}`}>
+                <h3 className={`font-semibold text-lg font-[Space_Grotesk,system-ui,sans-serif] ${plan.featured ? "text-teal-100" : "text-gray-500"}`}>{plan.name}</h3>
+                <div className={`font-bold text-3xl mt-2 font-[Space_Grotesk,system-ui,sans-serif] ${plan.featured ? "text-white" : "text-gray-900"}`}>{plan.price}<span className="text-sm font-normal">/mês</span></div>
+                <ul className="mt-6 space-y-3">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${plan.featured ? "text-teal-200" : "text-teal-600"}`} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/onboarding" className={`mt-8 block text-center font-semibold py-3 rounded-xl transition font-[Space_Grotesk,system-ui,sans-serif] ${plan.featured ? "bg-white text-teal-700 hover:bg-teal-50" : "bg-teal-600 text-white hover:bg-teal-700"}`}>
+                  Começar
+                </Link>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA FINAL */}
-      <section className="py-24 px-6 bg-teal-600">
+      {/* FINAL CTA */}
+      <section className="py-24 px-6 bg-gray-900">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-white">
+          <h2 className="font-bold text-3xl md:text-4xl text-white font-[Space_Grotesk,system-ui,sans-serif]">
             Crie sua conta em 30 segundos
           </h2>
-          <p className="font-body text-base text-teal-100 mt-4 max-w-xl mx-auto">
-            Escolha sua vertical, configure seu ambiente e comece a operar hoje.
+          <p className="text-base text-gray-400 mt-4">
+            Escolha sua vertical, configure seu ambiente e comece a operar hoje. Sem cartão de crédito.
           </p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-white text-teal-700 font-display font-bold px-10 py-4 rounded-xl text-lg hover:bg-teal-50 transition shadow-lg">
-            Começar Agora
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-teal-500 text-white font-bold px-10 py-4 rounded-xl text-lg hover:bg-teal-600 transition shadow-lg shadow-teal-500/20 font-[Space_Grotesk,system-ui,sans-serif]">
+            Começar grátis <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="py-8 px-6 border-t border-gray-100 bg-white">
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="font-body text-sm text-gray-500">
-            © 2026 Hachi Platform · Business Operating System
-          </p>
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-gray-500">2026 Hachi Platform. Todos os direitos reservados.</p>
+          <div className="flex gap-6 text-sm text-gray-500">
+            <a href="#" className="hover:text-gray-900 transition">Privacidade</a>
+            <a href="#" className="hover:text-gray-900 transition">Termos</a>
+          </div>
         </div>
       </footer>
     </div>
