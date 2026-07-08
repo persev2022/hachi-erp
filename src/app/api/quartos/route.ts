@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
     if (status) where.status = status;
+    if (session.tenantId) where.tenantId = session.tenantId;
 
     const quartos = await prisma.quarto.findMany({
       where,

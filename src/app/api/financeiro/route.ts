@@ -52,6 +52,9 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
+    // Tenant isolation
+    if (session.tenantId) where.tenantId = session.tenantId;
+
     if (pacienteId) where.pacienteId = pacienteId;
     if (tipo) where.tipo = tipo;
     if (status) where.status = status;

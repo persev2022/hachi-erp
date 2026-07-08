@@ -75,10 +75,15 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
     const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") || "20")));
 
-    // Build where clause
+    // Build where clause (tenant-scoped)
     const where: any = {
       deletedAt: null,
     };
+
+    // Filter by tenant
+    if (session.tenantId) {
+      where.tenantId = session.tenantId;
+    }
 
     if (search) {
       where.OR = [

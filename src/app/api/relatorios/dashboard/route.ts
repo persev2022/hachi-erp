@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth";
 
-// GET: Dashboard KPIs (real data from database)
+// GET: Dashboard KPIs (filtered by tenant)
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
@@ -10,35 +10,43 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
-    // Pacientes ativos
+    const tenantId = session.tenantId;
+    // Tenant filter — only show data from the user's tenant
+    const tf = tenantId ? { tenantId } : {};
+
+    // Pacientes ativos (tenant-scoped)
     const pacientesAtivos = await prisma.paciente.count({
-      where: { status: "ATIVO", deletedAt: null },
+      where: { ...tf, status: "ATIVO", deletedAt: null },
     });
 
-    // Quartos e ocupação
-    const totalQuartos = await prisma.quarto.count();
-    const quartosOcupados = await prisma.quarto.count({ where: { status: "OCUPADO" } });
+    // Quartos e ocupação (tenant-scoped)
+    const totalQuartos = await prisma.quarto.count({ where: tf });
+    const quartosOcupados = await prisma.quarto.count({ where: { ...tf, status: "OCUPADO" } });
     const ocupacao = totalQuartos > 0 ? Math.round((quartosOcupados / totalQuartos) * 100) : 0;
 
-    // Agendamentos hoje
+    // Agendamentos hoje (tenant-scoped via paciente)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const agendamentosHoje = await prisma.agendamento.count({
-      where: {
-        dataHora: { gte: today, lt: tomorrow },
-        status: { notIn: ["CANCELADO"] },
-      },
-    });
+    const agendaWhere: any = {
+      dataHora: { gte: today, lt: tomorrow },
+      status: { notIn: ["CANCELADO"] },
+    };
+    if (tenantId) {
+      agendaWhere.paciente = { tenantId };
+    }
 
-    // Receita do mês
+    const agendamentosHoje = await prisma.agendamento.count({ where: agendaWhere });
+
+    // Receita do mês (tenant-scoped)
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
 
     const receitaMes = await prisma.movimentacaoFinanceira.aggregate({
       where: {
+        ...tf,
         tipo: "RECEITA",
         status: "PAGO",
         dataPagamento: { gte: firstOfMonth, lte: lastOfMonth },
@@ -46,28 +54,36 @@ export async function GET(req: NextRequest) {
       _sum: { valor: true },
     });
 
-    // Inadimplentes (atrasados)
+    // Inadimplentes (tenant-scoped)
     const inadimplentes = await prisma.movimentacaoFinanceira.count({
-      where: { status: "ATRASADO", tipo: "RECEITA" },
+      where: { ...tf, status: "ATRASADO", tipo: "RECEITA" },
     });
 
-    // Evoluções não assinadas
-    const evolucoesPendentes = await prisma.evolucao.count({
-      where: { assinado: false },
-    });
+    // Evoluções não assinadas (tenant-scoped via paciente)
+    const evolWhere: any = { assinado: false };
+    if (tenantId) {
+      evolWhere.paciente = { tenantId };
+    }
+    const evolucoesPendentes = await prisma.evolucao.count({ where: evolWhere });
 
-    // Estoque abaixo do mínimo
+    // Estoque abaixo do mínimo (tenant-scoped)
     const todosItems = await prisma.itemEstoque.findMany({
+      where: tf,
       select: { quantidade: true, minimo: true },
     });
     const estoqueBaixo = todosItems.filter((i) => i.quantidade <= i.minimo).length;
 
-    // Próximos agendamentos de hoje
+    // Próximos agendamentos de hoje (tenant-scoped)
+    const proxWhere: any = {
+      dataHora: { gte: new Date(), lt: tomorrow },
+      status: { notIn: ["CANCELADO", "CONCLUIDO"] },
+    };
+    if (tenantId) {
+      proxWhere.paciente = { tenantId };
+    }
+
     const proximosAgendamentos = await prisma.agendamento.findMany({
-      where: {
-        dataHora: { gte: new Date(), lt: tomorrow },
-        status: { notIn: ["CANCELADO", "CONCLUIDO"] },
-      },
+      where: proxWhere,
       include: {
         paciente: { select: { nome: true } },
         profissional: { select: { name: true } },
