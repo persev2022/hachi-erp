@@ -40,7 +40,7 @@
 | Business OS — Notificações (bell + page + API) | ✅ Funcional | 80% |
 | Business OS — Charts (bar + ring + métricas page) | ✅ Funcional | 70% |
 | Vertical: Recovery | ✅ Produção real (CT Persev, 36 pacientes) | 98% |
-| Vertical: Clinic | ✅ Demo (TISS, exames, anamnese, convênios) | 80% |
+| Vertical: Clinic | ✅ Demo (TISS, exames, anamnese, convênios) | 85% |
 | Vertical: Senior | ✅ Demo (medicação, atividades) | 60% |
 | Vertical: Hotel | ✅ Demo (reservas, tarifas) | 55% |
 | Vertical: Restaurant | ⏸️ Aguardando código externo | 30% |
@@ -97,9 +97,8 @@
 
 | Item | Esforço | Impacto |
 |------|---------|---------|
-| Billing real (Stripe/Asaas) | 5 dias | Revenue automático |
-| White-label completo (logo + cor + domínio por tenant) | 3 dias | Diferencial |
-| Terminologia dinâmica em todas as páginas | 3 dias | Demo perfeita |
+| Billing real com gateway (Stripe/Asaas) | 5 dias | Revenue automático (foundation pronta) |
+| White-label completo (logo + domínio por tenant) | 2 dias | Diferencial (cor já funciona) |
 | Restaurant vertical (PDV, comandas) | Aguardando código | Completa a 8ª vertical |
 
 ### 🟡 Média Prioridade

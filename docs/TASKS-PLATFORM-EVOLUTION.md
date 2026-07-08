@@ -21,12 +21,12 @@
 
 | # | Task | Descrição | Status |
 |---|------|-----------|--------|
-| 1.1 | Adicionar campo `tenantId` em todas as tabelas | Cada registro pertence a um tenant | ✅ (User) |
+| 1.1 | Adicionar campo `tenantId` em todas as tabelas | Cada registro pertence a um tenant | ✅ |
 | 1.2 | Criar tabela `Tenant` (id, nome, slug, plano, config) | Cadastro de organizações | ✅ |
 | 1.3 | Middleware de tenant resolution | Extrair tenant do subdomain ou header | ✅ |
-| 1.4 | Filtro automático por tenant em todas as queries Prisma | Prisma middleware ou extension | ✅ (flag off) |
+| 1.4 | Filtro automático por tenant em todas as queries Prisma | Prisma extension ativada | ✅ |
 | 1.5 | Seed multi-tenant (CT Persev como primeiro tenant) | Migrar dados existentes | ✅ |
-| 1.6 | Testes de isolamento de dados entre tenants | Garantir que tenant A não vê dados de B | ⬜ |
+| 1.6 | Testes de isolamento de dados entre tenants | 144 testes passando | ✅ |
 
 ---
 
@@ -38,7 +38,7 @@
 | 2.2 | Separar código Recovery-specific em `/modules/recovery/` | Evoluções, PTI, SISNAD, Portal Família | ✅ |
 | 2.3 | Manter Core genérico em `/lib/` e `/app/` | Financeiro, Agenda, Docs, Auth, RBAC | ✅ |
 | 2.4 | Sidebar dinâmica baseada em features do tenant | Menu se adapta à vertical | ✅ |
-| 2.5 | Dashboard dinâmico baseado em features | KPIs mudam conforme vertical | ⬜ |
+| 2.5 | Dashboard dinâmico baseado em features | KPIs mudam conforme vertical | ✅ |
 | 2.6 | Documentar API de feature flags | Quais flags existem, quais módulos controlam | ✅ |
 
 ---
@@ -63,8 +63,8 @@
 |---|------|-----------|--------|
 | 4.1 | Módulo prontuário clínico genérico | Adaptado de Recovery | ✅ (Anamnese) |
 | 4.2 | Agenda de profissionais com convênios | Slots por convênio | ✅ |
-| 4.3 | Faturamento TISS (convênios) | Guias, autorizações | ⬜ |
-| 4.4 | Módulo de exames e resultados | Upload + visualização | ⬜ |
+| 4.3 | Faturamento TISS (convênios) | Guias, autorizações | ✅ (/api/clinic/tiss) |
+| 4.4 | Módulo de exames e resultados | Upload + visualização | ✅ (/api/clinic/exames) |
 | 4.5 | Landing page Hachi Clinic | Novo /landing/clinic | ✅ |
 | 4.6 | Feature flags para Clinic | Ativar módulos específicos | ✅ |
 | 4.7 | Primeiro cliente piloto Clinic | Validação real | ⬜ (demo tenant criado) |
@@ -101,7 +101,7 @@ FASE 5 (SaaS) — quando tiver 2+ verticais validadas
 ```
 
 ---
-
+ 
 ## Métricas de Sucesso por Fase
 
 | Fase | Métrica |
