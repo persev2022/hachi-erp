@@ -32,6 +32,7 @@ const PUBLIC_PATHS = [
   "/favicon.ico",
   "/guia",
   "/portal",
+  "/aws-calc",
 ];
 
 // CORS allowlist — add your production domain
