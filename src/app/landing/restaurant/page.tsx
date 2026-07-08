@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   Monitor, ClipboardList, LayoutGrid, Truck, QrCode, Package,
-  ArrowRight, UtensilsCrossed, CheckCircle2, AlertTriangle
+  ArrowRight, UtensilsCrossed, CheckCircle2, AlertTriangle, Shield
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -14,21 +14,20 @@ export const metadata: Metadata = {
 
 export default function RestaurantLanding() {
   return (
-    <div className="min-h-screen font-[Karla,system-ui,sans-serif]" style={{ background: "#FFF7ED", color: "#7C2D12" }}>
-      {/* FONT */}
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <div className="min-h-screen bg-white text-slate-900 antialiased">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
       {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b" style={{ background: "#FFF7ED", borderColor: "#FDBA74" }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UtensilsCrossed className="h-6 w-6" style={{ color: "#EA580C" }} />
-            <span className="font-bold text-xl font-[Playfair_Display,serif]">Hachi</span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold border" style={{ color: "#EA580C", borderColor: "#FDBA74" }}>Restaurant</span>
+          <div className="flex items-center gap-2.5">
+            <UtensilsCrossed className="h-6 w-6 text-orange-600" />
+            <span className="font-semibold text-lg tracking-tight">Hachi</span>
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">Restaurant</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium cursor-pointer transition-all duration-200 hover:opacity-70">Entrar</Link>
-            <Link href="/onboarding" className="text-white text-sm font-semibold px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Karla,system-ui,sans-serif]" style={{ background: "#EA580C" }}>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Entrar</Link>
+            <Link href="/onboarding" className="text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition-colors shadow-sm">
               Começar grátis
             </Link>
           </div>
@@ -36,58 +35,71 @@ export default function RestaurantLanding() {
       </nav>
 
       {/* HERO */}
-      <section className="pt-32 pb-16 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <h1 className="font-bold text-4xl md:text-5xl leading-tight font-[Playfair_Display,serif]">
-            Do pedido ao pagamento. Tudo no mesmo sistema.
-          </h1>
-          <p className="mt-5 text-lg max-w-2xl mx-auto opacity-80">
-            PDV, comandas, KDS e delivery integrados para restaurantes que não podem parar.
-          </p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 text-white font-semibold px-8 py-4 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Karla,system-ui,sans-serif]" style={{ background: "#EA580C" }}>
-            Começar grátis <ArrowRight className="w-4 h-4" />
-          </Link>
-          <img
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=600&fit=crop"
-            alt="Interior de restaurante sofisticado com iluminação ambiente"
-            loading="lazy"
-            className="mt-12 rounded-2xl shadow-2xl max-w-4xl mx-auto w-full h-auto"
-          />
+      <section className="pt-32 pb-28 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-full px-3 py-1 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+              Para restaurantes e bares
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]">
+              Do pedido ao pagamento.<br className="hidden sm:block" />
+              <span className="text-orange-600">Sem fricção.</span>
+            </h1>
+            <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
+              PDV, comandas digitais, KDS para cozinha, delivery integrado e cardápio QR Code. Operação gastronômica completa.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Link href="/onboarding" className="inline-flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg shadow-orange-600/20">
+                Começar grátis <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-100/50 to-slate-100/50 rounded-3xl blur-2xl" />
+            <img
+              src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=500&fit=crop"
+              alt="Prato sofisticado em ambiente de restaurante premium"
+              loading="lazy"
+              className="relative rounded-2xl shadow-2xl ring-1 ring-black/5 w-full h-auto object-cover"
+            />
+          </div>
         </div>
       </section>
 
       {/* SOCIAL PROOF */}
-      <section className="py-10 px-6">
-        <div className="max-w-3xl mx-auto grid grid-cols-3 rounded-2xl border overflow-hidden" style={{ background: "white", borderColor: "#FDBA74" }}>
+      <section className="py-16 px-6 border-y border-slate-100">
+        <div className="max-w-3xl mx-auto grid grid-cols-3 gap-8">
           {[
-            { value: "0", label: "Comandas perdidas" },
-            { value: "3x", label: "Mais giro de mesa" },
-            { value: "100%", label: "Controle fiscal" },
-          ].map((s, i) => (
-            <div key={s.label} className={`p-6 text-center ${i > 0 ? "border-l" : ""}`} style={{ borderColor: "#FDBA74" }}>
-              <div className="font-bold text-2xl font-[Playfair_Display,serif]" style={{ color: "#EA580C" }}>{s.value}</div>
-              <div className="text-xs font-medium mt-1 opacity-70">{s.label}</div>
+            { value: "3s", label: "Enviar pedido" },
+            { value: "Zero", label: "Comanda perdida" },
+            { value: "100%", label: "Controle estoque" },
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">{s.value}</div>
+              <div className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* PROBLEM */}
-      <section className="py-20 px-6" style={{ background: "#7C2D12" }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="font-bold text-3xl text-white text-center mb-12 font-[Playfair_Display,serif]">
-            Comandas perdidas, estoque descontrolado, fiscal atrasado
+      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(234,88,12,0.15),transparent_60%)]" />
+        <div className="max-w-5xl mx-auto relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight">
+            Comandas perdidas, cozinha sem controle, delivery caótico
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14">
             {[
-              { title: "Comandas no papel", desc: "Erros de pedido, clientes insatisfeitos e prejuízo operacional." },
-              { title: "Estoque invisível", desc: "Sem ficha técnica, CMV descontrolado e desperdício constante." },
-              { title: "Fiscal manual", desc: "Notas atrasadas, multas e fechamento de caixa no escuro." },
+              { title: "Pedidos errados", desc: "Letra ilegível, cozinha sobrecarregada, cliente insatisfeito." },
+              { title: "Estoque invisível", desc: "Falta ingrediente no pico, desperdício sem controle e CMV alto." },
+              { title: "Delivery fragmentado", desc: "Vários apps, sem consolidação e margem consumida por taxas." },
             ].map((p) => (
-              <div key={p.title} className="rounded-2xl p-6 border" style={{ background: "#5C1D0A", borderColor: "#FDBA74" }}>
-                <AlertTriangle className="w-6 h-6 mb-3" style={{ color: "#FBBF24" }} />
-                <h3 className="font-semibold text-lg text-white font-[Playfair_Display,serif]">{p.title}</h3>
-                <p className="text-sm mt-2 text-gray-300">{p.desc}</p>
+              <div key={p.title} className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                <AlertTriangle className="w-5 h-5 text-amber-400 mb-4" />
+                <h3 className="font-semibold text-white text-lg">{p.title}</h3>
+                <p className="text-sm mt-2 text-slate-400 leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -95,19 +107,19 @@ export default function RestaurantLanding() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-20 px-6">
+      <section className="py-28 px-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[size:20px_20px]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="font-bold text-3xl text-center mb-14 font-[Playfair_Display,serif]">Como funciona</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Como funciona</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16">
             {[
-              { step: "1", title: "Monte o cardápio", desc: "Pratos, fichas técnicas, fotos e preços em minutos." },
-              { step: "2", title: "Receba pedidos", desc: "Mesa, balcão, delivery e QR Code no mesmo fluxo." },
-              { step: "3", title: "Produza e entregue", desc: "KDS organiza a cozinha. PDV fecha a conta." },
+              { step: "1", title: "Configure o restaurante", desc: "Cardápio, mesas, cozinha e equipe em minutos." },
+              { step: "2", title: "Opere em tempo real", desc: "Pedidos digitais do salão à cozinha sem papel." },
+              { step: "3", title: "Controle tudo", desc: "Estoque, CMV, faturamento e delivery consolidado." },
             ].map((s) => (
               <div key={s.step} className="text-center">
-                <div className="w-12 h-12 rounded-full font-bold text-lg flex items-center justify-center mx-auto text-white" style={{ background: "#EA580C" }}>{s.step}</div>
-                <h3 className="font-semibold text-lg mt-4 font-[Playfair_Display,serif]">{s.title}</h3>
-                <p className="text-sm mt-2 opacity-70">{s.desc}</p>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20">{s.step}</div>
+                <h3 className="font-semibold text-lg mt-5">{s.title}</h3>
+                <p className="text-sm mt-2 text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -115,24 +127,26 @@ export default function RestaurantLanding() {
       </section>
 
       {/* FEATURES */}
-      <section className="py-20 px-6 border-t" style={{ borderColor: "#FDBA74" }}>
+      <section className="py-28 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-bold text-3xl text-center mb-14 font-[Playfair_Display,serif]">Recursos para gastronomia</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Operação gastronômica completa</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
             {[
-              { name: "PDV Completo", desc: "Split de pagamento, Pix, cartão e integração fiscal.", icon: Monitor },
-              { name: "Comandas Digitais", desc: "Pedidos por mesa, balcão ou delivery em tempo real.", icon: ClipboardList },
-              { name: "KDS (Kitchen Display)", desc: "Painel de produção com priorização e tempos.", icon: LayoutGrid },
-              { name: "Delivery Integrado", desc: "Gestão com rastreamento e integração marketplaces.", icon: Truck },
-              { name: "Cardápio Digital", desc: "QR Code na mesa com fotos e pedido direto.", icon: QrCode },
-              { name: "Estoque de Insumos", desc: "Fichas técnicas, custo por prato e alertas.", icon: Package },
+              { name: "PDV Inteligente", desc: "Frente de caixa rápida com split de pagamento e gorjeta.", icon: Monitor, color: "from-orange-500 to-orange-600" },
+              { name: "KDS Cozinha", desc: "Tela na cozinha com fila de pedidos e tempos de preparo.", icon: ClipboardList, color: "from-red-500 to-red-600" },
+              { name: "Mapa de Mesas", desc: "Status visual: livre, ocupada, conta pedida, reservada.", icon: LayoutGrid, color: "from-violet-500 to-violet-600" },
+              { name: "Delivery Integrado", desc: "iFood, Rappi e pedido direto consolidados num painel.", icon: Truck, color: "from-green-500 to-green-600" },
+              { name: "Cardápio QR Code", desc: "Cliente escaneia, vê o menu e faz pedido pelo celular.", icon: QrCode, color: "from-blue-500 to-blue-600" },
+              { name: "Estoque e CMV", desc: "Controle de insumos, fichas técnicas e custo por prato.", icon: Package, color: "from-amber-500 to-amber-600" },
             ].map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.name} className="rounded-2xl p-6 border transition-all duration-200 cursor-pointer" style={{ background: "white", borderColor: "#FDBA74" }}>
-                  <Icon className="h-8 w-8 mb-3" style={{ color: "#EA580C" }} />
-                  <h3 className="font-semibold text-base font-[Playfair_Display,serif]">{f.name}</h3>
-                  <p className="text-sm mt-2 opacity-70">{f.desc}</p>
+                <div key={f.name} className="group rounded-2xl p-6 bg-white border border-slate-150 shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-4`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold">{f.name}</h3>
+                  <p className="text-sm mt-2 text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -141,33 +155,35 @@ export default function RestaurantLanding() {
       </section>
 
       {/* TRUST */}
-      <section className="py-16 px-6">
+      <section className="py-20 px-6 bg-slate-50 border-y border-slate-100">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-bold text-2xl mb-8 font-[Playfair_Display,serif]">Integrações e compliance</h2>
-          <div className="flex flex-wrap justify-center gap-3">
-            {["NFC-e/SAT", "Pix automático", "iFood", "Rappi", "Controle CMV"].map((c) => (
-              <span key={c} className="inline-flex items-center gap-1.5 text-sm border px-4 py-2 rounded-full" style={{ background: "white", borderColor: "#FDBA74" }}>
-                <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "#EA580C" }} /> {c}
+          <Shield className="w-8 h-8 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Conformidade fiscal</h2>
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
+            {["NFC-e", "SAT", "LGPD", "PAF-ECF", "Criptografia AES-256"].map((c) => (
+              <span key={c} className="inline-flex items-center gap-1.5 text-sm bg-white border border-slate-200 px-4 py-2 rounded-full text-slate-700 shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5 text-orange-500" /> {c}
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="py-24 px-6" style={{ background: "linear-gradient(135deg, #EA580C, #FB923C)" }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-bold text-3xl text-white font-[Playfair_Display,serif]">Operação redonda. Cozinha feliz. Cliente satisfeito.</h2>
-          <p className="text-base text-white/80 mt-4">Teste grátis. Sem fidelidade.</p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-white font-bold px-8 py-4 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Karla,system-ui,sans-serif]" style={{ color: "#EA580C" }}>
-            Começar grátis <ArrowRight className="w-4 h-4" />
+      {/* CTA */}
+      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(234,88,12,0.2),transparent_60%)]" />
+        <div className="max-w-3xl mx-auto text-center relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">Seu restaurante no digital hoje</h2>
+          <p className="text-slate-400 mt-4 text-lg">Sem instalação complexa. Resultado no primeiro serviço.</p>
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-semibold px-10 py-4 rounded-xl text-lg transition-all shadow-lg shadow-orange-500/25">
+            Começar grátis <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="py-8 px-6 border-t" style={{ background: "#FFF7ED", borderColor: "#FDBA74" }}>
-        <p className="text-sm text-center opacity-70">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
+      <footer className="py-8 px-6 border-t border-slate-100">
+        <p className="text-sm text-center text-slate-400">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
       </footer>
     </div>
   );

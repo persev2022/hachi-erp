@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   FileHeart, Syringe, Calendar, Users, BedDouble, Scissors,
-  ArrowRight, Stethoscope, CheckCircle2, AlertTriangle
+  ArrowRight, Stethoscope, CheckCircle2, AlertTriangle, Shield
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -14,21 +14,20 @@ export const metadata: Metadata = {
 
 export default function VetLanding() {
   return (
-    <div className="min-h-screen font-[Nunito,system-ui,sans-serif]" style={{ background: "#ECFDF5", color: "#064E3B" }}>
-      {/* FONT */}
-      <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <div className="min-h-screen bg-white text-slate-900 antialiased">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
       {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b" style={{ background: "#ECFDF5", borderColor: "#6EE7B7" }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Stethoscope className="h-6 w-6" style={{ color: "#059669" }} />
-            <span className="font-bold text-xl font-[Fredoka,system-ui,sans-serif]">Hachi</span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold border" style={{ color: "#059669", borderColor: "#6EE7B7" }}>Vet</span>
+          <div className="flex items-center gap-2.5">
+            <Stethoscope className="h-6 w-6 text-green-600" />
+            <span className="font-semibold text-lg tracking-tight">Hachi</span>
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">Vet</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium cursor-pointer transition-all duration-200 hover:opacity-70">Entrar</Link>
-            <Link href="/onboarding" className="text-white text-sm font-semibold px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Fredoka,system-ui,sans-serif]" style={{ background: "#059669" }}>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Entrar</Link>
+            <Link href="/onboarding" className="text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition-colors shadow-sm">
               Começar grátis
             </Link>
           </div>
@@ -36,58 +35,71 @@ export default function VetLanding() {
       </nav>
 
       {/* HERO */}
-      <section className="pt-32 pb-16 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <h1 className="font-bold text-4xl md:text-5xl leading-tight font-[Fredoka,system-ui,sans-serif]">
-            Prontuário veterinário e gestão completa para clínicas pet
-          </h1>
-          <p className="mt-5 text-lg max-w-2xl mx-auto opacity-80">
-            Do prontuário à vacinação, da internação ao banho e tosa. Feito por quem entende a rotina veterinária.
-          </p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 text-white font-semibold px-8 py-4 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Fredoka,system-ui,sans-serif]" style={{ background: "#059669" }}>
-            Começar grátis <ArrowRight className="w-4 h-4" />
-          </Link>
-          <img
-            src="https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=1200&h=600&fit=crop"
-            alt="Cachorro em consulta veterinária recebendo cuidado profissional"
-            loading="lazy"
-            className="mt-12 rounded-2xl shadow-2xl max-w-4xl mx-auto w-full h-auto"
-          />
+      <section className="pt-32 pb-28 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-3 py-1 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Para clínicas veterinárias
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]">
+              Cuidado animal com<br className="hidden sm:block" />
+              <span className="text-green-600">gestão inteligente.</span>
+            </h1>
+            <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
+              Prontuário animal, carteira de vacinação, internação e portal do tutor. Tudo que sua clínica vet precisa.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Link href="/onboarding" className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg shadow-green-600/20">
+                Começar grátis <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-100/50 to-slate-100/50 rounded-3xl blur-2xl" />
+            <img
+              src="https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=800&h=500&fit=crop"
+              alt="Veterinário examinando cachorro com cuidado"
+              loading="lazy"
+              className="relative rounded-2xl shadow-2xl ring-1 ring-black/5 w-full h-auto object-cover"
+            />
+          </div>
         </div>
       </section>
 
       {/* SOCIAL PROOF */}
-      <section className="py-10 px-6">
-        <div className="max-w-3xl mx-auto grid grid-cols-3 rounded-2xl border overflow-hidden" style={{ background: "white", borderColor: "#6EE7B7" }}>
+      <section className="py-16 px-6 border-y border-slate-100">
+        <div className="max-w-3xl mx-auto grid grid-cols-3 gap-8">
           {[
             { value: "100%", label: "Vacinas rastreadas" },
             { value: "24/7", label: "Portal do tutor" },
-            { value: "0", label: "Fichas perdidas" },
-          ].map((s, i) => (
-            <div key={s.label} className={`p-6 text-center ${i > 0 ? "border-l" : ""}`} style={{ borderColor: "#6EE7B7" }}>
-              <div className="font-bold text-2xl font-[Fredoka,system-ui,sans-serif]" style={{ color: "#059669" }}>{s.value}</div>
-              <div className="text-xs font-medium mt-1 opacity-70">{s.label}</div>
+            { value: "Zero", label: "Ficha perdida" },
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">{s.value}</div>
+              <div className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* PROBLEM */}
-      <section className="py-20 px-6" style={{ background: "#064E3B" }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="font-bold text-3xl text-white text-center mb-12 font-[Fredoka,system-ui,sans-serif]">
+      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(22,163,74,0.15),transparent_60%)]" />
+        <div className="max-w-5xl mx-auto relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight">
             Fichas em papel, vacinas sem controle, tutores sem acesso
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14">
             {[
-              { title: "Fichas que se perdem", desc: "Histórico clínico incompleto e sem rastreabilidade." },
-              { title: "Vacinas esquecidas", desc: "Sem alertas de reforço, risco para os animais." },
-              { title: "Tutores no escuro", desc: "Sem acesso a histórico, exames ou agendamento online." },
+              { title: "Prontuário em papel", desc: "Histórico clínico inacessível, sem busca e sem rastreabilidade." },
+              { title: "Vacinas descontroladas", desc: "Lembretes manuais, doses perdidas e tutores desinformados." },
+              { title: "Internação sem visibilidade", desc: "Tutor sem saber o estado do pet, equipe sem protocolo digital." },
             ].map((p) => (
-              <div key={p.title} className="rounded-2xl p-6 border" style={{ background: "#022C22", borderColor: "#6EE7B7" }}>
-                <AlertTriangle className="w-6 h-6 mb-3" style={{ color: "#FBBF24" }} />
-                <h3 className="font-semibold text-lg text-white font-[Fredoka,system-ui,sans-serif]">{p.title}</h3>
-                <p className="text-sm mt-2 text-gray-300">{p.desc}</p>
+              <div key={p.title} className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                <AlertTriangle className="w-5 h-5 text-amber-400 mb-4" />
+                <h3 className="font-semibold text-white text-lg">{p.title}</h3>
+                <p className="text-sm mt-2 text-slate-400 leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -95,19 +107,19 @@ export default function VetLanding() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-20 px-6">
+      <section className="py-28 px-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[size:20px_20px]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="font-bold text-3xl text-center mb-14 font-[Fredoka,system-ui,sans-serif]">Como funciona</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Como funciona</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16">
             {[
-              { step: "1", title: "Cadastre os pets", desc: "Perfil completo com espécie, raça, peso e tutor." },
-              { step: "2", title: "Atenda e registre", desc: "Prontuário digital com prescrições e exames." },
-              { step: "3", title: "Engaje os tutores", desc: "Portal com histórico, vacinas e agendamento." },
+              { step: "1", title: "Configure a clínica", desc: "Profissionais, especialidades, agenda e estoque em minutos." },
+              { step: "2", title: "Digitalize o cuidado", desc: "Prontuário, vacinas, exames e internação no sistema." },
+              { step: "3", title: "Conecte tutores", desc: "Portal com histórico, lembretes e pagamentos online." },
             ].map((s) => (
               <div key={s.step} className="text-center">
-                <div className="w-12 h-12 rounded-full font-bold text-lg flex items-center justify-center mx-auto text-white" style={{ background: "#059669" }}>{s.step}</div>
-                <h3 className="font-semibold text-lg mt-4 font-[Fredoka,system-ui,sans-serif]">{s.title}</h3>
-                <p className="text-sm mt-2 opacity-70">{s.desc}</p>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">{s.step}</div>
+                <h3 className="font-semibold text-lg mt-5">{s.title}</h3>
+                <p className="text-sm mt-2 text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -115,24 +127,26 @@ export default function VetLanding() {
       </section>
 
       {/* FEATURES */}
-      <section className="py-20 px-6 border-t" style={{ borderColor: "#6EE7B7" }}>
+      <section className="py-28 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-bold text-3xl text-center mb-14 font-[Fredoka,system-ui,sans-serif]">Recursos para veterinária</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Gestão veterinária completa</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
             {[
-              { name: "Prontuário Animal", desc: "Ficha por pet: histórico, alergias, exames e peso.", icon: FileHeart },
-              { name: "Carteira de Vacinação", desc: "Vacinas digitais com alertas automáticos de reforço.", icon: Syringe },
-              { name: "Agenda Veterinária", desc: "Consultas, cirurgias, retornos e gestão de salas.", icon: Calendar },
-              { name: "Portal do Tutor", desc: "Histórico, vacinas, resultados e agendamento online.", icon: Users },
-              { name: "Internação", desc: "Sinais vitais, medicação e evolução clínica.", icon: BedDouble },
-              { name: "Banho e Tosa", desc: "Agendamento com preferências e notificação.", icon: Scissors },
+              { name: "Prontuário Animal", desc: "Histórico completo por pet: consultas, exames, cirurgias.", icon: FileHeart, color: "from-green-500 to-green-600" },
+              { name: "Carteira de Vacinação", desc: "Controle de doses, lotes, validade e lembretes automáticos.", icon: Syringe, color: "from-blue-500 to-blue-600" },
+              { name: "Agenda Veterinária", desc: "Consultas, cirurgias, retornos e encaixes inteligentes.", icon: Calendar, color: "from-violet-500 to-violet-600" },
+              { name: "Portal do Tutor", desc: "Tutor acompanha histórico, vacinas e pagamentos online.", icon: Users, color: "from-amber-500 to-amber-600" },
+              { name: "Internação", desc: "Protocolo digital, evolução e comunicação com tutor.", icon: BedDouble, color: "from-rose-500 to-rose-600" },
+              { name: "Pet Shop e Banho", desc: "Agendamento de banho, tosa e venda de produtos integrada.", icon: Scissors, color: "from-cyan-500 to-cyan-600" },
             ].map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.name} className="rounded-2xl p-6 border transition-all duration-200 cursor-pointer" style={{ background: "white", borderColor: "#6EE7B7" }}>
-                  <Icon className="h-8 w-8 mb-3" style={{ color: "#059669" }} />
-                  <h3 className="font-semibold text-base font-[Fredoka,system-ui,sans-serif]">{f.name}</h3>
-                  <p className="text-sm mt-2 opacity-70">{f.desc}</p>
+                <div key={f.name} className="group rounded-2xl p-6 bg-white border border-slate-150 shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-4`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold">{f.name}</h3>
+                  <p className="text-sm mt-2 text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -141,33 +155,35 @@ export default function VetLanding() {
       </section>
 
       {/* TRUST */}
-      <section className="py-16 px-6">
+      <section className="py-20 px-6 bg-slate-50 border-y border-slate-100">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-bold text-2xl mb-8 font-[Fredoka,system-ui,sans-serif]">Integrado ao seu dia a dia</h2>
-          <div className="flex flex-wrap justify-center gap-3">
-            {["WhatsApp alertas", "Pix integrado", "NFS-e", "LGPD", "Multi-unidade"].map((c) => (
-              <span key={c} className="inline-flex items-center gap-1.5 text-sm border px-4 py-2 rounded-full" style={{ background: "white", borderColor: "#6EE7B7" }}>
-                <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "#059669" }} /> {c}
+          <Shield className="w-8 h-8 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Conformidade e segurança</h2>
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
+            {["CRMV", "LGPD", "MAPA", "Criptografia AES-256", "Backup diário"].map((c) => (
+              <span key={c} className="inline-flex items-center gap-1.5 text-sm bg-white border border-slate-200 px-4 py-2 rounded-full text-slate-700 shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> {c}
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="py-24 px-6" style={{ background: "linear-gradient(135deg, #059669, #34D399)" }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-bold text-3xl text-white font-[Fredoka,system-ui,sans-serif]">Sua clínica vet no digital. Comece hoje.</h2>
-          <p className="text-base text-white/80 mt-4">Sem instalação. Funciona no tablet e celular.</p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-white font-bold px-8 py-4 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Fredoka,system-ui,sans-serif]" style={{ color: "#059669" }}>
-            Começar grátis <ArrowRight className="w-4 h-4" />
+      {/* CTA */}
+      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(22,163,74,0.2),transparent_60%)]" />
+        <div className="max-w-3xl mx-auto text-center relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">Sua clínica vet no digital hoje</h2>
+          <p className="text-slate-400 mt-4 text-lg">Configure em minutos. Sem complexidade. Teste grátis.</p>
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-semibold px-10 py-4 rounded-xl text-lg transition-all shadow-lg shadow-green-500/25">
+            Começar grátis <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="py-8 px-6 border-t" style={{ background: "#ECFDF5", borderColor: "#6EE7B7" }}>
-        <p className="text-sm text-center opacity-70">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
+      <footer className="py-8 px-6 border-t border-slate-100">
+        <p className="text-sm text-center text-slate-400">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
       </footer>
     </div>
   );

@@ -2,9 +2,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
-  BarChart3, Calendar, Users, FileText, Package, MessageSquare,
-  Zap, Shield, ArrowRight, CheckCircle2, Layers, Settings,
-  TrendingUp, Building2, AlertTriangle, Globe, Lock
+  BarChart3, Calendar, Users, FileText, Package, Zap,
+  ArrowRight, CheckCircle2, Shield, Building2, AlertTriangle, TrendingUp
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -15,18 +14,20 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen font-[Inter,system-ui,sans-serif]" style={{ background: "#F0FDFA", color: "#134E4A" }}>
+    <div className="min-h-screen bg-white text-slate-900 antialiased">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
       {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b" style={{ background: "#F0FDFA", borderColor: "#5EEAD4" }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Building2 className="h-7 w-7" style={{ color: "#0D9488" }} />
-            <span className="font-bold text-xl font-[Space_Grotesk,system-ui,sans-serif]">Hachi</span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold border" style={{ background: "#F0FDFA", color: "#0D9488", borderColor: "#5EEAD4" }}>Platform</span>
+          <div className="flex items-center gap-2.5">
+            <Building2 className="h-6 w-6 text-teal-600" />
+            <span className="font-semibold text-lg tracking-tight">Hachi</span>
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">Platform</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium cursor-pointer transition-all duration-200 hover:opacity-70" style={{ color: "#134E4A" }}>Entrar</Link>
-            <Link href="/onboarding" className="text-white text-sm font-semibold px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Space_Grotesk,system-ui,sans-serif]" style={{ background: "#0D9488" }}>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Entrar</Link>
+            <Link href="/onboarding" className="text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition-colors shadow-sm">
               Começar grátis
             </Link>
           </div>
@@ -34,84 +35,147 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="pt-32 pb-16 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.1] font-[Space_Grotesk,system-ui,sans-serif]" style={{ color: "#134E4A" }}>
-            Um sistema. Oito verticais.<br className="hidden sm:block" /> Resultado real.
-          </h1>
-          <p className="mt-5 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed opacity-80">
-            O sistema operacional para negócios que precisam operar, controlar, integrar e evoluir sem complexidade.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/onboarding" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90 font-[Space_Grotesk,system-ui,sans-serif]" style={{ background: "#0D9488" }}>
-              Começar grátis <ArrowRight className="w-4 h-4" />
-            </Link>
+      <section className="pt-32 pb-24 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-3 py-1 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+              8 verticais, uma plataforma
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]">
+              O sistema operacional<br className="hidden sm:block" />
+              <span className="text-teal-600">do seu negócio.</span>
+            </h1>
+            <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
+              Financeiro, agenda, CRM, prontuário e automação. Tudo integrado, sem complexidade. Configure em minutos.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Link href="/onboarding" className="inline-flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg shadow-teal-600/20">
+                Começar grátis <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
-          <img
-            src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=600&fit=crop"
-            alt="Dashboard de gestão empresarial moderno com métricas e gráficos"
-            loading="lazy"
-            className="mt-12 rounded-2xl shadow-2xl max-w-4xl mx-auto w-full h-auto"
-          />
+          {/* CSS PRODUCT MOCKUP */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-100/60 to-slate-100/60 rounded-3xl blur-2xl" />
+            <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl ring-1 ring-black/5 overflow-hidden">
+              <div className="flex">
+                {/* Sidebar */}
+                <div className="w-14 bg-slate-50 border-r border-slate-100 p-3 flex flex-col gap-3 min-h-[280px]">
+                  <div className="w-8 h-8 rounded-lg bg-teal-600" />
+                  <div className="mt-4 flex flex-col gap-2.5">
+                    <div className="w-8 h-2 rounded bg-slate-300" />
+                    <div className="w-8 h-2 rounded bg-teal-200" />
+                    <div className="w-8 h-2 rounded bg-slate-200" />
+                    <div className="w-8 h-2 rounded bg-slate-200" />
+                  </div>
+                </div>
+                {/* Main content */}
+                <div className="flex-1 p-5">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-24 h-3 rounded bg-slate-200" />
+                    <div className="w-16 h-6 rounded-md bg-teal-50 border border-teal-200" />
+                  </div>
+                  {/* KPI Cards */}
+                  <div className="grid grid-cols-4 gap-3 mb-5">
+                    <div className="rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 p-3 border border-teal-200/50">
+                      <div className="text-[10px] text-teal-600 font-medium">Receita</div>
+                      <div className="text-sm font-bold text-slate-800 mt-1">R$ 84k</div>
+                      <div className="text-[9px] text-teal-600 mt-1 flex items-center gap-0.5"><TrendingUp className="w-2.5 h-2.5" />+12%</div>
+                    </div>
+                    <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-3 border border-blue-200/50">
+                      <div className="text-[10px] text-blue-600 font-medium">Pacientes</div>
+                      <div className="text-sm font-bold text-slate-800 mt-1">1.247</div>
+                      <div className="text-[9px] text-blue-600 mt-1 flex items-center gap-0.5"><TrendingUp className="w-2.5 h-2.5" />+8%</div>
+                    </div>
+                    <div className="rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 p-3 border border-violet-200/50">
+                      <div className="text-[10px] text-violet-600 font-medium">Agendas</div>
+                      <div className="text-sm font-bold text-slate-800 mt-1">89</div>
+                      <div className="text-[9px] text-violet-600 mt-1">Hoje</div>
+                    </div>
+                    <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-3 border border-amber-200/50">
+                      <div className="text-[10px] text-amber-600 font-medium">NPS</div>
+                      <div className="text-sm font-bold text-slate-800 mt-1">92</div>
+                      <div className="text-[9px] text-green-600 mt-1">Excelente</div>
+                    </div>
+                  </div>
+                  {/* Mini table */}
+                  <div className="rounded-lg border border-slate-100 overflow-hidden">
+                    <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-slate-50 text-[9px] font-medium text-slate-500">
+                      <span>Nome</span><span>Status</span><span>Valor</span><span>Data</span>
+                    </div>
+                    {[1,2,3].map(i => (
+                      <div key={i} className="grid grid-cols-4 gap-2 px-3 py-2 border-t border-slate-50 text-[9px] text-slate-600">
+                        <div className="w-14 h-2 rounded bg-slate-200" />
+                        <div className="w-10 h-4 rounded-full bg-green-100 border border-green-200" />
+                        <div className="w-10 h-2 rounded bg-slate-200" />
+                        <div className="w-12 h-2 rounded bg-slate-100" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* SOCIAL PROOF BAR */}
-      <section className="py-10 px-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 rounded-2xl border overflow-hidden" style={{ background: "white", borderColor: "#5EEAD4" }}>
+      {/* SOCIAL PROOF */}
+      <section className="py-16 px-6 border-y border-slate-100">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             { value: "25.000+", label: "Linhas de código" },
             { value: "105", label: "Páginas" },
             { value: "8", label: "Verticais" },
             { value: "99.9%", label: "Uptime" },
-          ].map((s, i) => (
-            <div key={s.label} className={`p-6 text-center ${i > 0 ? "border-l" : ""}`} style={{ borderColor: "#5EEAD4" }}>
-              <div className="font-bold text-2xl font-[Space_Grotesk,system-ui,sans-serif]" style={{ color: "#0D9488" }}>{s.value}</div>
-              <div className="text-xs font-medium mt-1 uppercase tracking-wider opacity-70">{s.label}</div>
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">{s.value}</div>
+              <div className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* PROBLEM SECTION */}
-      <section className="py-20 px-6" style={{ background: "#134E4A" }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="font-bold text-3xl md:text-4xl text-white text-center mb-12 font-[Space_Grotesk,system-ui,sans-serif]">
+      {/* PROBLEM */}
+      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(13,148,136,0.15),transparent_60%)]" />
+        <div className="max-w-5xl mx-auto relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight">
             Seu negócio ainda funciona assim?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <p className="text-slate-400 text-center mt-4 text-lg">Complexidade sem necessidade. Dados sem conexão.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14">
             {[
-              { title: "Dados espalhados", desc: "Planilhas, WhatsApp e cadernos. Informação duplicada e decisões no escuro.", icon: AlertTriangle },
-              { title: "Retrabalho constante", desc: "Cobranças manuais, relatórios feitos na mão, erros humanos evitáveis.", icon: AlertTriangle },
-              { title: "Zero visibilidade", desc: "Sem indicadores, sem controle financeiro real, sem previsibilidade.", icon: AlertTriangle },
-            ].map((p) => {
-              const Icon = p.icon;
-              return (
-                <div key={p.title} className="rounded-2xl p-6 border" style={{ background: "#0D3D38", borderColor: "#5EEAD4" }}>
-                  <Icon className="w-6 h-6 mb-3" style={{ color: "#D97706" }} />
-                  <h3 className="font-semibold text-lg text-white font-[Space_Grotesk,system-ui,sans-serif]">{p.title}</h3>
-                  <p className="text-sm mt-2 text-gray-300">{p.desc}</p>
-                </div>
-              );
-            })}
+              { title: "Dados espalhados", desc: "Planilhas, WhatsApp e cadernos. Informação duplicada e decisões no escuro." },
+              { title: "Retrabalho constante", desc: "Cobranças manuais, relatórios feitos na mão, erros humanos evitáveis." },
+              { title: "Zero visibilidade", desc: "Sem indicadores, sem controle financeiro real, sem previsibilidade." },
+            ].map((p) => (
+              <div key={p.title} className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                <AlertTriangle className="w-5 h-5 text-amber-400 mb-4" />
+                <h3 className="font-semibold text-white text-lg">{p.title}</h3>
+                <p className="text-sm mt-2 text-slate-400 leading-relaxed">{p.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-20 px-6">
+      <section className="py-28 px-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[size:20px_20px]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="font-bold text-3xl md:text-4xl text-center mb-14 font-[Space_Grotesk,system-ui,sans-serif]" style={{ color: "#134E4A" }}>Como funciona</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Como funciona</h2>
+          <p className="text-slate-500 text-center mt-4">Três passos para uma operação digital.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16">
             {[
               { step: "1", title: "Escolha sua vertical", desc: "Recovery, Clinic, Senior, Hotel, Restaurant, Education, Vet ou Services." },
               { step: "2", title: "Configure em minutos", desc: "Ambiente pronto com módulos específicos para seu segmento." },
               { step: "3", title: "Opere e cresça", desc: "Financeiro, CRM, automação e relatórios desde o dia um." },
             ].map((s) => (
               <div key={s.step} className="text-center">
-                <div className="w-12 h-12 rounded-full font-bold text-lg flex items-center justify-center mx-auto font-[Space_Grotesk,system-ui,sans-serif] text-white" style={{ background: "#0D9488" }}>{s.step}</div>
-                <h3 className="font-semibold text-lg mt-4 font-[Space_Grotesk,system-ui,sans-serif]">{s.title}</h3>
-                <p className="text-sm mt-2 opacity-70">{s.desc}</p>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 text-white font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-teal-500/20">{s.step}</div>
+                <h3 className="font-semibold text-lg mt-5">{s.title}</h3>
+                <p className="text-sm mt-2 text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -119,24 +183,28 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section className="py-20 px-6 border-t" style={{ borderColor: "#5EEAD4" }}>
+      <section className="py-28 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-bold text-3xl md:text-4xl text-center mb-14 font-[Space_Grotesk,system-ui,sans-serif]" style={{ color: "#134E4A" }}>Módulos compartilhados</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Módulos compartilhados</h2>
+          <p className="text-slate-500 text-center mt-4">Tudo que seu negócio precisa. Integrado de verdade.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
             {[
-              { name: "Financeiro", desc: "Contas, cobranças, Pix e fluxo de caixa automatizado.", icon: BarChart3 },
-              { name: "Agenda", desc: "Agendamentos, bloqueios e lembretes para equipe e clientes.", icon: Calendar },
-              { name: "CRM", desc: "Pipeline comercial, follow-up e scoring de leads.", icon: Users },
-              { name: "Documentos", desc: "Contratos, prontuários e assinatura digital integrada.", icon: FileText },
-              { name: "Estoque", desc: "Controle de insumos, alertas e custo por operação.", icon: Package },
-              { name: "Automação", desc: "Workflows de cobrança, comunicação e onboarding.", icon: Zap },
+              { name: "Financeiro", desc: "Contas, cobranças, Pix e fluxo de caixa automatizado.", icon: BarChart3, color: "teal" },
+              { name: "Agenda", desc: "Agendamentos, bloqueios e lembretes para equipe e clientes.", icon: Calendar, color: "blue" },
+              { name: "CRM", desc: "Pipeline comercial, follow-up e scoring de leads.", icon: Users, color: "violet" },
+              { name: "Documentos", desc: "Contratos, prontuários e assinatura digital integrada.", icon: FileText, color: "slate" },
+              { name: "Estoque", desc: "Controle de insumos, alertas e custo por operação.", icon: Package, color: "amber" },
+              { name: "Automação", desc: "Workflows de cobrança, comunicação e onboarding.", icon: Zap, color: "rose" },
             ].map((f) => {
               const Icon = f.icon;
+              const colors: Record<string, string> = { teal: "from-teal-500 to-teal-600", blue: "from-blue-500 to-blue-600", violet: "from-violet-500 to-violet-600", slate: "from-slate-600 to-slate-700", amber: "from-amber-500 to-amber-600", rose: "from-rose-500 to-rose-600" };
               return (
-                <div key={f.name} className="rounded-2xl p-6 border transition-all duration-200 hover:border-opacity-100 cursor-pointer" style={{ background: "white", borderColor: "#5EEAD4" }}>
-                  <Icon className="h-8 w-8 mb-3" style={{ color: "#0D9488" }} />
-                  <h3 className="font-semibold text-base font-[Space_Grotesk,system-ui,sans-serif]">{f.name}</h3>
-                  <p className="text-sm mt-2 opacity-70">{f.desc}</p>
+                <div key={f.name} className="group rounded-2xl p-6 bg-white border border-slate-150 shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors[f.color]} flex items-center justify-center mb-4`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold">{f.name}</h3>
+                  <p className="text-sm mt-2 text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -144,38 +212,38 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TRUST/COMPLIANCE */}
-      <section className="py-16 px-6">
+      {/* TRUST */}
+      <section className="py-20 px-6 bg-slate-50 border-y border-slate-100">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-bold text-2xl mb-8 font-[Space_Grotesk,system-ui,sans-serif]" style={{ color: "#134E4A" }}>Segurança e conformidade</h2>
-          <div className="flex flex-wrap justify-center gap-3">
+          <Shield className="w-8 h-8 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Segurança e conformidade</h2>
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
             {["LGPD Compliant", "Criptografia AES-256", "Audit Log", "Backup diário", "Multi-tenant isolado"].map((c) => (
-              <span key={c} className="inline-flex items-center gap-1.5 text-sm border px-4 py-2 rounded-full" style={{ background: "white", color: "#134E4A", borderColor: "#5EEAD4" }}>
-                <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "#0D9488" }} /> {c}
+              <span key={c} className="inline-flex items-center gap-1.5 text-sm bg-white border border-slate-200 px-4 py-2 rounded-full text-slate-700 shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500" /> {c}
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="py-24 px-6" style={{ background: "linear-gradient(135deg, #0D9488, #2DD4BF)" }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-bold text-3xl md:text-4xl text-white font-[Space_Grotesk,system-ui,sans-serif]">
+      {/* CTA */}
+      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(13,148,136,0.2),transparent_60%)]" />
+        <div className="max-w-3xl mx-auto text-center relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
             Crie sua conta em 30 segundos
           </h2>
-          <p className="text-base text-white/80 mt-4">
-            Escolha sua vertical, configure e comece a operar hoje. Sem cartão de crédito.
-          </p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-white font-bold px-10 py-4 rounded-xl text-lg cursor-pointer transition-all duration-200 hover:opacity-90 font-[Space_Grotesk,system-ui,sans-serif]" style={{ color: "#0D9488" }}>
+          <p className="text-slate-400 mt-4 text-lg">Escolha sua vertical, configure e comece a operar hoje. Sem cartão.</p>
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white font-semibold px-10 py-4 rounded-xl text-lg transition-all shadow-lg shadow-teal-500/25">
             Começar grátis <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="py-8 px-6 border-t" style={{ background: "#F0FDFA", borderColor: "#5EEAD4" }}>
-        <p className="text-sm text-center opacity-70">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
+      <footer className="py-8 px-6 border-t border-slate-100">
+        <p className="text-sm text-center text-slate-400">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
       </footer>
     </div>
   );
