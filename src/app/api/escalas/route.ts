@@ -101,10 +101,14 @@ export async function GET(req: NextRequest) {
       escalas = escalas.filter((e) => e.userId === userId);
     }
 
-    // Enrich with user names
+    // Enrich with user names (filtered by tenant)
     const userIds = [...new Set(escalas.map((e) => e.userId))];
+    const userWhere: any = { id: { in: userIds } };
+    if (session.tenantId) {
+      userWhere.tenantId = session.tenantId;
+    }
     const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
+      where: userWhere,
       select: { id: true, name: true, role: true },
     });
     const userMap = Object.fromEntries(users.map((u) => [u.id, u]));

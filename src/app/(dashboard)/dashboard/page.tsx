@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [userRole, setUserRole] = React.useState<string>("");
   const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
+  const [terminology, setTerminology] = React.useState<Record<string, string> | null>(null);
 
   const fetchData = React.useCallback(() => {
     fetch("/api/relatorios/dashboard")
@@ -56,6 +57,10 @@ export default function DashboardPage() {
     fetch("/api/platform")
       .then((r) => r.json())
       .then((d) => { if (d.success) setFeatures(d.platform.features); })
+      .catch(() => {});
+    fetch("/api/platform/terminology")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setTerminology(d.terminology); })
       .catch(() => {});
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchData, 30000);
@@ -97,13 +102,19 @@ export default function DashboardPage() {
 
   const kpis = data?.kpis;
 
+  // Adapt labels based on tenant vertical terminology
+  const t = terminology || {};
+  const pacienteLabel = t.paciente ? `${t.paciente}s Ativos` : "Pacientes Ativos";
+  const evolLabel = t.evolucao ? `${t.evolucao} Pendentes` : "Evoluções Pendentes";
+  const quartoLabel = t.quartos || "Quartos";
+
   const stats = [
-    { label: "Pacientes Ativos", value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"], feature: undefined },
-    { label: "Ocupação", value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
+    { label: pacienteLabel, value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"], feature: undefined },
+    { label: `Ocupação ${quartoLabel}`, value: `${kpis?.ocupacao ?? 0}%`, icon: BedDouble, color: "text-emerald-600", href: "/quartos", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
     { label: "Consultas Hoje", value: String(kpis?.agendamentosHoje ?? 0), icon: Calendar, color: "text-indigo-600", href: "/agenda", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "MONITOR"], feature: "agenda" },
     { label: "Receita Mensal", value: `R$ ${((kpis?.receitaMes ?? 0) / 1000).toFixed(0)}k`, icon: DollarSign, color: "text-amber-600", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
     { label: "Inadimplentes", value: String(kpis?.inadimplentes ?? 0), icon: AlertTriangle, color: "text-red-500", href: "/financeiro", roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
-    { label: "Evoluções Pendentes", value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"], feature: "prontuario" },
+    { label: evolLabel, value: String(kpis?.evolucoesPendentes ?? 0), icon: FileHeart, color: "text-purple-600", href: "/prontuario", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"], feature: "prontuario" },
     { label: "Estoque Baixo", value: String(kpis?.estoqueBaixo ?? 0), icon: Package, color: "text-orange-600", href: "/estoque", roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"], feature: "estoque" },
   ];
 

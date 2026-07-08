@@ -59,9 +59,15 @@ export async function GET(req: NextRequest) {
     title = "Relatório Clínico";
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
+    const evolWhere: any = { createdAt: { gte: thirtyDaysAgo } };
+    const prescWhere: any = { ativa: true };
+    if (tenantId) {
+      evolWhere.paciente = { tenantId };
+      prescWhere.paciente = { tenantId };
+    }
     const [evolucoes, prescricoes, pacientes] = await Promise.all([
-      prisma.evolucao.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
-      prisma.prescricao.count({ where: { ativa: true } }),
+      prisma.evolucao.count({ where: evolWhere }),
+      prisma.prescricao.count({ where: prescWhere }),
       prisma.paciente.count({ where: { ...(tenantId ? { tenantId } : {}), status: "ATIVO", deletedAt: null } }),
     ]);
     rows = [

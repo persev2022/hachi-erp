@@ -151,6 +151,11 @@ export async function GET(req: NextRequest) {
     const where: any = { canal: "WHATSAPP" };
     if (pacienteId) where.pacienteId = pacienteId;
 
+    // Tenant isolation: filter comunicações by tenant
+    if (session.tenantId) {
+      where.tenantId = session.tenantId;
+    }
+
     const comunicacoes = await prisma.comunicacao.findMany({
       where,
       include: {

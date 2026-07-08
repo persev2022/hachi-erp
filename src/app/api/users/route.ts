@@ -31,6 +31,10 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
+    // Tenant isolation: only show users belonging to this tenant
+    const tenantFilter = session.tenantId ? { tenantId: session.tenantId } : {};
+    Object.assign(where, tenantFilter);
+
     if (role) {
       // Support comma-separated roles
       const roles = role.split(",").map((r) => r.trim());

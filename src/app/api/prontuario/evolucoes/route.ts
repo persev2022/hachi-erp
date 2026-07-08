@@ -36,6 +36,11 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
+    // Tenant isolation: filter evoluções by paciente's tenant
+    if (session.tenantId) {
+      where.paciente = { tenantId: session.tenantId };
+    }
+
     if (pacienteId) {
       where.pacienteId = pacienteId;
     }

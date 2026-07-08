@@ -10,7 +10,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    // Tenant isolation: filter quartos by tenant
+    const tenantFilter = session.tenantId ? { tenantId: session.tenantId } : {};
+
     const quartos = await prisma.quarto.findMany({
+      where: tenantFilter,
       include: {
         pacientes: {
           where: { status: "ATIVO", deletedAt: null },
