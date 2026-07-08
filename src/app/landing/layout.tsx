@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Hachi Platform — Sistema Operacional para Negócios",
+  title: "Hachi Platform — Business Operating System",
   description:
     "Plataforma multi-vertical com prontuário, financeiro, agenda, CRM e automação. 8 verticais, um único sistema. Comece grátis.",
   keywords: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "gestão escolar",
   ],
   openGraph: {
-    title: "Hachi Platform — Sistema Operacional para Negócios",
+    title: "Hachi Platform — Business Operating System",
     description: "Uma plataforma. 8 verticais. Comece em 30 segundos.",
     locale: "pt_BR",
     type: "website",
