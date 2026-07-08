@@ -30,6 +30,7 @@ const PUBLIC_PATHS = [
   "/_next",
   "/images",
   "/favicon.ico",
+  "/guia",
 ];
 
 // CORS allowlist — add your production domain
