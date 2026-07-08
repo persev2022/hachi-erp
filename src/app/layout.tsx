@@ -22,6 +22,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0D9488" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <script dangerouslySetInnerHTML={{ __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}` }} />
       </head>
       <body className={inter.className}>{children}</body>
     </html>

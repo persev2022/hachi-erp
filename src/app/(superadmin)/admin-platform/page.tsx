@@ -46,6 +46,18 @@ interface HealthData {
   timestamp: string;
 }
 
+interface ActivityEntry {
+  id: string;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  userName: string;
+  userEmail: string;
+  tenantId: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+}
+
 const verticalLabels: Record<string, string> = {
   recovery: "Recovery",
   clinic: "Clinic",
@@ -74,6 +86,29 @@ const planLabels: Record<string, string> = {
   enterprise: "Enterprise",
 };
 
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `${diffMin}min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  return `${diffD}d`;
+}
+
+function actionColor(action: string): string {
+  switch (action.toUpperCase()) {
+    case "CREATE": return "text-green-600";
+    case "UPDATE": return "text-blue-600";
+    case "DELETE": return "text-red-600";
+    case "LOGIN": return "text-gray-500";
+    default: return "text-gray-600";
+  }
+}
+
 export default function SuperAdminPage() {
   const [tenants, setTenants] = React.useState<Tenant[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -82,10 +117,13 @@ export default function SuperAdminPage() {
   const [error, setError] = React.useState("");
   const [health, setHealth] = React.useState<HealthData | null>(null);
   const [healthLoading, setHealthLoading] = React.useState(true);
+  const [activity, setActivity] = React.useState<ActivityEntry[]>([]);
+  const [activityLoading, setActivityLoading] = React.useState(true);
 
   React.useEffect(() => {
     fetchTenants();
     fetchHealth();
+    fetchActivity();
   }, []);
 
   async function fetchHealth() {
@@ -97,6 +135,18 @@ export default function SuperAdminPage() {
       // silent
     } finally {
       setHealthLoading(false);
+    }
+  }
+
+  async function fetchActivity() {
+    try {
+      const res = await fetch("/api/platform/activity");
+      const data = await res.json();
+      if (data.success) setActivity(data.data.slice(0, 10));
+    } catch {
+      // silent
+    } finally {
+      setActivityLoading(false);
     }
   }
 
@@ -347,6 +397,32 @@ export default function SuperAdminPage() {
             </div>
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">Não foi possível carregar status</p>
+          )}
+        </div>
+
+        {/* Atividade Recente */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <BarChart3 className="h-5 w-5 text-gray-400" />
+            <h2 className="font-semibold text-gray-900">Atividade Recente</h2>
+          </div>
+          {activityLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+          ) : activity.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-4">Nenhuma atividade registrada</p>
+          ) : (
+            <div className="space-y-2">
+              {activity.map((entry) => (
+                <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <span className="text-xs text-gray-400 w-10 shrink-0">{timeAgo(entry.createdAt)}</span>
+                  <span className="text-sm text-gray-700 truncate">{entry.userName}</span>
+                  <span className={`text-xs font-mono font-medium ${actionColor(entry.action)}`}>{entry.action}</span>
+                  <span className="text-xs font-mono text-gray-500 truncate">{entry.entity}</span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </main>
