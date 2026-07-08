@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Shield,
+  Bell,
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -57,6 +58,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
   const [tenantName, setTenantName] = React.useState<string | null>(null);
   const [terminology, setTerminology] = React.useState<Record<string, string> | null>(null);
+  const [unreadCount, setUnreadCount] = React.useState(0);
+  const [brandColor, setBrandColor] = React.useState<string | null>(null);
 
   // Fetch user role, platform features, and terminology once
   React.useEffect(() => {
@@ -81,6 +84,22 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       .then((r) => r.json())
       .then((d) => { if (d.success) setTerminology(d.terminology); })
       .catch(() => {});
+
+    fetch("/api/platform/branding")
+      .then((r) => r.json())
+      .then((d) => { if (d.success && d.primaryColor) setBrandColor(d.primaryColor); })
+      .catch(() => {});
+
+    // Fetch unread notifications count
+    const fetchUnread = () => {
+      fetch("/api/notifications/count")
+        .then((r) => r.json())
+        .then((d) => { if (d.success) setUnreadCount(d.unread); })
+        .catch(() => {});
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Apply terminology to nav items
@@ -156,6 +175,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
+                  style={isActive && brandColor ? { backgroundColor: brandColor, color: "#fff" } : undefined}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   {getNavLabel(item)}
@@ -168,6 +188,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Footer */}
       <div className="p-3 border-t border-border space-y-1">
+        {unreadCount > 0 && (
+          <Link href="/notifications" onClick={onClose} className="flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <div className="flex items-center gap-3">
+              <Bell className="h-4 w-4" />
+              Notificações
+            </div>
+            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{unreadCount}</span>
+          </Link>
+        )}
         <div className="flex items-center justify-between px-3 py-1">
           <span className="text-xs text-muted-foreground">Tema</span>
           <ThemeToggle />
