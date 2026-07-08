@@ -13,6 +13,7 @@ import {
   BedDouble,
   FileText,
   BarChart3,
+  PieChart,
   Settings,
   MessageSquare,
   LogOut,
@@ -45,6 +46,7 @@ const navigation: NavItem[] = [
   { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "comunicacao" },
   { name: "CRM", href: "/crm", icon: UserCheck, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "crm" },
   { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"], feature: "relatorios" },
+  { name: "Métricas", href: "/metricas", icon: PieChart, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR"], feature: "relatorios" },
   { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"], feature: "configuracoes" },
   { name: "Platform", href: "/admin-platform", icon: Shield, roles: ["ADMIN"] },
 ];

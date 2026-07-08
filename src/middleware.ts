@@ -31,6 +31,7 @@ const PUBLIC_PATHS = [
   "/images",
   "/favicon.ico",
   "/guia",
+  "/portal",
 ];
 
 // CORS allowlist — add your production domain
@@ -142,6 +143,7 @@ export async function middleware(req: NextRequest) {
       "/comunicacao": ["ADMIN", "COORDENADOR", "SECRETARIA"],
       "/crm": ["ADMIN", "COORDENADOR", "SECRETARIA"],
       "/relatorios": ["ADMIN", "FINANCEIRO"],
+      "/metricas": ["ADMIN", "FINANCEIRO", "COORDENADOR"],
       "/configuracoes": ["ADMIN"],
       "/quartos": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
       "/estoque": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"],
