@@ -20,6 +20,7 @@ import {
   X,
   Shield,
   Bell,
+  UserCheck,
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -42,6 +43,7 @@ const navigation: NavItem[] = [
   { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
   { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"], feature: "documentos" },
   { name: "Comunicação", href: "/comunicacao", icon: MessageSquare, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "comunicacao" },
+  { name: "CRM", href: "/crm", icon: UserCheck, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "crm" },
   { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"], feature: "relatorios" },
   { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"], feature: "configuracoes" },
   { name: "Platform", href: "/admin-platform", icon: Shield, roles: ["ADMIN"] },

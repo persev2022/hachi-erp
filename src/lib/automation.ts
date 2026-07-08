@@ -13,6 +13,7 @@
  */
 
 import { emitEvent } from "@/lib/webhooks";
+import { createNotification } from "@/lib/notifications";
 
 export interface AutomationRule {
   id: string;
@@ -120,13 +121,23 @@ export async function processAutomations(
       }
     }
 
-    // Log execution (Phase 1 — actual execution in Phase 2)
+    // Log execution
     await emitEvent(tenantId, `automation.executed`, {
       ruleId: rule.id,
       ruleName: rule.name,
       trigger: event,
       action: rule.action,
       payload,
+    });
+
+    // Create notification for the responsible user
+    await createNotification({
+      tenantId,
+      userId: payload.userId || "system",
+      title: `Automação: ${rule.name}`,
+      message: `Regra "${rule.name}" executada para ${event}`,
+      type: "info",
+      link: payload.link || undefined,
     });
 
     executed.push(rule.id);

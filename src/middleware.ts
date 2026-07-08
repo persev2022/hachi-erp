@@ -140,6 +140,7 @@ export async function middleware(req: NextRequest) {
       "/pacientes": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"],
       "/documentos": ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"],
       "/comunicacao": ["ADMIN", "COORDENADOR", "SECRETARIA"],
+      "/crm": ["ADMIN", "COORDENADOR", "SECRETARIA"],
       "/relatorios": ["ADMIN", "FINANCEIRO"],
       "/configuracoes": ["ADMIN"],
       "/quartos": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
