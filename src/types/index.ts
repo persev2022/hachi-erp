@@ -1,5 +1,5 @@
 /**
- * Tipos globais do Hachi ERP.
+ * Tipos globais do Hachi Platform.
  * Quando o Prisma estiver conectado, reimportar de @prisma/client.
  */
 

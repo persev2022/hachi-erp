@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
         const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
         await resend.emails.send({
-          from: "Hachi ERP <noreply@hachi.med.br>",
+          from: "Hachi Platform <noreply@hachi.med.br>",
           to: user.email,
-          subject: "Redefinir senha — Hachi ERP",
+          subject: "Redefinir senha — Hachi Platform",
           html: `
             <h2>Olá, ${user.name}</h2>
             <p>Recebemos uma solicitação para redefinir sua senha.</p>

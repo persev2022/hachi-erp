@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Hachi ERP — Gestão Integrada para Clínicas de Reabilitação",
+  title: "Hachi Platform — Gestão Integrada para Clínicas de Reabilitação",
   description:
     "Sistema completo de gestão para clínicas de reabilitação em dependência química. Prontuário eletrônico, financeiro, agendamento e comunicação integrados.",
 };

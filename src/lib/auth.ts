@@ -18,7 +18,11 @@ export interface SessionPayload {
 }
 
 export async function createToken(payload: SessionPayload): Promise<string> {
-  return new SignJWT(payload as unknown as Record<string, unknown>)
+  // Remove null/undefined values (jose doesn't accept null in payload)
+  const cleanPayload: Record<string, unknown> = { userId: payload.userId, role: payload.role };
+  if (payload.tenantId) cleanPayload.tenantId = payload.tenantId;
+
+  return new SignJWT(cleanPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
