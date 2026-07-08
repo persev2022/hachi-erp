@@ -241,3 +241,60 @@ Hachi Platform (Core Engine + Business OS)
 - SAP: Business Suite + Industry Solutions
 - ServiceNow: Platform + vertical workflows
 - A Hachi segue o mesmo padrão, em escala menor mas com a mesma filosofia.
+
+
+---
+
+## 🐛 Bug Fixes Importantes (Jul/2026)
+
+### JWT com null values
+- **Problema**: `jose` (SignJWT) não aceita `null` como valor no payload. Se `tenantId` é `null`, o login retorna Internal Server Error.
+- **Solução**: Filtrar valores nulos antes de assinar o token. Só incluir `tenantId` quando não é null/undefined.
+- **Lição**: Sempre sanitizar payloads antes de passar para libs de serialização (JWT, JSON-LD, etc.)
+
+### Multi-tenant activation
+- **Problema**: Ativar `MULTI_TENANT_ACTIVE = true` sem que todos os dados tenham `tenantId` pode quebrar queries.
+- **Solução**: Rodar `prisma/assign-tenant.ts` ANTES de ativar a flag. Garantir que todo registro tem tenantId.
+- **Lição**: Migrations de dados devem preceder mudanças de comportamento.
+
+---
+
+## 📊 Métricas do Projeto (Jul/2026 — última medição)
+
+| Métrica | Valor |
+|---------|-------|
+| Linhas de código | 28.639 |
+| Páginas | 127 |
+| API Routes | 95 |
+| Modelos Prisma | 17 |
+| Testes | 144 (passando) |
+| Verticais | 8 (7 com APIs) |
+| Tenants demo | 9 |
+| Build time | ~5s |
+| Deploy time | <60s |
+
+---
+
+## 🏗️ Padrões Arquiteturais Consolidados
+
+### Vertical-specific APIs
+- Padrão: `src/app/api/[vertical]/[feature]/route.ts`
+- Todas verificam `tenant.vertical === "[vertical]"` (403 se não match)
+- Dados armazenados via: Documento model (titulo prefixado) OU SystemConfig (JSON)
+- Quando usar Documento: dados vinculados a um paciente/entidade
+- Quando usar SystemConfig: dados globais do tenant (tarifas, grade, atividades)
+
+### Feature Flags
+- Definidos em `src/lib/features.ts` como `VERTICAL_FEATURES`
+- Consultados via `GET /api/platform` (retorna features do tenant logado)
+- Aplicados em: sidebar (oculta menu), dashboard (oculta cards), middleware (futuro)
+
+### Terminologia
+- Definida em `src/app/api/platform/terminology/route.ts`
+- Cada vertical tem mapeamento: paciente→Hóspede, quarto→UH, evolucao→Atendimento
+- Frontend fetch e aplica nos títulos/labels
+
+### Branding (White-label)
+- Config armazenada no `tenant.config.branding` (JSON)
+- API: `GET /api/platform/branding`
+- Sidebar aplica `brandColor` como inline style no item ativo

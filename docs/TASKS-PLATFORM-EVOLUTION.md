@@ -76,11 +76,11 @@
 | # | Task | Descrição | Status |
 |---|------|-----------|--------|
 | 5.1 | Sistema de planos e billing | Stripe/Asaas integration | ⬜ |
-| 5.2 | Onboarding self-service (signup → tenant → config) | Zero-touch | ⬜ |
+| 5.2 | Onboarding self-service (signup → tenant → config) | Zero-touch | ✅ |
 | 5.3 | Marketplace de módulos | Instalar/desinstalar features | ⬜ |
-| 5.4 | White-label (branding por tenant) | Logo, cores, domínio | ⬜ |
-| 5.5 | Documentação para desenvolvedores | APIs, webhooks, extensões | ⬜ |
-| 5.6 | Multi-idioma (i18n) | pt-BR, en, es | ⬜ |
+| 5.4 | White-label (branding por tenant) | Logo, cores, domínio | 🟡 (cor funciona) |
+| 5.5 | Documentação para desenvolvedores | APIs, webhooks, extensões | ✅ (/api/platform/docs) |
+| 5.6 | Multi-idioma (i18n) | pt-BR, en, es | 🟡 (foundation criada) |
 
 ---
 
