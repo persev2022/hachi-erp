@@ -1,0 +1,13 @@
+{
+  "name": "Hachi Platform",
+  "short_name": "Hachi",
+  "description": "Business Operating System — One Platform, Infinite Verticals",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0D9488",
+  "icons": [
+    { "src": "/images/hachi-logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/hachi-logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
