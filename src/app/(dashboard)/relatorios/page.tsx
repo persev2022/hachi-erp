@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BarChart3, TrendingUp, Users, BedDouble, DollarSign, Calendar, Download, Loader2, FileSpreadsheet } from "lucide-react";
+import { BarChart3, TrendingUp, Users, BedDouble, DollarSign, Calendar, Download, Loader2, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,6 +88,19 @@ export default function RelatoriosPage() {
       <div>
         <h1 className="text-xl md:text-2xl font-bold">Relatórios & BI</h1>
         <p className="text-sm text-muted-foreground mt-1">Indicadores de performance e exportação de dados</p>
+      </div>
+
+      {/* PDF Export Buttons */}
+      <div className="flex flex-wrap gap-2">
+        <a href="/api/relatorios/pdf?type=financeiro" target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-muted transition">
+          <FileText className="h-4 w-4" /> Financeiro (PDF)
+        </a>
+        <a href="/api/relatorios/pdf?type=ocupacao" target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-muted transition">
+          <FileText className="h-4 w-4" /> Ocupação (PDF)
+        </a>
+        <a href="/api/relatorios/pdf?type=clinico" target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-muted transition">
+          <FileText className="h-4 w-4" /> Clínico (PDF)
+        </a>
       </div>
 
       {/* KPIs */}
