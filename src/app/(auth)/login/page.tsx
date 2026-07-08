@@ -74,9 +74,9 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <CardTitle className="text-2xl">Hachi ERP</CardTitle>
+          <CardTitle className="text-2xl">Hachi Platform</CardTitle>
           <CardDescription className="mt-1">
-            Sistema de gestão para clínicas de reabilitação
+            Business Operating System
           </CardDescription>
         </div>
       </CardHeader>
@@ -123,7 +123,7 @@ export default function LoginPage() {
           </div>
         </form>
         <p className="text-center text-xs text-muted-foreground mt-6">
-          © 2026 Hachi — Todos os direitos reservados
+          © 2026 Hachi Platform — Todos os direitos reservados
         </p>
       </CardContent>
     </Card>
