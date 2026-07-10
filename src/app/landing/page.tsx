@@ -245,7 +245,7 @@ export default function LandingPage() {
                 }}
               >
                 <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center mb-4">
-                  <span className="text-red-400 text-lg">✕</span>
+                  <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </div>
                 <h3 className="font-semibold text-white text-lg">{p.title}</h3>
                 <p className="text-sm mt-2 text-slate-400 leading-relaxed">{p.desc}</p>
@@ -263,10 +263,10 @@ export default function LandingPage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
             {[
-              { icon: "⚡", title: "Operar", desc: "Organize o dia a dia sem esforço. Agenda, tarefas e fluxos automáticos.", color: "teal" },
-              { icon: "📊", title: "Controlar", desc: "Visibilidade total em tempo real. KPIs, financeiro e ocupação num clique.", color: "blue" },
-              { icon: "🔗", title: "Integrar", desc: "WhatsApp, Pix, fiscal — tudo conectado. Sem copiar e colar entre sistemas.", color: "purple" },
-              { icon: "🚀", title: "Evoluir", desc: "Escale sem reconstruir. Novas unidades, novas verticais, mesma base.", color: "amber" },
+              { title: "Operar", desc: "Organize o dia a dia sem esforço. Agenda, tarefas e fluxos automáticos.", color: "teal" },
+              { title: "Controlar", desc: "Visibilidade total em tempo real. KPIs, financeiro e ocupação num clique.", color: "blue" },
+              { title: "Integrar", desc: "WhatsApp, Pix, fiscal — tudo conectado. Sem copiar e colar entre sistemas.", color: "purple" },
+              { title: "Evoluir", desc: "Escale sem reconstruir. Novas unidades, novas verticais, mesma base.", color: "amber" },
             ].map((s, i) => (
               <div
                 key={s.title}
@@ -277,7 +277,10 @@ export default function LandingPage() {
                   transition: `all 0.5s ease ${i * 100}ms`,
                 }}
               >
-                <span className="text-2xl">{s.icon}</span>
+                {i === 0 && <svg className="w-6 h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>}
+                {i === 1 && <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>}
+                {i === 2 && <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.915-3.811a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>}
+                {i === 3 && <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>}
                 <h3 className="font-semibold text-lg mt-3">{s.title}</h3>
                 <p className="text-sm mt-2 text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
@@ -333,7 +336,7 @@ export default function LandingPage() {
               {["Visão financeira consolidada", "Ocupação e disponibilidade", "Alertas inteligentes", "Relatórios exportáveis"].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-teal-600 text-xs">✓</span>
+                    <svg className="w-3 h-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                   </span>
                   {item}
                 </li>
@@ -430,7 +433,7 @@ export default function LandingPage() {
                 <ul className="mt-5 space-y-2">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="text-teal-500 text-xs">✓</span> {f}
+                      <svg className="w-3.5 h-3.5 text-teal-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> {f}
                     </li>
                   ))}
                 </ul>
