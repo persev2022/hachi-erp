@@ -6,8 +6,10 @@ import { useTerminology } from "@/hooks/use-terminology";
 
 interface Reserva {
   id: string;
-  nome: string;
-  quarto: string;
+  hospedeNome?: string;
+  nome?: string;
+  quartoId?: string;
+  quarto?: string;
   checkin: string;
   checkout: string;
   status: string;
@@ -22,8 +24,8 @@ export default function ReservasPage() {
     fetch("/api/hotel/reservas")
       .then((r) => r.json())
       .then((d) => {
-        if (d.success && d.reservas) {
-          setReservas(d.reservas);
+        if (d.success && d.data) {
+          setReservas(d.data);
         }
       })
       .catch(() => {})
@@ -113,9 +115,9 @@ export default function ReservasPage() {
                     key={r.id}
                     className="border-b last:border-0 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium">{r.nome}</td>
+                    <td className="px-4 py-3 font-medium">{r.hospedeNome || r.nome}</td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {r.quarto}
+                      {r.quartoId || r.quarto || "—"}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDate(r.checkin)}

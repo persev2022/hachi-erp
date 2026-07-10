@@ -36,8 +36,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Get feature flags for this vertical
-    const features = getFeatures(vertical);
+    // Get feature flags — use tenant config if available, otherwise use vertical preset
+    const tenantConfig = tenant?.config as Record<string, unknown> | null;
+    const tenantFeatures = tenantConfig?.features as Record<string, boolean> | undefined;
+    const features = tenantFeatures || getFeatures(vertical);
 
     return NextResponse.json({
       success: true,

@@ -148,6 +148,7 @@ export async function middleware(req: NextRequest) {
       "/configuracoes": ["ADMIN"],
       "/quartos": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
       "/estoque": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"],
+      "/vertical": ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO"],
       "/reservas": ["ADMIN", "COORDENADOR", "SECRETARIA"],
       "/pdv": ["ADMIN", "FINANCEIRO"],
       "/delivery": ["ADMIN", "COORDENADOR"],
