@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 const documentTypes = [
   { id: "CONTRATO", label: "Contrato", icon: FileSignature, desc: "Contrato de prestação de serviços" },
@@ -33,6 +34,7 @@ const documentTypes = [
 ];
 
 export default function DocumentosPage() {
+  const terms = useTerminology();
   const { show } = useToast();
   const [showForm, setShowForm] = React.useState(false);
   const [selectedType, setSelectedType] = React.useState("");
@@ -164,13 +166,13 @@ export default function DocumentosPage() {
             </div>
             <form onSubmit={handleGenerate} className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Paciente *</label>
+                <label className="text-sm font-medium">{terms.paciente} *</label>
                 <select
                   name="pacienteId"
                   required
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
-                  <option value="">Selecione o paciente</option>
+                  <option value="">{`Selecione o ${terms.paciente.toLowerCase()}`}</option>
                   {pacientes.map((p) => (
                     <option key={p.id} value={p.id}>{p.nome}</option>
                   ))}

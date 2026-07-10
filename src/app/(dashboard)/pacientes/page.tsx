@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTerminology } from "@/hooks/use-terminology";
 
 
 type StatusPaciente = "ATIVO" | "ALTA" | "EVADIDO" | "TRANSFERIDO" | "OBITO";
@@ -73,11 +74,11 @@ function formatCpf(cpf: string) {
 }
 
 export default function PacientesPage() {
+  const terms = useTerminology();
   const [busca, setBusca] = React.useState("");
   const [pacientes, setPacientes] = React.useState<Paciente[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
-  const [pageTitle, setPageTitle] = React.useState("Pacientes");
   const [pagination, setPagination] = React.useState({
     total: 0,
     page: 1,
@@ -85,26 +86,6 @@ export default function PacientesPage() {
     totalPages: 0,
   });
   const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  // Fetch terminology for dynamic title
-  React.useEffect(() => {
-    fetch("/api/platform/terminology")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success && d.terminology?.paciente) {
-          const term = d.terminology.paciente;
-          // Pluralize based on last char
-          if (term.endsWith("e")) {
-            setPageTitle(`${term}s`);
-          } else if (term.endsWith("l")) {
-            setPageTitle(term.slice(0, -1) + "is");
-          } else {
-            setPageTitle(`${term}s`);
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const fetchPacientes = React.useCallback(async (search: string, page = 1) => {
     setLoading(true);
@@ -156,9 +137,9 @@ export default function PacientesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{pageTitle}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{terms.pacientes}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Gerencie os {pageTitle.toLowerCase()} da clínica
+            {`Gerencie os ${terms.pacientes.toLowerCase()}`}
             {pagination.total > 0 && (
               <span className="ml-2">· {pagination.total} cadastrados</span>
             )}
@@ -167,7 +148,7 @@ export default function PacientesPage() {
         <Button asChild>
           <Link href="/pacientes/novo">
             <Plus className="h-4 w-4 mr-2" />
-            Novo Paciente
+            {terms.novoPaciente}
           </Link>
         </Button>
       </div>

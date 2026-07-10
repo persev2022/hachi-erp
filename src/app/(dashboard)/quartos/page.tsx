@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Quarto {
   id: string;
@@ -28,6 +29,7 @@ const statusConfig: Record<string, { color: string; bg: string; icon: React.Elem
 const statusLabel: Record<string, string> = { DISPONIVEL: "Disponível", OCUPADO: "Ocupado", MANUTENCAO: "Manutenção", LIMPEZA: "Limpeza" };
 
 export default function QuartosPage() {
+  const terms = useTerminology();
   const [quartos, setQuartos] = React.useState<Quarto[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [showTransfer, setShowTransfer] = React.useState(false);
@@ -100,8 +102,8 @@ export default function QuartosPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Quartos & Leitos</h1>
-          <p className="text-sm text-muted-foreground mt-1">Mapa de ocupação e gestão de leitos</p>
+          <h1 className="text-xl md:text-2xl font-bold">{`${terms.quartos} & Leitos`}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{`Mapa de ocupação e gestão de leitos`}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => setShowTransfer(true)}>
@@ -145,23 +147,23 @@ export default function QuartosPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-card border rounded-xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Transferir Paciente</h2>
+              <h2 className="text-lg font-semibold">{`Transferir ${terms.paciente}`}</h2>
               <Button variant="ghost" size="icon" onClick={() => setShowTransfer(false)}><X className="h-4 w-4" /></Button>
             </div>
             <div className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Paciente</label>
+                <label className="text-sm font-medium">{terms.paciente}</label>
                 <select value={transferPaciente} onChange={(e) => setTransferPaciente(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option value="">Selecione o paciente</option>
+                  <option value="">{`Selecione o ${terms.paciente.toLowerCase()}`}</option>
                   {pacientes.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Quarto Destino</label>
+                <label className="text-sm font-medium">{`${terms.quarto} Destino`}</label>
                 <select value={transferQuarto} onChange={(e) => setTransferQuarto(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option value="">Selecione o quarto</option>
+                  <option value="">{`Selecione o ${terms.quarto.toLowerCase()}`}</option>
                   {quartos.filter((q) => q.status === "DISPONIVEL").map((q) => (
                     <option key={q.id} value={q.id}>{q.numero} ({q.tipo || "—"})</option>
                   ))}
@@ -244,7 +246,7 @@ export default function QuartosPage() {
         </div>
       ))}
 
-      {quartos.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum quarto cadastrado.</p>}
+      {quartos.length === 0 && <p className="text-center text-muted-foreground py-8">{`Nenhum ${terms.quarto.toLowerCase()} cadastrado.`}</p>}
     </div>
   );
 }

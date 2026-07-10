@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Loader2, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Patient {
   id: string;
@@ -23,16 +24,9 @@ interface Column {
 }
 
 export default function CRMPage() {
+  const terms = useTerminology();
   const [columns, setColumns] = React.useState<Column[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [terminology, setTerminology] = React.useState<Record<string, string> | null>(null);
-
-  React.useEffect(() => {
-    fetch("/api/platform/terminology")
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setTerminology(d.terminology); })
-      .catch(() => {});
-  }, []);
 
   React.useEffect(() => {
     fetch("/api/crm")
@@ -51,7 +45,7 @@ export default function CRMPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const title = terminology?.paciente ? `CRM — ${terminology.paciente}s` : "CRM — Pipeline";
+  const title = `CRM — ${terms.pacientes}`;
 
   function formatDate(d?: string | null) {
     if (!d) return null;
@@ -70,7 +64,7 @@ export default function CRMPage() {
     <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-xl md:text-2xl font-bold">{title}</h1>
-        <p className="text-sm text-muted-foreground mt-1">Visão Kanban do funil de {terminology?.paciente || "pacientes"}</p>
+        <p className="text-sm text-muted-foreground mt-1">{`Visão Kanban do funil de ${terms.pacientes.toLowerCase()}`}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

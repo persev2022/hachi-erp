@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Evolucao {
   id: string;
@@ -55,6 +56,7 @@ function formatDateTime(d: string) {
 }
 
 export default function ProntuarioPage() {
+  const terms = useTerminology();
   const [busca, setBusca] = React.useState("");
   const [filtroTipo, setFiltroTipo] = React.useState<string>("Todas");
   const [evolucoes, setEvolucoes] = React.useState<Evolucao[]>([]);
@@ -148,12 +150,12 @@ export default function ProntuarioPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-bold">Prontuário Eletrônico</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Evoluções clínicas e histórico dos pacientes
+            {`${terms.evolucoes} clínicas e histórico dos ${terms.pacientes.toLowerCase()}`}
           </p>
         </div>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Nova Evolução
+          {terms.novaEvolucao}
         </Button>
       </div>
 
@@ -162,20 +164,20 @@ export default function ProntuarioPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-card border rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Nova Evolução</h2>
+              <h2 className="text-lg font-semibold">{terms.novaEvolucao}</h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
             <form onSubmit={handleNewEvolucao} className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Paciente *</label>
+                <label className="text-sm font-medium">{terms.paciente} *</label>
                 <select
                   name="pacienteId"
                   required
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
-                  <option value="">Selecione o paciente</option>
+                  <option value="">{`Selecione o ${terms.paciente.toLowerCase()}`}</option>
                   {pacientes.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.nome}
@@ -200,13 +202,13 @@ export default function ProntuarioPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Conteúdo da Evolução *</label>
+                <label className="text-sm font-medium">{`Conteúdo da ${terms.evolucao}`} *</label>
                 <textarea
                   name="conteudo"
                   required
                   minLength={10}
                   rows={6}
-                  placeholder="Descreva a evolução clínica do paciente..."
+                  placeholder={`Descreva a ${terms.evolucao.toLowerCase()} clínica do ${terms.paciente.toLowerCase()}...`}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y min-h-[120px]"
                 />
               </div>
@@ -229,7 +231,7 @@ export default function ProntuarioPage() {
         <div className="relative w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar paciente, profissional ou conteúdo..."
+            placeholder={`Buscar ${terms.paciente.toLowerCase()}, profissional ou conteúdo...`}
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             className="pl-9"

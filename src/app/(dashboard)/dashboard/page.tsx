@@ -12,6 +12,7 @@ import {
   Package,
   Loader2,
 } from "lucide-react";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface DashboardData {
   kpis: {
@@ -34,11 +35,11 @@ interface DashboardData {
 }
 
 export default function DashboardPage() {
+  const terms = useTerminology();
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [userRole, setUserRole] = React.useState<string>("");
   const [features, setFeatures] = React.useState<Record<string, boolean> | null>(null);
-  const [terminology, setTerminology] = React.useState<Record<string, string> | null>(null);
 
   const fetchData = React.useCallback(() => {
     fetch("/api/relatorios/dashboard")
@@ -57,10 +58,6 @@ export default function DashboardPage() {
     fetch("/api/platform")
       .then((r) => r.json())
       .then((d) => { if (d.success) setFeatures(d.platform.features); })
-      .catch(() => {});
-    fetch("/api/platform/terminology")
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setTerminology(d.terminology); })
       .catch(() => {});
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchData, 30000);
@@ -103,10 +100,9 @@ export default function DashboardPage() {
   const kpis = data?.kpis;
 
   // Adapt labels based on tenant vertical terminology
-  const t = terminology || {};
-  const pacienteLabel = t.paciente ? `${t.paciente}s Ativos` : "Pacientes Ativos";
-  const evolLabel = t.evolucao ? `${t.evolucao} Pendentes` : "Evoluções Pendentes";
-  const quartoLabel = t.quartos || "Quartos";
+  const pacienteLabel = `${terms.pacientes} Ativos`;
+  const evolLabel = `${terms.evolucoes} Pendentes`;
+  const quartoLabel = terms.quartos;
 
   const stats = [
     { label: pacienteLabel, value: String(kpis?.pacientesAtivos ?? 0), icon: Users, color: "text-blue-600", href: "/pacientes", roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"], feature: undefined },

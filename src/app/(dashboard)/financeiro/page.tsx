@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Movimentacao {
   id: string;
@@ -50,6 +51,7 @@ function formatDate(d: string) {
 }
 
 export default function FinanceiroPage() {
+  const terms = useTerminology();
   const { show } = useToast();
   const [movimentacoes, setMovimentacoes] = React.useState<Movimentacao[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -173,9 +175,9 @@ export default function FinanceiroPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Paciente</label>
+                <label className="text-sm font-medium">{terms.paciente}</label>
                 <select name="pacienteId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option value="">Sem paciente (despesa geral)</option>
+                  <option value="">{`Sem ${terms.paciente.toLowerCase()} (despesa geral)`}</option>
                   {pacientes.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
                 </select>
               </div>
@@ -287,7 +289,7 @@ export default function FinanceiroPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Vencimento</TableHead>
-                <TableHead>Paciente</TableHead>
+                <TableHead>{terms.paciente}</TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Valor</TableHead>

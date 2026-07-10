@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Agendamento {
   id: string;
@@ -55,6 +56,7 @@ function formatHora(d: string) {
 }
 
 export default function AgendaPage() {
+  const terms = useTerminology();
   const { show } = useToast();
   const [data, setData] = React.useState(() => new Date().toISOString().split("T")[0]);
   const [agendamentos, setAgendamentos] = React.useState<Agendamento[]>([]);
@@ -203,7 +205,7 @@ export default function AgendaPage() {
           />
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Novo Agendamento</span>
+            <span className="hidden sm:inline">{terms.novoAgendamento}</span>
             <span className="sm:hidden">Novo</span>
           </Button>
         </div>
@@ -214,20 +216,20 @@ export default function AgendaPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-card border rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Novo Agendamento</h2>
+              <h2 className="text-lg font-semibold">{terms.novoAgendamento}</h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
             <form onSubmit={handleNewAgendamento} className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Paciente *</label>
+                <label className="text-sm font-medium">{terms.paciente} *</label>
                 <select
                   name="pacienteId"
                   required
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
-                  <option value="">Selecione o paciente</option>
+                  <option value="">{`Selecione o ${terms.paciente.toLowerCase()}`}</option>
                   {pacientes.map((p) => (
                     <option key={p.id} value={p.id}>{p.nome}</option>
                   ))}

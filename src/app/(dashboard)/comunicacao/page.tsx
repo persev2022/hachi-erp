@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Comunicacao {
   id: string;
@@ -43,6 +44,7 @@ function formatDateTime(d: string) {
 }
 
 export default function ComunicacaoPage() {
+  const terms = useTerminology();
   const { show } = useToast();
   const [comunicacoes, setComunicacoes] = React.useState<Comunicacao[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -132,7 +134,7 @@ export default function ComunicacaoPage() {
             </div>
             <form onSubmit={handleSend} className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Paciente (opcional)</label>
+                <label className="text-sm font-medium">{`${terms.paciente} (opcional)`}</label>
                 <select
                   name="pacienteId"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
