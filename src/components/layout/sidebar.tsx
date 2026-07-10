@@ -22,6 +22,10 @@ import {
   Shield,
   Bell,
   UserCheck,
+  CalendarCheck,
+  ShoppingCart,
+  Truck,
+  Wrench,
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -48,6 +52,10 @@ const navigation: NavItem[] = [
   { name: "Relatórios", href: "/relatorios", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO"], feature: "relatorios" },
   { name: "Métricas", href: "/metricas", icon: PieChart, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR"], feature: "relatorios" },
   { name: "Configurações", href: "/configuracoes", icon: Settings, roles: ["ADMIN"], feature: "configuracoes" },
+  { name: "Reservas", href: "/reservas", icon: CalendarCheck, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "reservas" },
+  { name: "PDV", href: "/pdv", icon: ShoppingCart, roles: ["ADMIN", "FINANCEIRO"], feature: "pdv" },
+  { name: "Delivery", href: "/delivery", icon: Truck, roles: ["ADMIN", "COORDENADOR"], feature: "delivery" },
+  { name: "Ferramentas", href: "/vertical", icon: Wrench, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO"] },
   { name: "Platform", href: "/admin-platform", icon: Shield, roles: ["ADMIN"] },
 ];
 

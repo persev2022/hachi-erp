@@ -148,6 +148,9 @@ export async function middleware(req: NextRequest) {
       "/configuracoes": ["ADMIN"],
       "/quartos": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"],
       "/estoque": ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"],
+      "/reservas": ["ADMIN", "COORDENADOR", "SECRETARIA"],
+      "/pdv": ["ADMIN", "FINANCEIRO"],
+      "/delivery": ["ADMIN", "COORDENADOR"],
     };
 
     for (const [route, allowedRoles] of Object.entries(routeRoles)) {
