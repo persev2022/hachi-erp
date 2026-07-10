@@ -1,117 +1,200 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
+import * as React from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
-import {
-  BarChart3, Calendar, Users, FileText, Package, Zap,
-  ArrowRight, CheckCircle2, Shield, Building2, AlertTriangle, TrendingUp
-} from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Hachi Platform — Business Operating System",
-  description: "Plataforma multi-vertical com prontuário, financeiro, agenda, CRM e automação. 8 verticais, um sistema.",
-  keywords: ["plataforma multi-vertical", "sistema gestão empresarial", "SaaS brasileiro", "prontuário eletrônico", "gestão clínica"],
-};
+/* ─── Hooks ─────────────────────────────────────────── */
+function useMouseParallax() {
+  const [pos, setPos] = React.useState({ x: 0, y: 0 });
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setPos({ x, y });
+    };
+    window.addEventListener("mousemove", handler);
+    return () => window.removeEventListener("mousemove", handler);
+  }, []);
+  return pos;
+}
 
+function useScrollReveal() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
+function useCountUp(target: number, active: boolean) {
+  const [val, setVal] = React.useState(0);
+  React.useEffect(() => {
+    if (!active) return;
+    let start = 0;
+    const duration = 1800;
+    const step = (ts: number) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      setVal(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [active, target]);
+  return val;
+}
+
+/* ─── CSS Animations ────────────────────────────────── */
+const animations = `
+@keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+@keyframes gradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+`;
+
+/* ─── Data ──────────────────────────────────────────── */
+const verticals = [
+  { name: "Recovery", desc: "Comunidades terapêuticas e reabilitação", color: "#0D9488", href: "/landing/recovery" },
+  { name: "Clinic", desc: "Clínicas médicas e estética", color: "#3B82F6", href: "/landing/clinic" },
+  { name: "Senior", desc: "Instituições de longa permanência", color: "#8B5CF6", href: "/landing/senior" },
+  { name: "Hotel", desc: "Hotéis e pousadas", color: "#F59E0B", href: "/landing/hotel" },
+  { name: "Restaurant", desc: "Restaurantes e dark kitchens", color: "#EF4444", href: "/landing/restaurant" },
+  { name: "Education", desc: "Escolas e cursos", color: "#06B6D4", href: "/landing/education" },
+  { name: "Vet", desc: "Clínicas veterinárias e petshops", color: "#10B981", href: "/landing/vet" },
+  { name: "Services", desc: "Prestadores de serviço em geral", color: "#6366F1", href: "/landing/services" },
+];
+
+const plans = [
+  { name: "Starter", price: "R$299", desc: "Para quem está começando a organizar", features: ["Até 50 cadastros", "Financeiro básico", "1 usuário", "Suporte por email"] },
+  { name: "Professional", price: "R$599", desc: "Para operações em crescimento", features: ["Cadastros ilimitados", "Todos os módulos", "Até 10 usuários", "Integrações", "Suporte prioritário"], highlight: true },
+  { name: "Enterprise", price: "R$1.499", desc: "Para redes e multi-unidades", features: ["Multi-unidade", "API completa", "Usuários ilimitados", "Onboarding dedicado", "SLA 99.9%"] },
+];
+
+/* ─── Page Component ────────────────────────────────── */
 export default function LandingPage() {
-  return (
-    <div className="min-h-screen bg-white text-slate-900 antialiased">
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  const mouse = useMouseParallax();
+  const stats = useScrollReveal();
+  const problem = useScrollReveal();
+  const solution = useScrollReveal();
+  const verts = useScrollReveal();
+  const dashboard = useScrollReveal();
+  const pricing = useScrollReveal();
 
-      {/* NAV */}
+  const countCode = useCountUp(28500, stats.visible);
+  const countPages = useCountUp(139, stats.visible);
+  const countApis = useCountUp(95, stats.visible);
+  const countTests = useCountUp(144, stats.visible);
+
+  return (
+    <div className="min-h-screen bg-white text-slate-900 antialiased overflow-x-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <style dangerouslySetInnerHTML={{ __html: animations }} />
+
+      {/* ─── NAV ─── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Building2 className="h-6 w-6 text-teal-600" />
-            <span className="font-semibold text-lg tracking-tight">Hachi</span>
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">Platform</span>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xs">H</span>
+            </div>
+            <span className="font-semibold text-lg tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Hachi</span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Entrar</Link>
-            <Link href="/onboarding" className="text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition-colors shadow-sm">
+            <Link href="/onboarding" className="text-sm font-medium text-white bg-slate-900 hover:bg-teal-700 px-5 py-2.5 rounded-xl transition-all shadow-sm">
               Começar grátis
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="pt-32 pb-24 px-6">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      {/* ─── HERO ─── */}
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        {/* Animated gradient mesh bg */}
+        <div className="absolute inset-0 opacity-40" style={{
+          background: "radial-gradient(circle at 20% 50%, rgba(13,148,136,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(245,158,11,0.08) 0%, transparent 50%)",
+          backgroundSize: "200% 200%",
+          animation: "gradient 12s ease infinite",
+        }} />
+
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative">
+          {/* Left: Copy */}
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-3 py-1 mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-              8 verticais, uma plataforma
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-3.5 py-1.5 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500" style={{ animation: "pulse-dot 2s infinite" }} />
+              Plataforma #1 para gestão multi-vertical
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]">
-              O sistema operacional<br className="hidden sm:block" />
-              <span className="text-teal-600">do seu negócio.</span>
+            <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Pare de perder tempo{" "}
+              <span className="text-slate-400">com planilhas.</span>
+              <br />
+              <span className="text-teal-600">Automatize toda a sua operação.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
-              Financeiro, agenda, CRM, prontuário e automação. Tudo integrado, sem complexidade. Configure em minutos.
+              A plataforma que transforma negócios desorganizados em máquinas de eficiência. De comunidades terapêuticas a restaurantes — uma base, infinitas verticais.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link href="/onboarding" className="inline-flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg shadow-teal-600/20">
-                Começar grátis <ArrowRight className="w-4 h-4" />
+              <Link href="/onboarding" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg">
+                Começar grátis →
+              </Link>
+              <Link href="#como-funciona" className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-4 rounded-xl border border-slate-200 transition-all">
+                Ver como funciona
               </Link>
             </div>
           </div>
-          {/* CSS PRODUCT MOCKUP */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-100/60 to-slate-100/60 rounded-3xl blur-2xl" />
-            <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl ring-1 ring-black/5 overflow-hidden">
-              <div className="flex">
-                {/* Sidebar */}
-                <div className="w-14 bg-slate-50 border-r border-slate-100 p-3 flex flex-col gap-3 min-h-[280px]">
-                  <div className="w-8 h-8 rounded-lg bg-teal-600" />
-                  <div className="mt-4 flex flex-col gap-2.5">
-                    <div className="w-8 h-2 rounded bg-slate-300" />
-                    <div className="w-8 h-2 rounded bg-teal-200" />
-                    <div className="w-8 h-2 rounded bg-slate-200" />
-                    <div className="w-8 h-2 rounded bg-slate-200" />
+
+          {/* Right: 3D Dashboard Mock */}
+          <div className="relative" style={{ perspective: "1200px" }}>
+            <div
+              className="relative transition-transform duration-200 ease-out"
+              style={{
+                transform: `rotateY(${mouse.x * 4}deg) rotateX(${-mouse.y * 3}deg)`,
+                animation: "float 6s ease-in-out infinite",
+              }}
+            >
+              <div className="bg-slate-900 rounded-2xl border border-slate-700 p-4 shadow-2xl w-full max-w-lg mx-auto">
+                <div className="flex gap-3">
+                  {/* Sidebar */}
+                  <div className="w-12 space-y-2 pt-2">
+                    <div className="w-3 h-3 rounded-full bg-teal-400" />
+                    <div className="w-3 h-3 rounded-full bg-blue-400" />
+                    <div className="w-3 h-3 rounded-full bg-purple-400" />
+                    <div className="w-3 h-3 rounded-full bg-amber-400" />
                   </div>
-                </div>
-                {/* Main content */}
-                <div className="flex-1 p-5">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="w-24 h-3 rounded bg-slate-200" />
-                    <div className="w-16 h-6 rounded-md bg-teal-50 border border-teal-200" />
-                  </div>
-                  {/* KPI Cards */}
-                  <div className="grid grid-cols-4 gap-3 mb-5">
-                    <div className="rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 p-3 border border-teal-200/50">
-                      <div className="text-[10px] text-teal-600 font-medium">Receita</div>
-                      <div className="text-sm font-bold text-slate-800 mt-1">R$ 84k</div>
-                      <div className="text-[9px] text-teal-600 mt-1 flex items-center gap-0.5"><TrendingUp className="w-2.5 h-2.5" />+12%</div>
-                    </div>
-                    <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-3 border border-blue-200/50">
-                      <div className="text-[10px] text-blue-600 font-medium">Pacientes</div>
-                      <div className="text-sm font-bold text-slate-800 mt-1">1.247</div>
-                      <div className="text-[9px] text-blue-600 mt-1 flex items-center gap-0.5"><TrendingUp className="w-2.5 h-2.5" />+8%</div>
-                    </div>
-                    <div className="rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 p-3 border border-violet-200/50">
-                      <div className="text-[10px] text-violet-600 font-medium">Agendas</div>
-                      <div className="text-sm font-bold text-slate-800 mt-1">89</div>
-                      <div className="text-[9px] text-violet-600 mt-1">Hoje</div>
-                    </div>
-                    <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-3 border border-amber-200/50">
-                      <div className="text-[10px] text-amber-600 font-medium">NPS</div>
-                      <div className="text-sm font-bold text-slate-800 mt-1">92</div>
-                      <div className="text-[9px] text-green-600 mt-1">Excelente</div>
-                    </div>
-                  </div>
-                  {/* Mini table */}
-                  <div className="rounded-lg border border-slate-100 overflow-hidden">
-                    <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-slate-50 text-[9px] font-medium text-slate-500">
-                      <span>Nome</span><span>Status</span><span>Valor</span><span>Data</span>
-                    </div>
-                    {[1,2,3].map(i => (
-                      <div key={i} className="grid grid-cols-4 gap-2 px-3 py-2 border-t border-slate-50 text-[9px] text-slate-600">
-                        <div className="w-14 h-2 rounded bg-slate-200" />
-                        <div className="w-10 h-4 rounded-full bg-green-100 border border-green-200" />
-                        <div className="w-10 h-2 rounded bg-slate-200" />
-                        <div className="w-12 h-2 rounded bg-slate-100" />
+                  {/* Main */}
+                  <div className="flex-1 space-y-3">
+                    {/* KPI row */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-teal-500/20 rounded-lg p-2 text-center">
+                        <p className="text-[10px] text-teal-300">Ativos</p>
+                        <p className="text-sm font-bold text-white">36</p>
                       </div>
-                    ))}
+                      <div className="bg-blue-500/20 rounded-lg p-2 text-center">
+                        <p className="text-[10px] text-blue-300">Ocupação</p>
+                        <p className="text-sm font-bold text-white">87%</p>
+                      </div>
+                      <div className="bg-amber-500/20 rounded-lg p-2 text-center">
+                        <p className="text-[10px] text-amber-300">Receita</p>
+                        <p className="text-sm font-bold text-white">R$47k</p>
+                      </div>
+                    </div>
+                    {/* Chart bars */}
+                    <div className="flex items-end gap-1 h-16">
+                      {[40, 60, 35, 80, 55, 70, 45, 90, 65, 75, 50, 85].map((h, i) => (
+                        <div key={i} className="flex-1 bg-teal-500/40 rounded-sm transition-all duration-500" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                    {/* Table rows */}
+                    <div className="space-y-1">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-4 bg-slate-800 rounded" />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -120,39 +203,50 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
-      <section className="py-16 px-6 border-y border-slate-100">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+      {/* ─── SOCIAL PROOF ─── */}
+      <section ref={stats.ref} className="py-16 px-6 border-y border-slate-100 bg-slate-50/50">
+        <p className="text-center text-sm text-slate-400 mb-8 font-medium">Confiado por negócios que precisam de organização</p>
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6">
           {[
-            { value: "25.000+", label: "Linhas de código" },
-            { value: "105", label: "Páginas" },
+            { value: countCode.toLocaleString("pt-BR") + "+", label: "Linhas de código" },
+            { value: String(countPages), label: "Páginas" },
             { value: "8", label: "Verticais" },
+            { value: String(countApis), label: "APIs" },
             { value: "99.9%", label: "Uptime" },
           ].map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-slate-900">{s.value}</div>
-              <div className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
+              <div className="text-[11px] font-medium text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* PROBLEM */}
-      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(13,148,136,0.15),transparent_60%)]" />
+      {/* ─── PROBLEM ─── */}
+      <section ref={problem.ref} className="py-28 px-6 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(13,148,136,0.12),transparent_60%)]" />
         <div className="max-w-5xl mx-auto relative">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight">
-            Seu negócio ainda funciona assim?
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Planilhas. WhatsApp. Caos.
           </h2>
-          <p className="text-slate-400 text-center mt-4 text-lg">Complexidade sem necessidade. Dados sem conexão.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14">
             {[
-              { title: "Dados espalhados", desc: "Planilhas, WhatsApp e cadernos. Informação duplicada e decisões no escuro." },
-              { title: "Retrabalho constante", desc: "Cobranças manuais, relatórios feitos na mão, erros humanos evitáveis." },
-              { title: "Zero visibilidade", desc: "Sem indicadores, sem controle financeiro real, sem previsibilidade." },
-            ].map((p) => (
-              <div key={p.title} className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
-                <AlertTriangle className="w-5 h-5 text-amber-400 mb-4" />
+              { title: "Dados perdidos", desc: "Informações espalhadas em 47 planilhas diferentes. Ninguém sabe o que é verdade." },
+              { title: "Dinheiro que desaparece", desc: "Cobranças manuais que esquecem. Inadimplência que ninguém rastreia. Caixa no escuro." },
+              { title: "Equipe cega", desc: "Sem visibilidade do que está acontecendo. Decisões baseadas em achismo." },
+            ].map((p, i) => (
+              <div
+                key={p.title}
+                className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm"
+                style={{
+                  opacity: problem.visible ? 1 : 0,
+                  transform: problem.visible ? "translateY(0)" : "translateY(24px)",
+                  transition: `all 0.6s ease ${i * 150}ms`,
+                }}
+              >
+                <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center mb-4">
+                  <span className="text-red-400 text-lg">✕</span>
+                </div>
                 <h3 className="font-semibold text-white text-lg">{p.title}</h3>
                 <p className="text-sm mt-2 text-slate-400 leading-relaxed">{p.desc}</p>
               </div>
@@ -161,20 +255,30 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="py-28 px-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-[size:20px_20px]">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Como funciona</h2>
-          <p className="text-slate-500 text-center mt-4">Três passos para uma operação digital.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16">
+      {/* ─── SOLUTION (4 Pillars) ─── */}
+      <section ref={solution.ref} id="como-funciona" className="py-28 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Um sistema que resolve 4 problemas de uma vez
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
             {[
-              { step: "1", title: "Escolha sua vertical", desc: "Recovery, Clinic, Senior, Hotel, Restaurant, Education, Vet ou Services." },
-              { step: "2", title: "Configure em minutos", desc: "Ambiente pronto com módulos específicos para seu segmento." },
-              { step: "3", title: "Opere e cresça", desc: "Financeiro, CRM, automação e relatórios desde o dia um." },
-            ].map((s) => (
-              <div key={s.step} className="text-center">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 text-white font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-teal-500/20">{s.step}</div>
-                <h3 className="font-semibold text-lg mt-5">{s.title}</h3>
+              { icon: "⚡", title: "Operar", desc: "Organize o dia a dia sem esforço. Agenda, tarefas e fluxos automáticos.", color: "teal" },
+              { icon: "📊", title: "Controlar", desc: "Visibilidade total em tempo real. KPIs, financeiro e ocupação num clique.", color: "blue" },
+              { icon: "🔗", title: "Integrar", desc: "WhatsApp, Pix, fiscal — tudo conectado. Sem copiar e colar entre sistemas.", color: "purple" },
+              { icon: "🚀", title: "Evoluir", desc: "Escale sem reconstruir. Novas unidades, novas verticais, mesma base.", color: "amber" },
+            ].map((s, i) => (
+              <div
+                key={s.title}
+                className="rounded-2xl p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+                style={{
+                  opacity: solution.visible ? 1 : 0,
+                  transform: solution.visible ? "translateY(0)" : "translateY(24px)",
+                  transition: `all 0.5s ease ${i * 100}ms`,
+                }}
+              >
+                <span className="text-2xl">{s.icon}</span>
+                <h3 className="font-semibold text-lg mt-3">{s.title}</h3>
                 <p className="text-sm mt-2 text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
@@ -182,68 +286,198 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section className="py-28 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight">Módulos compartilhados</h2>
-          <p className="text-slate-500 text-center mt-4">Tudo que seu negócio precisa. Integrado de verdade.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
-            {[
-              { name: "Financeiro", desc: "Contas, cobranças, Pix e fluxo de caixa automatizado.", icon: BarChart3, color: "teal" },
-              { name: "Agenda", desc: "Agendamentos, bloqueios e lembretes para equipe e clientes.", icon: Calendar, color: "blue" },
-              { name: "CRM", desc: "Pipeline comercial, follow-up e scoring de leads.", icon: Users, color: "violet" },
-              { name: "Documentos", desc: "Contratos, prontuários e assinatura digital integrada.", icon: FileText, color: "slate" },
-              { name: "Estoque", desc: "Controle de insumos, alertas e custo por operação.", icon: Package, color: "amber" },
-              { name: "Automação", desc: "Workflows de cobrança, comunicação e onboarding.", icon: Zap, color: "rose" },
-            ].map((f) => {
-              const Icon = f.icon;
-              const colors: Record<string, string> = { teal: "from-teal-500 to-teal-600", blue: "from-blue-500 to-blue-600", violet: "from-violet-500 to-violet-600", slate: "from-slate-600 to-slate-700", amber: "from-amber-500 to-amber-600", rose: "from-rose-500 to-rose-600" };
-              return (
-                <div key={f.name} className="group rounded-2xl p-6 bg-white border border-slate-150 shadow-sm hover:shadow-md transition-shadow duration-300">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors[f.color]} flex items-center justify-center mb-4`}>
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <h3 className="font-semibold">{f.name}</h3>
-                  <p className="text-sm mt-2 text-slate-500 leading-relaxed">{f.desc}</p>
+      {/* ─── VERTICALS ─── */}
+      <section ref={verts.ref} className="py-28 px-6 bg-slate-50 border-y border-slate-100">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            8 mercados. Uma plataforma.
+          </h2>
+          <p className="text-slate-500 text-center mt-4 text-lg">Cada vertical com módulos específicos. Todas com a mesma base sólida.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-14">
+            {verticals.map((v, i) => (
+              <Link
+                key={v.name}
+                href={v.href}
+                className="group rounded-xl p-4 bg-white border border-slate-200 hover:shadow-md transition-all duration-300 flex items-center gap-3"
+                style={{
+                  opacity: verts.visible ? 1 : 0,
+                  transform: verts.visible ? "translateY(0)" : "translateY(16px)",
+                  transition: `all 0.4s ease ${i * 60}ms`,
+                  borderLeftColor: v.color,
+                  borderLeftWidth: "3px",
+                }}
+              >
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: v.color }} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{v.name}</p>
+                  <p className="text-xs text-slate-400 truncate">{v.desc}</p>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* TRUST */}
-      <section className="py-20 px-6 bg-slate-50 border-y border-slate-100">
-        <div className="max-w-4xl mx-auto text-center">
-          <Shield className="w-8 h-8 text-slate-400 mx-auto mb-4" />
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Segurança e conformidade</h2>
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
-            {["LGPD Compliant", "Criptografia AES-256", "Audit Log", "Backup diário", "Multi-tenant isolado"].map((c) => (
-              <span key={c} className="inline-flex items-center gap-1.5 text-sm bg-white border border-slate-200 px-4 py-2 rounded-full text-slate-700 shadow-sm">
-                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500" /> {c}
-              </span>
+                <span className="text-slate-300 group-hover:text-teal-500 transition-colors">→</span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-28 px-6 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(13,148,136,0.2),transparent_60%)]" />
-        <div className="max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-            Crie sua conta em 30 segundos
+      {/* ─── DASHBOARD FULL MOCK ─── */}
+      <section ref={dashboard.ref} className="py-28 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Tudo num único painel.
+            </h2>
+            <p className="text-slate-500 mt-4 leading-relaxed">
+              Dashboard em tempo real com KPIs financeiros, ocupação, agenda do dia e alertas. Sem precisar abrir 5 abas diferentes.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {["Visão financeira consolidada", "Ocupação e disponibilidade", "Alertas inteligentes", "Relatórios exportáveis"].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-teal-600 text-xs">✓</span>
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ perspective: "1000px" }}>
+            <div
+              className="transition-transform duration-300"
+              style={{
+                transform: `rotateY(${mouse.x * 2}deg) rotateX(${-mouse.y * 2}deg)`,
+                opacity: dashboard.visible ? 1 : 0,
+                transition: "opacity 0.8s ease, transform 0.3s ease",
+              }}
+            >
+              <div className="bg-slate-900 rounded-2xl border border-slate-700 p-5 shadow-2xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-3 h-3 rounded-full bg-red-400" />
+                  <div className="w-3 h-3 rounded-full bg-amber-400" />
+                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                  <span className="ml-2 text-[10px] text-slate-500">dashboard.hachi.app</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  <div className="bg-teal-500/20 rounded-lg p-3 text-center">
+                    <p className="text-[9px] text-teal-300">Receita</p>
+                    <p className="text-base font-bold text-white">R$84k</p>
+                  </div>
+                  <div className="bg-blue-500/20 rounded-lg p-3 text-center">
+                    <p className="text-[9px] text-blue-300">Pacientes</p>
+                    <p className="text-base font-bold text-white">1.247</p>
+                  </div>
+                  <div className="bg-purple-500/20 rounded-lg p-3 text-center">
+                    <p className="text-[9px] text-purple-300">Ocupação</p>
+                    <p className="text-base font-bold text-white">92%</p>
+                  </div>
+                  <div className="bg-amber-500/20 rounded-lg p-3 text-center">
+                    <p className="text-[9px] text-amber-300">NPS</p>
+                    <p className="text-base font-bold text-white">94</p>
+                  </div>
+                </div>
+                <div className="flex items-end gap-1 h-20 mb-3">
+                  {[35, 50, 40, 65, 55, 70, 48, 80, 60, 75, 55, 90, 68, 82, 72].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-sm bg-gradient-to-t from-teal-600/60 to-teal-400/40" style={{ height: `${h}%` }} />
+                  ))}
+                </div>
+                <div className="space-y-1.5">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-5 bg-slate-800 rounded flex items-center px-2 gap-2">
+                      <div className="w-2 h-2 rounded-full bg-slate-600" />
+                      <div className="flex-1 h-2 bg-slate-700 rounded" />
+                      <div className="w-8 h-2 bg-slate-700 rounded" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PRICING ─── */}
+      <section ref={pricing.ref} className="py-28 px-6 bg-slate-50 border-y border-slate-100">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Comece grátis. Pague quando crescer.
           </h2>
-          <p className="text-slate-400 mt-4 text-lg">Escolha sua vertical, configure e comece a operar hoje. Sem cartão.</p>
-          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white font-semibold px-10 py-4 rounded-xl text-lg transition-all shadow-lg shadow-teal-500/25">
-            Começar grátis <ArrowRight className="w-5 h-5" />
+          <p className="text-slate-500 text-center mt-4">14 dias grátis em qualquer plano. Sem cartão de crédito.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-14">
+            {plans.map((plan, i) => (
+              <div
+                key={plan.name}
+                className={`rounded-2xl p-6 border transition-all duration-300 ${
+                  plan.highlight
+                    ? "bg-white border-teal-200 shadow-lg ring-2 ring-teal-500/20 scale-[1.02]"
+                    : "bg-white border-slate-200 shadow-sm hover:shadow-md"
+                }`}
+                style={{
+                  opacity: pricing.visible ? 1 : 0,
+                  transform: pricing.visible ? "translateY(0)" : "translateY(24px)",
+                  transition: `all 0.5s ease ${i * 100}ms`,
+                }}
+              >
+                {plan.highlight && (
+                  <span className="inline-block text-[10px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-0.5 mb-3">
+                    Mais popular
+                  </span>
+                )}
+                <h3 className="font-semibold text-lg">{plan.name}</h3>
+                <p className="text-sm text-slate-400 mt-1">{plan.desc}</p>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{plan.price}</span>
+                  <span className="text-sm text-slate-400">/mês</span>
+                </div>
+                <ul className="mt-5 space-y-2">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-teal-500 text-xs">✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/onboarding"
+                  className={`mt-6 block text-center py-3 rounded-xl font-medium text-sm transition-all ${
+                    plan.highlight
+                      ? "bg-slate-900 text-white hover:bg-teal-700 shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Começar grátis
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FINAL CTA ─── */}
+      <section className="py-28 px-6 relative overflow-hidden" style={{
+        background: "linear-gradient(135deg, #0D9488 0%, #4F46E5 100%)",
+      }}>
+        <div className="absolute inset-0 opacity-20" style={{
+          background: "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+        }} />
+        <div className="max-w-3xl mx-auto text-center relative">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Sua operação merece ser automática.
+          </h2>
+          <p className="text-white/70 mt-4 text-lg">Sem cartão. Sem compromisso. 14 dias grátis.</p>
+          <Link href="/onboarding" className="mt-8 inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold px-10 py-4 rounded-xl text-lg transition-all shadow-xl">
+            Começar agora →
           </Link>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-8 px-6 border-t border-slate-100">
-        <p className="text-sm text-center text-slate-400">&copy; 2026 Hachi Platform &middot; Business Operating System</p>
+      {/* ─── FOOTER ─── */}
+      <footer className="py-10 px-6 border-t border-slate-100">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-400">© 2026 Hachi Platform · Business Operating System</p>
+          <div className="flex items-center gap-6">
+            <Link href="/landing" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Verticais</Link>
+            <Link href="/api" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">API Docs</Link>
+            <Link href="/login" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">Login</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );
