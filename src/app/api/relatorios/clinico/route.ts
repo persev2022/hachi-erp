@@ -14,45 +14,58 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
+    const tenantId = session.tenantId;
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
 
+    // Build tenant-scoped where for evolucoes (relation filter via paciente)
+    const evolucaoWhere: any = { createdAt: { gte: thirtyDaysAgo } };
+    if (tenantId) evolucaoWhere.paciente = { tenantId };
+
     // Total evolutions in last 30 days
     const totalEvolucoes = await prisma.evolucao.count({
-      where: { createdAt: { gte: thirtyDaysAgo } },
+      where: evolucaoWhere,
     });
 
     // Evolutions by type
     const evolucoesPorTipo = await prisma.evolucao.groupBy({
       by: ["tipo"],
-      where: { createdAt: { gte: thirtyDaysAgo } },
+      where: evolucaoWhere,
       _count: true,
     });
 
     // Unsigned evolutions
+    const naoAssinadasWhere: any = { assinado: false };
+    if (tenantId) naoAssinadasWhere.paciente = { tenantId };
     const naoAssinadas = await prisma.evolucao.count({
-      where: { assinado: false },
+      where: naoAssinadasWhere,
     });
 
     // Active prescriptions
+    const prescricoesWhere: any = { ativa: true };
+    if (tenantId) prescricoesWhere.paciente = { tenantId };
     const prescricoesAtivas = await prisma.prescricao.count({
-      where: { ativa: true },
+      where: prescricoesWhere,
     });
 
     // Active patients
+    const pacientesWhere: any = { status: "ATIVO", deletedAt: null };
+    if (tenantId) pacientesWhere.tenantId = tenantId;
     const pacientesAtivos = await prisma.paciente.count({
-      where: { status: "ATIVO", deletedAt: null },
+      where: pacientesWhere,
     });
 
-    // Adherence: evolutions per patient per month (ideal = at least 1 per day per type)
+    // Adherence: evolutions per patient per month
     const evolucoesPorPaciente = pacientesAtivos > 0
       ? Math.round(totalEvolucoes / pacientesAtivos)
       : 0;
 
     // Patients without evolution in last 7 days
     const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+    const evolucao7Where: any = { createdAt: { gte: sevenDaysAgo } };
+    if (tenantId) evolucao7Where.paciente = { tenantId };
     const pacientesComEvolucao = await prisma.evolucao.findMany({
-      where: { createdAt: { gte: sevenDaysAgo } },
+      where: evolucao7Where,
       select: { pacienteId: true },
       distinct: ["pacienteId"],
     });

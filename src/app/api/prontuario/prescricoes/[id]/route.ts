@@ -14,17 +14,23 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     const prescricao = await prisma.prescricao.findUnique({
       where: { id },
       include: {
-        paciente: { select: { id: true, nome: true } },
+        paciente: { select: { id: true, nome: true, tenantId: true } },
         medico: { select: { id: true, name: true, crm: true } },
       },
     });
 
     if (!prescricao) {
+      return NextResponse.json({ success: false, error: "Prescrição não encontrada" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify prescription's patient belongs to tenant
+    if (tenantId && prescricao.paciente?.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Prescrição não encontrada" }, { status: 404 });
     }
 
@@ -56,9 +62,17 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    const prescricao = await prisma.prescricao.findUnique({ where: { id } });
+    const prescricao = await prisma.prescricao.findUnique({
+      where: { id },
+      include: { paciente: { select: { tenantId: true } } },
+    });
 
     if (!prescricao) {
+      return NextResponse.json({ success: false, error: "Prescrição não encontrada" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify prescription's patient belongs to tenant
+    if (session.tenantId && prescricao.paciente?.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Prescrição não encontrada" }, { status: 404 });
     }
 

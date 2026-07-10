@@ -22,10 +22,15 @@ export async function GET(
     // Verify patient exists
     const paciente = await prisma.paciente.findUnique({
       where: { id: pacienteId, deletedAt: null },
-      select: { id: true, nome: true, mensalidadeValor: true, diaVencimento: true },
+      select: { id: true, nome: true, mensalidadeValor: true, diaVencimento: true, tenantId: true },
     });
 
     if (!paciente) {
+      return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId && paciente.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
     }
 

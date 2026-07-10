@@ -14,11 +14,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
+    const tenantId = session.tenantId;
     const { searchParams } = new URL(req.url);
     const meses = parseInt(searchParams.get("meses") || "6");
 
     const now = new Date();
     const results = [];
+
+    // Build tenant filter
+    const tenantFilter: any = tenantId ? { tenantId } : {};
 
     for (let i = meses - 1; i >= 0; i--) {
       const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -26,17 +30,17 @@ export async function GET(req: NextRequest) {
 
       const [receitas, despesas, receitasPagas] = await Promise.all([
         prisma.movimentacaoFinanceira.aggregate({
-          where: { tipo: "RECEITA", dataVencimento: { gte: start, lte: end } },
+          where: { tipo: "RECEITA", dataVencimento: { gte: start, lte: end }, ...tenantFilter },
           _sum: { valor: true },
           _count: true,
         }),
         prisma.movimentacaoFinanceira.aggregate({
-          where: { tipo: "DESPESA", dataVencimento: { gte: start, lte: end } },
+          where: { tipo: "DESPESA", dataVencimento: { gte: start, lte: end }, ...tenantFilter },
           _sum: { valor: true },
           _count: true,
         }),
         prisma.movimentacaoFinanceira.aggregate({
-          where: { tipo: "RECEITA", status: "PAGO", dataPagamento: { gte: start, lte: end } },
+          where: { tipo: "RECEITA", status: "PAGO", dataPagamento: { gte: start, lte: end }, ...tenantFilter },
           _sum: { valor: true },
         }),
       ]);
@@ -63,7 +67,7 @@ export async function GET(req: NextRequest) {
 
     // Inadimplência
     const inadimplencia = await prisma.movimentacaoFinanceira.aggregate({
-      where: { tipo: "RECEITA", status: "ATRASADO" },
+      where: { tipo: "RECEITA", status: "ATRASADO", ...tenantFilter },
       _sum: { valor: true },
       _count: true,
     });

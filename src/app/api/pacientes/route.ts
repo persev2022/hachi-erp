@@ -163,6 +163,7 @@ export async function POST(req: NextRequest) {
         data: {
           ...pacienteData,
           email: pacienteData.email || null,
+          ...(session.tenantId ? { tenantId: session.tenantId } : {}),
         },
       });
 

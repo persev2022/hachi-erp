@@ -31,6 +31,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId) {
+      const paciente = await prisma.paciente.findUnique({
+        where: { id: pacienteId, deletedAt: null },
+        select: { tenantId: true },
+      });
+      if (!paciente || paciente.tenantId !== session.tenantId) {
+        return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+      }
+    }
+
     // PTIs are stored as Documento with tipo PTI
     // The structured data is stored as JSON in the arquivo field
     const ptis = await prisma.documento.findMany({
@@ -112,6 +123,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (!paciente) {
+      return NextResponse.json(
+        { success: false, error: "Paciente não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId && paciente.tenantId !== session.tenantId) {
       return NextResponse.json(
         { success: false, error: "Paciente não encontrado" },
         { status: 404 }

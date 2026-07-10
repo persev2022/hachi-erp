@@ -26,11 +26,14 @@ export async function GET(req: NextRequest) {
     const endOfYear = new Date(ano, 11, 31, 23, 59, 59);
 
     // Get all patients admitted in the year
+    const pacientesWhere: any = {
+      dataAdmissao: { gte: startOfYear, lte: endOfYear },
+      deletedAt: null,
+    };
+    if (session.tenantId) pacientesWhere.tenantId = session.tenantId;
+
     const pacientes = await prisma.paciente.findMany({
-      where: {
-        dataAdmissao: { gte: startOfYear, lte: endOfYear },
-        deletedAt: null,
-      },
+      where: pacientesWhere,
       select: {
         nome: true,
         sexo: true,

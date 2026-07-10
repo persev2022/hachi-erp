@@ -14,11 +14,17 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     const item = await prisma.itemEstoque.findUnique({ where: { id } });
 
     if (!item) {
+      return NextResponse.json({ success: false, error: "Item não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify item belongs to tenant
+    if (tenantId && item.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Item não encontrado" }, { status: 404 });
     }
 
@@ -46,6 +52,11 @@ export async function PUT(
     const item = await prisma.itemEstoque.findUnique({ where: { id } });
 
     if (!item) {
+      return NextResponse.json({ success: false, error: "Item não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify item belongs to tenant
+    if (session.tenantId && item.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Item não encontrado" }, { status: 404 });
     }
 

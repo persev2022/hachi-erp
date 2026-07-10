@@ -58,6 +58,7 @@ export async function GET(
       );
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     const paciente = await prisma.paciente.findUnique({
@@ -84,6 +85,14 @@ export async function GET(
     });
 
     if (!paciente) {
+      return NextResponse.json(
+        { success: false, error: "Paciente não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (tenantId && paciente.tenantId !== tenantId) {
       return NextResponse.json(
         { success: false, error: "Paciente não encontrado" },
         { status: 404 }
@@ -117,6 +126,7 @@ export async function PUT(
       );
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
     const body = await req.json();
     const parsed = updatePacienteSchema.safeParse(body);
@@ -138,6 +148,14 @@ export async function PUT(
     });
 
     if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Paciente não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (tenantId && existing.tenantId !== tenantId) {
       return NextResponse.json(
         { success: false, error: "Paciente não encontrado" },
         { status: 404 }
@@ -189,6 +207,7 @@ export async function DELETE(
       );
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     // Check if patient exists
@@ -197,6 +216,14 @@ export async function DELETE(
     });
 
     if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Paciente não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (tenantId && existing.tenantId !== tenantId) {
       return NextResponse.json(
         { success: false, error: "Paciente não encontrado" },
         { status: 404 }

@@ -21,6 +21,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     const paciente = await prisma.paciente.findUnique({
@@ -50,6 +51,11 @@ export async function GET(
     });
 
     if (!paciente) {
+      return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (tenantId && paciente.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
     }
 

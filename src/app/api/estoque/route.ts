@@ -39,6 +39,11 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
+    // Tenant isolation
+    if (session.tenantId) {
+      where.tenantId = session.tenantId;
+    }
+
     if (search) {
       where.nome = { contains: search, mode: "insensitive" };
     }
@@ -104,6 +109,7 @@ export async function POST(req: NextRequest) {
         validade: parsed.data.validade || null,
         localizacao: parsed.data.localizacao,
         fornecedor: parsed.data.fornecedor,
+        ...(session.tenantId ? { tenantId: session.tenantId } : {}),
       },
     });
 

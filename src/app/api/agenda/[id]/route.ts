@@ -14,17 +14,23 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     const agendamento = await prisma.agendamento.findUnique({
       where: { id },
       include: {
-        paciente: { select: { id: true, nome: true, telefone: true } },
+        paciente: { select: { id: true, nome: true, telefone: true, tenantId: true } },
         profissional: { select: { id: true, name: true, role: true } },
       },
     });
 
     if (!agendamento) {
+      return NextResponse.json({ success: false, error: "Agendamento não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify appointment's patient belongs to tenant
+    if (tenantId && agendamento.paciente?.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Agendamento não encontrado" }, { status: 404 });
     }
 
@@ -46,12 +52,21 @@ export async function PUT(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
     const body = await req.json();
 
-    const agendamento = await prisma.agendamento.findUnique({ where: { id } });
+    const agendamento = await prisma.agendamento.findUnique({
+      where: { id },
+      include: { paciente: { select: { tenantId: true } } },
+    });
 
     if (!agendamento) {
+      return NextResponse.json({ success: false, error: "Agendamento não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify appointment's patient belongs to tenant
+    if (tenantId && agendamento.paciente?.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Agendamento não encontrado" }, { status: 404 });
     }
 
@@ -109,11 +124,20 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
-    const agendamento = await prisma.agendamento.findUnique({ where: { id } });
+    const agendamento = await prisma.agendamento.findUnique({
+      where: { id },
+      include: { paciente: { select: { tenantId: true } } },
+    });
 
     if (!agendamento) {
+      return NextResponse.json({ success: false, error: "Agendamento não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify appointment's patient belongs to tenant
+    if (tenantId && agendamento.paciente?.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Agendamento não encontrado" }, { status: 404 });
     }
 

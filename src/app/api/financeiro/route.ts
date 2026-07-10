@@ -131,6 +131,10 @@ export async function POST(req: NextRequest) {
       if (!paciente) {
         return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
       }
+      // Tenant isolation: verify patient belongs to tenant
+      if (session.tenantId && paciente.tenantId !== session.tenantId) {
+        return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+      }
     }
 
     const movimentacao = await prisma.movimentacaoFinanceira.create({
@@ -143,6 +147,7 @@ export async function POST(req: NextRequest) {
         dataVencimento: parsed.data.dataVencimento,
         formaPagamento: parsed.data.formaPagamento,
         observacoes: parsed.data.observacoes,
+        ...(session.tenantId ? { tenantId: session.tenantId } : {}),
       },
       include: {
         paciente: { select: { id: true, nome: true } },

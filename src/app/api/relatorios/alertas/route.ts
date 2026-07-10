@@ -13,23 +13,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
     }
 
+    const tenantId = session.tenantId;
     const alertas: { id: string; tipo: string; msg: string; prioridade: "alta" | "media" | "baixa"; link?: string }[] = [];
     const now = new Date();
 
     // --- Inadimplência (ADMIN, FINANCEIRO) ---
     if (["ADMIN", "FINANCEIRO"].includes(session.role)) {
-      // Update overdue entries
+      // Update overdue entries (tenant-scoped)
+      const updateWhere: any = {
+        tipo: "RECEITA",
+        status: "PENDENTE",
+        dataVencimento: { lt: now },
+      };
+      if (tenantId) updateWhere.tenantId = tenantId;
+
       await prisma.movimentacaoFinanceira.updateMany({
-        where: {
-          tipo: "RECEITA",
-          status: "PENDENTE",
-          dataVencimento: { lt: now },
-        },
+        where: updateWhere,
         data: { status: "ATRASADO" },
       });
 
+      const atrasadosWhere: any = { status: "ATRASADO", tipo: "RECEITA" };
+      if (tenantId) atrasadosWhere.tenantId = tenantId;
+
       const atrasados = await prisma.movimentacaoFinanceira.findMany({
-        where: { status: "ATRASADO", tipo: "RECEITA" },
+        where: atrasadosWhere,
         include: { paciente: { select: { nome: true } } },
         take: 10,
       });
@@ -47,7 +54,10 @@ export async function GET(req: NextRequest) {
 
     // --- Estoque baixo (ADMIN, ENFERMEIRO) ---
     if (["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR"].includes(session.role)) {
-      const items = await prisma.itemEstoque.findMany();
+      const estoqueWhere: any = {};
+      if (tenantId) estoqueWhere.tenantId = tenantId;
+
+      const items = await prisma.itemEstoque.findMany({ where: estoqueWhere });
       const baixos = items.filter((i) => i.quantidade <= i.minimo);
       for (const item of baixos.slice(0, 5)) {
         alertas.push({
@@ -62,10 +72,11 @@ export async function GET(req: NextRequest) {
 
     // --- Evoluções não assinadas (profissionais clínicos) ---
     if (["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"].includes(session.role)) {
-      const where: any = { assinado: false };
-      if (!["ADMIN", "COORDENADOR"].includes(session.role)) where.profissionalId = session.userId;
+      const evoWhere: any = { assinado: false };
+      if (tenantId) evoWhere.paciente = { tenantId };
+      if (!["ADMIN", "COORDENADOR"].includes(session.role)) evoWhere.profissionalId = session.userId;
 
-      const pendentes = await prisma.evolucao.count({ where });
+      const pendentes = await prisma.evolucao.count({ where: evoWhere });
       if (pendentes > 0) {
         alertas.push({
           id: "evo-pendentes",
@@ -79,15 +90,16 @@ export async function GET(req: NextRequest) {
 
     // --- Agendamentos próximos (30 min) ---
     const in30min = new Date(now.getTime() + 30 * 60000);
-    const where: any = {
+    const agendaWhere: any = {
       dataHora: { gte: now, lte: in30min },
       status: { in: ["AGENDADO", "CONFIRMADO"] },
     };
+    if (tenantId) agendaWhere.paciente = { tenantId };
     if (!["ADMIN", "COORDENADOR", "SECRETARIA"].includes(session.role)) {
-      where.profissionalId = session.userId;
+      agendaWhere.profissionalId = session.userId;
     }
 
-    const proximoCount = await prisma.agendamento.count({ where });
+    const proximoCount = await prisma.agendamento.count({ where: agendaWhere });
     if (proximoCount > 0) {
       alertas.push({
         id: "agenda-proximo",

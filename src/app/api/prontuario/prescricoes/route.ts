@@ -92,6 +92,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
     }
 
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId && paciente.tenantId !== session.tenantId) {
+      return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+    }
+
     const prescricao = await prisma.prescricao.create({
       data: {
         pacienteId: parsed.data.pacienteId,

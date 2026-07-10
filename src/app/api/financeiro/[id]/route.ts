@@ -18,6 +18,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
+    const tenantId = session.tenantId;
     const { id } = await params;
 
     const movimentacao = await prisma.movimentacaoFinanceira.findUnique({
@@ -28,6 +29,11 @@ export async function GET(
     });
 
     if (!movimentacao) {
+      return NextResponse.json({ success: false, error: "Movimentação não encontrada" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify movement belongs to tenant
+    if (tenantId && movimentacao.tenantId !== tenantId) {
       return NextResponse.json({ success: false, error: "Movimentação não encontrada" }, { status: 404 });
     }
 
@@ -59,6 +65,11 @@ export async function PUT(
     const movimentacao = await prisma.movimentacaoFinanceira.findUnique({ where: { id } });
 
     if (!movimentacao) {
+      return NextResponse.json({ success: false, error: "Movimentação não encontrada" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify movement belongs to tenant
+    if (session.tenantId && movimentacao.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Movimentação não encontrada" }, { status: 404 });
     }
 

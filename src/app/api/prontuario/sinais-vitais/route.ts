@@ -32,6 +32,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "pacienteId obrigatório" }, { status: 400 });
     }
 
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId) {
+      const paciente = await prisma.paciente.findUnique({
+        where: { id: pacienteId, deletedAt: null },
+        select: { tenantId: true },
+      });
+      if (!paciente || paciente.tenantId !== session.tenantId) {
+        return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+      }
+    }
+
     const since = new Date(Date.now() - dias * 86400000);
 
     // Get vital signs from evolucoes that have sinaisVitais
@@ -88,6 +99,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { pacienteId, observacoes, ...vitais } = parsed.data;
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId) {
+      const paciente = await prisma.paciente.findUnique({
+        where: { id: pacienteId, deletedAt: null },
+        select: { tenantId: true },
+      });
+      if (!paciente || paciente.tenantId !== session.tenantId) {
+        return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+      }
+    }
 
     // Create as an ENFERMAGEM evolution with vital signs
     const evolucao = await prisma.evolucao.create({

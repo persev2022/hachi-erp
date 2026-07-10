@@ -30,6 +30,11 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
+    // Tenant isolation: filter agendamentos by paciente's tenant
+    if (session.tenantId) {
+      where.paciente = { tenantId: session.tenantId };
+    }
+
     if (data) {
       const startOfDay = new Date(data + "T00:00:00");
       const endOfDay = new Date(data + "T23:59:59");
@@ -79,6 +84,11 @@ export async function POST(req: NextRequest) {
       where: { id: parsed.data.pacienteId, deletedAt: null },
     });
     if (!paciente) {
+      return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
+    }
+
+    // Tenant isolation: verify patient belongs to tenant
+    if (session.tenantId && paciente.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Paciente não encontrado" }, { status: 404 });
     }
 
