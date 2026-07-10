@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Hachi Platform — Gestão Integrada para Clínicas de Reabilitação",
+  title: "Hachi Platform — Business Operating System",
   description:
-    "Sistema completo de gestão para clínicas de reabilitação em dependência química. Prontuário eletrônico, financeiro, agendamento e comunicação integrados.",
+    "Plataforma multi-vertical de gestão empresarial. Prontuário eletrônico, financeiro, agendamento, CRM e automação em um único sistema.",
 };
 
 export default function RootLayout({

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Plataforma multi-vertical com prontuário, financeiro, agenda, CRM e automação. 8 verticais, um único sistema. Comece grátis.",
   keywords: [
-    "ERP multi-vertical",
+    "plataforma multi-vertical",
     "sistema de gestão empresarial",
     "SaaS brasileiro",
     "prontuário eletrônico",
@@ -16,9 +16,11 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Hachi Platform — Business Operating System",
-    description: "Uma plataforma. 8 verticais. Comece em 30 segundos.",
+    description: "Uma plataforma. Infinitas verticais de negócio.",
     locale: "pt_BR",
     type: "website",
+    url: "https://hachi-erp.vercel.app/landing",
+    siteName: "Hachi Platform",
   },
 };
 

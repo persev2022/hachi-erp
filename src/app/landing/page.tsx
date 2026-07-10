@@ -9,7 +9,7 @@ import {
 export const metadata: Metadata = {
   title: "Hachi Platform — Business Operating System",
   description: "Plataforma multi-vertical com prontuário, financeiro, agenda, CRM e automação. 8 verticais, um sistema.",
-  keywords: ["ERP multi-vertical", "sistema gestão empresarial", "SaaS brasileiro", "prontuário eletrônico", "gestão clínica"],
+  keywords: ["plataforma multi-vertical", "sistema gestão empresarial", "SaaS brasileiro", "prontuário eletrônico", "gestão clínica"],
 };
 
 export default function LandingPage() {

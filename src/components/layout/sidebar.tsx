@@ -72,6 +72,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const [terminology, setTerminology] = React.useState<Record<string, string> | null>(null);
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [brandColor, setBrandColor] = React.useState<string | null>(null);
+  const [brandLogo, setBrandLogo] = React.useState<string | null>(null);
 
   // Fetch user role, platform features, and terminology once
   React.useEffect(() => {
@@ -99,7 +100,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
     fetch("/api/platform/branding")
       .then((r) => r.json())
-      .then((d) => { if (d.success && d.primaryColor) setBrandColor(d.primaryColor); })
+      .then((d) => {
+        if (d.success) {
+          if (d.primaryColor) setBrandColor(d.primaryColor);
+          if (d.logo) setBrandLogo(d.logo);
+        }
+      })
       .catch(() => {});
 
     // Fetch unread notifications count
@@ -146,7 +152,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <div className="h-16 flex items-center justify-between px-6 border-b border-border">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/hachi-logo.png" alt="Hachi" className="h-11 w-11 rounded-md object-contain" />
+          <img src={brandLogo || "/images/hachi-logo.png"} alt="Hachi" className="h-11 w-11 rounded-md object-contain" />
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
               <span className="font-bold text-lg text-foreground">Hachi</span>
@@ -266,6 +272,7 @@ export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
       <div className="flex items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/hachi-logo.png" alt="Hachi" className="h-9 w-9 rounded-md object-contain" />
+        {/* Note: mobile header uses static logo; branding logo applies to sidebar only */}
         <span className="font-bold text-foreground">Hachi</span>
       </div>
       <UserAvatar />
