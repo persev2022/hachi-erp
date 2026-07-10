@@ -70,7 +70,11 @@ export async function POST(req: NextRequest) {
         vertical,
         plan: "starter",
         active: true,
-        config: { features, branding: { name: orgName, primaryColor: "#0d9488" } } as any,
+        config: {
+          features,
+          branding: { name: orgName, primaryColor: "#0d9488" },
+          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        } as any,
       },
     });
 

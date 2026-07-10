@@ -41,6 +41,10 @@ export async function GET(req: NextRequest) {
     const tenantFeatures = tenantConfig?.features as Record<string, boolean> | undefined;
     const features = tenantFeatures || getFeatures(vertical);
 
+    // Trial check
+    const trialEndsAt = (tenantConfig?.trialEndsAt as string) || null;
+    const trialExpired = trialEndsAt ? new Date(trialEndsAt) < new Date() : false;
+
     return NextResponse.json({
       success: true,
       platform: {
@@ -54,6 +58,8 @@ export async function GET(req: NextRequest) {
             }
           : { name: "Hachi", slug: "default", vertical: "recovery", plan: "starter" },
         features,
+        trialEndsAt,
+        trialExpired,
         version: "0.2.0",
       },
     });
