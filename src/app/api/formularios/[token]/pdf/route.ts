@@ -46,6 +46,8 @@ export async function GET(
 function buildPdfHtml(tipo: string, dados: Record<string, any>, assinatura: any): string {
   const title = tipo === "reserva-vaga"
     ? "SOLICITAÇÃO DE RESERVA DE VAGA E PRÉ-CADASTRO"
+    : tipo === "transferencia"
+    ? "TERMO DE TRANSFERÊNCIA DE CENTRO TERAPÊUTICO"
     : "ORDEM DE SERVIÇO — TRANSPORTE ASSISTIDO";
 
   const rows = Object.entries(dados)
@@ -137,6 +139,34 @@ function formatLabel(key: string): string {
     cidadeDestino: "Cidade Destino",
     valor: "Valor (R$)",
     formaPagamento: "Forma de Pagamento",
+    acolhidoNome: "Nome do Acolhido",
+    acolhidoCpf: "CPF do Acolhido",
+    acolhidoRg: "RG do Acolhido",
+    acolhidoNasc: "Data de Nascimento (Acolhido)",
+    dataAdmissaoOrigem: "Data de Admissão na Origem",
+    responsavelNome: "Nome do Responsável",
+    responsavelCpf: "CPF do Responsável",
+    responsavelRg: "RG do Responsável",
+    responsavelParentesco: "Parentesco/Relação",
+    responsavelTel: "Telefone do Responsável",
+    responsavelEndereco: "Endereço do Responsável",
+    origemNome: "Unidade de Origem",
+    origemCnpj: "CNPJ (Origem)",
+    origemResponsavel: "Responsável Técnico (Origem)",
+    origemEndereco: "Endereço (Origem)",
+    origemCidade: "Cidade/UF (Origem)",
+    origemTelefone: "Telefone (Origem)",
+    destinoNome: "Unidade de Destino",
+    destinoCnpj: "CNPJ (Destino)",
+    destinoResponsavel: "Responsável Técnico (Destino)",
+    destinoEndereco: "Endereço (Destino)",
+    destinoCidade: "Cidade/UF (Destino)",
+    destinoTelefone: "Telefone (Destino)",
+    dataTransferencia: "Data da Transferência",
+    motivoTransferencia: "Motivo da Transferência",
+    observacoes: "Observações",
+    condicoesClinicas: "Condições Clínicas",
+    pertences: "Pertences Entregues",
   };
   return map[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 }

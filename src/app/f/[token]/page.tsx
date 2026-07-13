@@ -109,13 +109,13 @@ export default function FormularioPublicoPage() {
             </div>
           </div>
           <h1 className="text-xl font-bold text-gray-900">
-            {formInfo.tipo === "reserva-vaga" ? "Solicitação de Reserva de Vaga e Pré-Cadastro" : "Ordem de Serviço — Transporte Assistido"}
+            {formInfo.tipo === "reserva-vaga" ? "Solicitação de Reserva de Vaga e Pré-Cadastro" : formInfo.tipo === "transferencia" ? "Termo de Transferência de Centro Terapêutico" : "Ordem de Serviço — Transporte Assistido"}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Preencha os dados para solicitar a reserva de vaga e iniciar o pré-cadastro.</p>
+          <p className="text-sm text-gray-500 mt-1">Preencha os dados abaixo e assine digitalmente.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {formInfo.tipo === "reserva-vaga" ? <ReservaVagaForm /> : <TransporteAssistidoForm />}
+          {formInfo.tipo === "reserva-vaga" ? <ReservaVagaForm /> : formInfo.tipo === "transferencia" ? <TransferenciaForm /> : <TransporteAssistidoForm />}
 
           {/* Assinatura */}
           <div className="bg-white rounded-xl border p-6 space-y-4">
@@ -291,6 +291,103 @@ function TransporteAssistidoForm() {
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-2">
         <p><strong>Declaração:</strong> O serviço consiste na condução assistida, sem procedimentos médicos. Declaro ter solicitado voluntariamente o transporte.</p>
         <p><strong>Nota:</strong> Equipe atua apenas na condução segura. Após o recebimento na unidade, a responsabilidade assistencial passa à unidade.</p>
+      </div>
+    </>
+  );
+}
+
+
+/* ─── Formulário de Transferência de CT ─── */
+function TransferenciaForm() {
+  return (
+    <>
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 border-b pb-2">Dados do Acolhido</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Nome completo *</label><Input name="acolhidoNome" required /></div>
+          <div><label className="text-xs font-medium text-gray-600">CPF *</label><Input name="acolhidoCpf" required placeholder="000.000.000-00" /></div>
+          <div><label className="text-xs font-medium text-gray-600">RG</label><Input name="acolhidoRg" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Data de nascimento</label><Input name="acolhidoNasc" type="date" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Data de admissão na unidade de origem</label><Input name="dataAdmissaoOrigem" type="date" /></div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 border-b pb-2">Responsável Legal / Familiar</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Nome completo *</label><Input name="responsavelNome" required /></div>
+          <div><label className="text-xs font-medium text-gray-600">CPF *</label><Input name="responsavelCpf" required /></div>
+          <div><label className="text-xs font-medium text-gray-600">RG</label><Input name="responsavelRg" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Parentesco / Relação</label><Input name="responsavelParentesco" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Telefone *</label><Input name="responsavelTel" required /></div>
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Endereço</label><Input name="responsavelEndereco" /></div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 border-b pb-2">Unidade de Origem (CT que está transferindo)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Nome da instituição *</label><Input name="origemNome" required /></div>
+          <div><label className="text-xs font-medium text-gray-600">CNPJ</label><Input name="origemCnpj" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Responsável técnico</label><Input name="origemResponsavel" /></div>
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Endereço</label><Input name="origemEndereco" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Cidade/UF</label><Input name="origemCidade" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Telefone</label><Input name="origemTelefone" /></div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 border-b pb-2">Unidade de Destino (CT que vai receber)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Nome da instituição *</label><Input name="destinoNome" required /></div>
+          <div><label className="text-xs font-medium text-gray-600">CNPJ</label><Input name="destinoCnpj" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Responsável técnico</label><Input name="destinoResponsavel" /></div>
+          <div className="md:col-span-2"><label className="text-xs font-medium text-gray-600">Endereço</label><Input name="destinoEndereco" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Cidade/UF</label><Input name="destinoCidade" /></div>
+          <div><label className="text-xs font-medium text-gray-600">Telefone</label><Input name="destinoTelefone" /></div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 border-b pb-2">Dados da Transferência</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label className="text-xs font-medium text-gray-600">Data da transferência *</label><Input name="dataTransferencia" type="date" required defaultValue={new Date().toISOString().split("T")[0]} /></div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Motivo da transferência *</label>
+            <select name="motivoTransferencia" required className="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Selecione</option>
+              <option value="Adequação de perfil terapêutico">Adequação de perfil terapêutico</option>
+              <option value="Solicitação do acolhido">Solicitação do acolhido</option>
+              <option value="Solicitação da família">Solicitação da família</option>
+              <option value="Indicação clínica">Indicação clínica</option>
+              <option value="Proximidade familiar">Proximidade familiar</option>
+              <option value="Encerramento de atividades da unidade">Encerramento de atividades da unidade</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="text-xs font-medium text-gray-600">Observações / Detalhamento do motivo</label>
+            <textarea name="observacoes" className="w-full border rounded-lg px-3 py-2 text-sm bg-white resize-none h-20" placeholder="Informações adicionais sobre a transferência..." />
+          </div>
+          <div className="md:col-span-2">
+            <label className="text-xs font-medium text-gray-600">Condições clínicas / psicológicas do acolhido no momento da transferência</label>
+            <textarea name="condicoesClinicas" className="w-full border rounded-lg px-3 py-2 text-sm bg-white resize-none h-20" placeholder="Estado emocional, medicações em uso, observações relevantes..." />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 border-b pb-2">Pertences do Acolhido</h2>
+        <div>
+          <label className="text-xs font-medium text-gray-600">Lista de pertences entregues junto com o acolhido</label>
+          <textarea name="pertences" className="w-full border rounded-lg px-3 py-2 text-sm bg-white resize-none h-24" placeholder="Roupas, documentos, medicações, objetos pessoais..." />
+        </div>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-2">
+        <p><strong>Declaração:</strong> Declaro que a transferência do acolhido acima identificado está sendo realizada de forma voluntária, com ciência e concordância do responsável legal, respeitando o bem-estar e a continuidade do tratamento.</p>
+        <p><strong>Responsabilidade:</strong> A partir da entrega do acolhido na unidade de destino, a responsabilidade assistencial e terapêutica passa integralmente à nova instituição.</p>
+        <p><strong>Documentação:</strong> A unidade de origem se compromete a enviar relatório clínico e prontuário atualizado em até 48 horas após a transferência.</p>
       </div>
     </>
   );

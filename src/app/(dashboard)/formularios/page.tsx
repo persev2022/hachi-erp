@@ -18,6 +18,7 @@ interface FormLink {
 const TIPO_LABELS: Record<string, string> = {
   "reserva-vaga": "Reserva de Vaga / Pré-Cadastro",
   "transporte-assistido": "OS — Transporte Assistido",
+  "transferencia": "Termo de Transferência de CT",
 };
 
 export default function FormulariosPage() {
@@ -80,7 +81,7 @@ export default function FormulariosPage() {
       </p>
 
       {/* Generate buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           onClick={() => gerarLink("reserva-vaga")}
           disabled={generating === "reserva-vaga"}
@@ -92,7 +93,7 @@ export default function FormulariosPage() {
             </div>
             <div>
               <p className="font-semibold text-sm">Reserva de Vaga</p>
-              <p className="text-xs text-muted-foreground">Pré-cadastro + dados do responsável e paciente</p>
+              <p className="text-xs text-muted-foreground">Pré-cadastro + dados responsável e paciente</p>
             </div>
           </div>
           {generating === "reserva-vaga" && <Loader2 className="h-4 w-4 animate-spin mt-2 text-teal-600" />}
@@ -113,6 +114,23 @@ export default function FormulariosPage() {
             </div>
           </div>
           {generating === "transporte-assistido" && <Loader2 className="h-4 w-4 animate-spin mt-2 text-indigo-600" />}
+        </button>
+
+        <button
+          onClick={() => gerarLink("transferencia")}
+          disabled={generating === "transferencia"}
+          className="bg-white dark:bg-zinc-900 border-2 border-dashed border-gray-300 hover:border-teal-400 rounded-xl p-5 text-left transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Link2 className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm">Transferência de CT</p>
+              <p className="text-xs text-muted-foreground">Termo quando acolhido muda de unidade</p>
+            </div>
+          </div>
+          {generating === "transferencia" && <Loader2 className="h-4 w-4 animate-spin mt-2 text-amber-600" />}
         </button>
       </div>
 

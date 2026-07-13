@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { tipo } = body; // "reserva-vaga" | "transporte-assistido"
 
-    if (!["reserva-vaga", "transporte-assistido"].includes(tipo)) {
-      return NextResponse.json({ success: false, error: "Tipo inválido. Use: reserva-vaga ou transporte-assistido" }, { status: 400 });
+    if (!["reserva-vaga", "transporte-assistido", "transferencia"].includes(tipo)) {
+      return NextResponse.json({ success: false, error: "Tipo inválido. Use: reserva-vaga, transporte-assistido ou transferencia" }, { status: 400 });
     }
 
     const token = crypto.randomBytes(16).toString("hex");
