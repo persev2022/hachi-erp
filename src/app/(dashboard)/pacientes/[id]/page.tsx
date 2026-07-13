@@ -33,6 +33,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTerminology } from "@/hooks/use-terminology";
 
 type Tab = "resumo" | "evolucoes" | "prescricoes" | "documentos" | "agenda" | "financeiro";
 
@@ -79,6 +80,7 @@ function formatDateTime(d: string | null | undefined) {
 
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const terms = useTerminology();
   const [paciente, setPaciente] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
@@ -184,7 +186,7 @@ export default function PacienteDetailPage() {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            CPF: {paciente.cpf} · Admissão: {formatDate(paciente.dataAdmissao)}
+            CPF: {paciente.cpf} · {terms.admissao}: {formatDate(paciente.dataAdmissao)}
             {paciente.quarto && ` · Quarto ${paciente.quarto.numero}`}
           </p>
         </div>
@@ -274,13 +276,13 @@ export default function PacienteDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <BedDouble className="h-4 w-4" /> Tratamento Atual
+                <BedDouble className="h-4 w-4" /> {terms.admissao}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div><span className="text-muted-foreground">Admissão:</span> {formatDate(paciente.dataAdmissao)}</div>
+              <div><span className="text-muted-foreground">{terms.admissao}:</span> {formatDate(paciente.dataAdmissao)}</div>
               <div><span className="text-muted-foreground">Previsão alta:</span> {formatDate(paciente.dataAltaPrevista)}</div>
-              <div><span className="text-muted-foreground">Dias de tratamento:</span> {paciente.diasTratamento} dias</div>
+              <div><span className="text-muted-foreground">{terms.diasTratamento}:</span> {paciente.diasTratamento}</div>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Quarto:</span>
                 <span>{paciente.quarto?.numero || "Não atribuído"}</span>

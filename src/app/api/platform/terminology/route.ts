@@ -16,6 +16,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Dias de tratamento",
     portalFamilia: "Portal da Família",
     acolhido: "Acolhido",
+    responsavel: "Responsável",
+    agendamentoHoje: "Consultas Hoje",
   },
   clinic: {
     paciente: "Paciente",
@@ -27,6 +29,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Sessões previstas",
     portalFamilia: "Portal do Paciente",
     acolhido: "Paciente",
+    responsavel: "Responsável",
+    agendamentoHoje: "Consultas Hoje",
   },
   senior: {
     paciente: "Residente",
@@ -38,6 +42,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Período de estadia",
     portalFamilia: "Portal do Familiar",
     acolhido: "Residente",
+    responsavel: "Familiar responsável",
+    agendamentoHoje: "Atividades Hoje",
   },
   hotel: {
     paciente: "Hóspede",
@@ -49,6 +55,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Diárias",
     portalFamilia: "Portal do Hóspede",
     acolhido: "Hóspede",
+    responsavel: "Contato",
+    agendamentoHoje: "Check-ins Hoje",
   },
   restaurant: {
     paciente: "Cliente",
@@ -60,6 +68,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "—",
     portalFamilia: "Cardápio Digital",
     acolhido: "Cliente",
+    responsavel: "Contato",
+    agendamentoHoje: "Reservas Hoje",
   },
   education: {
     paciente: "Aluno",
@@ -71,6 +81,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Período letivo",
     portalFamilia: "Portal dos Pais",
     acolhido: "Aluno",
+    responsavel: "Responsável legal",
+    agendamentoHoje: "Aulas Hoje",
   },
   vet: {
     paciente: "Animal",
@@ -82,6 +94,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Internação prevista",
     portalFamilia: "Portal do Tutor",
     acolhido: "Pet",
+    responsavel: "Tutor",
+    agendamentoHoje: "Consultas Hoje",
   },
   services: {
     paciente: "Cliente",
@@ -93,6 +107,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Prazo do contrato",
     portalFamilia: "Portal do Cliente",
     acolhido: "Cliente",
+    responsavel: "Contato principal",
+    agendamentoHoje: "Reuniões Hoje",
   },
   generic: {
     paciente: "Cliente",
@@ -104,6 +120,8 @@ const TERMINOLOGY: Record<string, Record<string, string>> = {
     diasTratamento: "Período previsto",
     portalFamilia: "Portal do Cliente",
     acolhido: "Cliente",
+    responsavel: "Responsável",
+    agendamentoHoje: "Agendamentos Hoje",
   },
 };
 

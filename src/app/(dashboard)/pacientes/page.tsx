@@ -183,7 +183,7 @@ export default function PacientesPage() {
       {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">Carregando pacientes...</span>
+          <span className="ml-2 text-muted-foreground">Carregando...</span>
         </div>
       )}
 

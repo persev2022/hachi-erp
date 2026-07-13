@@ -17,6 +17,8 @@ export interface Terminology {
   novoPaciente: string;
   novaEvolucao: string;
   novoAgendamento: string;
+  responsavel: string;
+  agendamentoHoje: string;
 }
 
 const DEFAULT_TERMINOLOGY: Terminology = {
@@ -34,6 +36,8 @@ const DEFAULT_TERMINOLOGY: Terminology = {
   novoPaciente: "Novo Paciente",
   novaEvolucao: "Nova Evolução",
   novoAgendamento: "Novo Agendamento",
+  responsavel: "Responsável",
+  agendamentoHoje: "Agendamentos Hoje",
 };
 
 // Cache to avoid re-fetching
@@ -61,6 +65,8 @@ async function fetchTerminology(): Promise<Terminology> {
         novoPaciente: `Novo ${t.paciente || "Paciente"}`,
         novaEvolucao: `Nova ${t.evolucao || "Evolução"}`,
         novoAgendamento: "Novo Agendamento",
+        responsavel: t.responsavel || "Responsável",
+        agendamentoHoje: t.agendamentoHoje || "Agendamentos Hoje",
       };
       cachedTerminology = term;
       return term;

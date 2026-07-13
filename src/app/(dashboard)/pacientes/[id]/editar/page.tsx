@@ -14,10 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-simple";
+import { useTerminology } from "@/hooks/use-terminology";
 
 export default function EditarPacientePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const terms = useTerminology();
   const { show } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -306,11 +308,11 @@ export default function EditarPacientePage() {
         {/* Tratamento */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Tratamento</CardTitle>
+            <CardTitle className="text-lg">{terms.admissao}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Data de Admissão *</label>
+              <label className="text-sm font-medium">{terms.admissao} *</label>
               <Input
                 name="dataAdmissao"
                 type="date"
@@ -319,7 +321,7 @@ export default function EditarPacientePage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Dias de Tratamento *</label>
+              <label className="text-sm font-medium">{terms.diasTratamento} *</label>
               <Input
                 name="diasTratamento"
                 type="number"

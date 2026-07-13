@@ -17,6 +17,8 @@ const PUBLIC_PATHS = [
   "/landing/education",
   "/landing/vet",
   "/landing/services",
+  "/f/",
+  "/api/formularios/",
   "/api/onboarding",
   "/api/portal-familia",
   "/api/auth/login",

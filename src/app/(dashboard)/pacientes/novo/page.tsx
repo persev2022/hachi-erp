@@ -13,11 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTerminology } from "@/hooks/use-terminology";
 import { useToast } from "@/components/ui/toast-simple";
 
 export default function NovoPacientePage() {
   const { show } = useToast();
   const router = useRouter();
+  const terms = useTerminology();
   const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string[]>>({});
   const [quartos, setQuartos] = React.useState<{ id: string; numero: string }[]>([]);
@@ -299,27 +301,27 @@ export default function NovoPacientePage() {
         {/* Tratamento */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Tratamento</CardTitle>
-            <CardDescription>Dados da internação atual</CardDescription>
+            <CardTitle className="text-lg">{terms.admissao}</CardTitle>
+            <CardDescription>Dados de entrada</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Data de Admissão *
+                {terms.admissao} *
               </label>
               <Input name="dataAdmissao" type="date" required defaultValue={new Date().toISOString().split("T")[0]} />
               {fieldError("dataAdmissao")}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Dias de Tratamento *
+                {terms.diasTratamento} *
               </label>
               <Input name="diasTratamento" type="number" placeholder="90" min={1} required defaultValue={90} />
               {fieldError("diasTratamento")}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Quarto
+                {terms.quarto}
               </label>
               <select
                 name="quartoId"
