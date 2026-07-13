@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { GridPattern, Spotlight, BlurFade, BentoCard, BentoGrid, HeroBadge, AnimatedCounter, BeamLine } from "@/components/landing/animations";
 
 /* ─── Hooks ─── */
 function useScrollY() {
@@ -94,6 +95,8 @@ export default function RecoveryLanding() {
 
       {/* HERO */}
       <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        <GridPattern />
+        <Spotlight />
         <div className="absolute inset-0 opacity-40" style={{ background: "radial-gradient(circle at 20% 50%, rgba(16,185,129,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%)" }} />
         {/* Parallax Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -1,4 +1,5 @@
 "use client";
+import { GridPattern, Spotlight, BlurFade, HeroBadge, AnimatedCounter, BeamLine } from "@/components/landing/animations";
 import * as React from "react";
 import Link from "next/link";
 
@@ -91,6 +92,8 @@ export default function SeniorLanding() {
       </nav>
 
       {/* HERO */}
+        <GridPattern />
+        <Spotlight />
       <section className="relative pt-32 pb-24 px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-40" style={{ background: "radial-gradient(circle at 20% 50%, rgba(139,92,246,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%)" }} />
         {/* Parallax Background */}

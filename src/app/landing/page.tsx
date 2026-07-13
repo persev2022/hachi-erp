@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { Spotlight, BeamLine, HeroBadge } from "@/components/landing/animations";
 
 /* ─── Hooks ─────────────────────────────────────────── */
 function useScrollY() {
@@ -143,6 +144,7 @@ export default function LandingPage() {
 
       {/* ─── HERO ─── */}
       <section className="relative pt-32 pb-24 px-6 overflow-hidden" style={{ opacity: Math.max(0.3, 1 - scrollY / 800) }}>
+        <Spotlight />
         {/* Animated gradient mesh bg */}
         <div className="absolute inset-0 opacity-40" style={{
           background: "radial-gradient(circle at 20% 50%, rgba(13,148,136,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(245,158,11,0.08) 0%, transparent 50%)",

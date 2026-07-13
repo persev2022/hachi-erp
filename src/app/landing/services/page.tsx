@@ -1,4 +1,5 @@
 "use client";
+import { GridPattern, Spotlight, BlurFade, HeroBadge, AnimatedCounter, BeamLine } from "@/components/landing/animations";
 import * as React from "react";
 import Link from "next/link";
 
@@ -91,6 +92,8 @@ export default function ServicesLanding() {
       </nav>
 
       {/* HERO */}
+        <GridPattern />
+        <Spotlight />
       <section className="relative pt-32 pb-24 px-6 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Glow orbs */}
