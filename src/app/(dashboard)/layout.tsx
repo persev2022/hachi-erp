@@ -9,6 +9,7 @@ import { CommandSearch } from "@/components/command-search";
 import { SessionTimeout } from "@/components/session-timeout";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { TrialBanner } from "@/components/trial-banner";
+import { DynamicFavicon } from "@/components/dynamic-favicon";
 
 export default function DashboardLayout({
   children,
@@ -34,6 +35,7 @@ export default function DashboardLayout({
         </div>
         <CommandSearch />
         <SessionTimeout />
+        <DynamicFavicon />
       </ToastProvider>
       </I18nProvider>
     </ThemeProvider>

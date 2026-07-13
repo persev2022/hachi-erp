@@ -16,11 +16,25 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Hachi Platform — Business Operating System",
-    description: "Uma plataforma. Infinitas verticais de negócio.",
+    description: "Uma plataforma. Infinitas verticais de negócio. Prontuário, financeiro, agenda, CRM e automação em um único sistema.",
     locale: "pt_BR",
     type: "website",
     url: "https://hachi-erp.vercel.app/landing",
     siteName: "Hachi Platform",
+    images: [
+      {
+        url: "https://hachi-erp.vercel.app/images/hachi-logo.png",
+        width: 512,
+        height: 512,
+        alt: "Hachi Platform Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hachi Platform — Business Operating System",
+    description: "Uma plataforma. Infinitas verticais de negócio.",
+    images: ["https://hachi-erp.vercel.app/images/hachi-logo.png"],
   },
 };
 
