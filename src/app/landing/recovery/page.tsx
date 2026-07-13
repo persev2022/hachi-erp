@@ -135,7 +135,7 @@ export default function RecoveryLanding() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Seus acolhidos merecem{" "}
-              <span className="text-emerald-600">um sistema à altura do cuidado que você oferece.</span>
+              <span className="bg-clip-text text-transparent bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, #0D9488, #10B981, #059669, #10B981, #0D9488)", animation: "gradient-text 4s linear infinite" }}>um sistema à altura do cuidado que você oferece.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
               Prontuário multidisciplinar, portal da família e conformidade ANVISA. Da admissão à alta, tudo num só lugar.

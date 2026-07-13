@@ -133,7 +133,7 @@ export default function ClinicLanding() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Menos tempo no administrativo.{" "}
-              <span className="text-cyan-600">Mais tempo com o paciente.</span>
+              <span className="bg-clip-text text-transparent bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, #06B6D4, #0891B2, #0EA5E9, #0891B2, #06B6D4)", animation: "gradient-text 4s linear infinite" }}>Mais tempo com o paciente.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
               Prontuário, agenda multi-profissional, convênios TISS e teleconsulta numa plataforma que médicos realmente usam.

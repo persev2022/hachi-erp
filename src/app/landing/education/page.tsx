@@ -119,7 +119,7 @@ export default function EducationLanding() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Conecte escola, alunos e famílias{" "}
-              <span className="text-cyan-600">em uma única plataforma.</span>
+              <span className="bg-clip-text text-transparent bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, #06B6D4, #0891B2, #0EA5E9, #0891B2, #06B6D4)", animation: "gradient-text 4s linear infinite" }}>em uma única plataforma.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
               Matrículas, diário de classe, comunicação com pais e financeiro num sistema que simplifica a gestão escolar.

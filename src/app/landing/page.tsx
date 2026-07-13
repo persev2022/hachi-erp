@@ -143,11 +143,18 @@ export default function LandingPage() {
       </nav>
 
       {/* ─── HERO ─── */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden" style={{ opacity: Math.max(0.3, 1 - scrollY / 800) }}>
-        <Spotlight />
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        {/* Strong spotlight — follows cursor */}
+        <div
+          className="absolute inset-0 pointer-events-none transition-all duration-300"
+          style={{
+            background: `radial-gradient(800px circle at ${50 + mouse.x * 30}% ${40 + mouse.y * 20}%, rgba(13,148,136,0.15), transparent 60%)`,
+          }}
+        />
+
         {/* Animated gradient mesh bg */}
-        <div className="absolute inset-0 opacity-40" style={{
-          background: "radial-gradient(circle at 20% 50%, rgba(13,148,136,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(245,158,11,0.08) 0%, transparent 50%)",
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(circle at 20% 50%, rgba(13,148,136,0.18) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.12) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(245,158,11,0.08) 0%, transparent 50%)",
           backgroundSize: "200% 200%",
           animation: "gradient 12s ease infinite",
         }} />
@@ -207,16 +214,17 @@ export default function LandingPage() {
               Pare de perder tempo{" "}
               <span className="text-slate-400">com planilhas.</span>
               <br />
-              <span className="text-teal-600">Automatize toda a sua operação.</span>
+              <span className="bg-clip-text text-transparent bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, #0F4C5C, #0D9488, #D4A373, #0D9488, #0F4C5C)", animation: "gradient-text 4s linear infinite" }}>Automatize toda a sua operação.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
               A plataforma que transforma negócios desorganizados em máquinas de eficiência. De comunidades terapêuticas a restaurantes — uma base, infinitas verticais.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link href="/onboarding" className="btn-magnetic inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-teal-500/20">
-                Começar grátis →
+              <Link href="/onboarding" className="btn-magnetic relative inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-teal-500/25 hover:scale-[1.02] active:scale-[0.98]">
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-teal-400/20 to-indigo-400/20 opacity-0 hover:opacity-100 transition-opacity" />
+                <span className="relative">Começar grátis →</span>
               </Link>
-              <Link href="#como-funciona" className="btn-magnetic inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-4 rounded-xl border border-slate-200 transition-all hover:border-teal-300">
+              <Link href="#como-funciona" className="btn-magnetic inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-4 rounded-xl border border-slate-200 transition-all hover:border-teal-300 hover:shadow-md">
                 Ver como funciona
               </Link>
             </div>
@@ -278,21 +286,39 @@ export default function LandingPage() {
       </section>
 
       {/* ─── SOCIAL PROOF ─── */}
-      <section ref={stats.ref} className="py-16 px-6 border-y border-slate-100 bg-slate-50/50">
-        <p className="text-center text-sm text-slate-400 mb-8 font-medium">Confiado por negócios que precisam de organização</p>
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6">
+      <section ref={stats.ref} className="py-20 px-6 relative overflow-hidden bg-gradient-to-b from-white via-slate-50/80 to-white">
+        {/* Animated beam line top */}
+        <div className="absolute top-0 left-0 right-0 h-px overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-400/40 to-transparent" />
+          <div className="absolute h-full w-1/4 bg-gradient-to-r from-transparent via-teal-500 to-transparent" style={{ animation: "beam 3s ease-in-out infinite" }} />
+        </div>
+        <p className="text-center text-sm text-slate-400 mb-10 font-medium tracking-wide uppercase">Confiado por negócios que precisam de organização</p>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
           {[
             { value: countCode.toLocaleString("pt-BR") + "+", label: "Linhas de código" },
             { value: String(countPages), label: "Páginas" },
             { value: "8", label: "Verticais" },
             { value: String(countApis), label: "APIs" },
             { value: "99.9%", label: "Uptime" },
-          ].map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-              <div className="text-[11px] font-medium text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
+          ].map((s, i) => (
+            <div
+              key={s.label}
+              className="text-center p-4 rounded-2xl bg-white/80 border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all duration-300"
+              style={{
+                opacity: stats.visible ? 1 : 0,
+                transform: stats.visible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
+                transition: `all 0.5s ease ${i * 100}ms`,
+              }}
+            >
+              <div className="text-3xl md:text-4xl font-bold text-slate-900" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
+              <div className="text-[11px] font-medium text-slate-400 mt-1.5 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
+        </div>
+        {/* Animated beam line bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-px overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent" />
+          <div className="absolute h-full w-1/4 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" style={{ animation: "beam 4s ease-in-out infinite", animationDelay: "1.5s" }} />
         </div>
       </section>
 

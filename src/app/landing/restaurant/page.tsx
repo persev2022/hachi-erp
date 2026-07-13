@@ -133,7 +133,7 @@ export default function RestaurantLanding() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Do pedido ao pagamento em segundos.{" "}
-              <span className="text-red-600">Sem erro, sem atraso.</span>
+              <span className="bg-clip-text text-transparent bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, #EF4444, #DC2626, #F97316, #DC2626, #EF4444)", animation: "gradient-text 4s linear infinite" }}>Sem erro, sem atraso.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
               Comanda digital, controle de estoque, PDV integrado e KDS para cozinha. Operação redonda do salão à entrega.

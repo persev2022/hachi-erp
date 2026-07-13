@@ -133,7 +133,7 @@ export default function HotelLanding() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Zero overbooking. Máxima ocupação.{" "}
-              <span className="text-blue-600">Controle total.</span>
+              <span className="bg-clip-text text-transparent bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, #3B82F6, #0EA5E9, #6366F1, #0EA5E9, #3B82F6)", animation: "gradient-text 4s linear infinite" }}>Controle total.</span>
             </h1>
             <p className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
               Reservas, check-in digital, housekeeping e portal do hóspede. Tudo integrado para uma operação impecável.
