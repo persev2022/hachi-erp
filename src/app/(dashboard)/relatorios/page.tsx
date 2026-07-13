@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-simple";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  Area, AreaChart,
+} from "recharts";
 
 interface DashboardKpis {
   pacientesAtivos: number;
@@ -145,51 +149,65 @@ export default function RelatoriosPage() {
         </CardContent>
       </Card>
 
-      {/* Financial chart with period filter */}
+      {/* Financial chart with period filter — Recharts */}
       {finData && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Receita vs Despesa</CardTitle>
-              <select
-                value={periodo}
-                onChange={(e) => setPeriodo(e.target.value)}
-                className="text-xs border rounded px-2 py-1 bg-background"
-              >
-                <option value="3">3 meses</option>
-                <option value="6">6 meses</option>
-                <option value="12">12 meses</option>
-              </select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-48 flex items-end justify-between gap-1 px-2">
-              {finData.periodos.map((p: any) => {
-                const maxVal = Math.max(...finData.periodos.map((x: any) => Math.max(x.receitas, x.despesas)), 1);
-                return (
-                  <div key={p.periodo} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full flex items-end gap-0.5 h-36">
-                      <div className="flex-1 bg-emerald-400 dark:bg-emerald-600 rounded-t transition-all" style={{ height: `${(p.receitas / maxVal) * 100}%` }} title={`R$ ${p.receitas.toFixed(0)}`} />
-                      <div className="flex-1 bg-red-300 dark:bg-red-500 rounded-t transition-all" style={{ height: `${(p.despesas / maxVal) * 100}%` }} title={`R$ ${p.despesas.toFixed(0)}`} />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">{p.periodo}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-4 mt-3 justify-center text-xs">
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-emerald-400" />Receita</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-red-300" />Despesa</span>
-            </div>
-            {finData.resumo && (
-              <div className="grid grid-cols-3 gap-3 mt-4 text-center text-xs">
-                <div><p className="font-bold text-emerald-600">R$ {finData.resumo.totalReceitas.toFixed(0)}</p><p className="text-muted-foreground">Total receitas</p></div>
-                <div><p className="font-bold text-red-600">R$ {finData.resumo.totalDespesas.toFixed(0)}</p><p className="text-muted-foreground">Total despesas</p></div>
-                <div><p className={`font-bold ${finData.resumo.resultado >= 0 ? "text-emerald-600" : "text-red-600"}`}>R$ {finData.resumo.resultado.toFixed(0)}</p><p className="text-muted-foreground">Resultado</p></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Receita vs Despesa</CardTitle>
+                <select
+                  value={periodo}
+                  onChange={(e) => setPeriodo(e.target.value)}
+                  className="text-xs border rounded px-2 py-1 bg-background"
+                >
+                  <option value="3">3 meses</option>
+                  <option value="6">6 meses</option>
+                  <option value="12">12 meses</option>
+                </select>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={finData.periodos} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: number) => [`R$ ${v.toLocaleString("pt-BR")}`, ""]} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="receitas" name="Receita" fill="#34d399" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="despesas" name="Despesa" fill="#f87171" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              {finData.resumo && (
+                <div className="grid grid-cols-3 gap-3 mt-4 text-center text-xs">
+                  <div><p className="font-bold text-emerald-600">R$ {finData.resumo.totalReceitas.toLocaleString("pt-BR")}</p><p className="text-muted-foreground">Total receitas</p></div>
+                  <div><p className="font-bold text-red-600">R$ {finData.resumo.totalDespesas.toLocaleString("pt-BR")}</p><p className="text-muted-foreground">Total despesas</p></div>
+                  <div><p className={`font-bold ${finData.resumo.resultado >= 0 ? "text-emerald-600" : "text-red-600"}`}>R$ {finData.resumo.resultado.toLocaleString("pt-BR")}</p><p className="text-muted-foreground">Resultado</p></div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" /> Evolução do Resultado
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={finData.periodos.map((p: any) => ({ ...p, resultado: p.receitas - p.despesas }))} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: number) => [`R$ ${v.toLocaleString("pt-BR")}`, "Resultado"]} />
+                  <Area type="monotone" dataKey="resultado" stroke="#0d9488" fill="#ccfbf1" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Reports list */}

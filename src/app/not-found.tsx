@@ -1,21 +1,24 @@
 import Link from "next/link";
+import { ArrowLeft, MapPin } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold text-gray-200">404</h1>
-        <p className="text-lg font-medium text-gray-900 mt-4">
-          Página não encontrada
-        </p>
-        <p className="text-sm text-gray-500 mt-2">
-          A página que você procura não existe ou foi movida.
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
+      <div className="max-w-md text-center">
+        <div className="h-16 w-16 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-6">
+          <MapPin className="h-8 w-8 text-teal-600" />
+        </div>
+        <h1 className="text-6xl font-bold text-gray-900 mb-2">404</h1>
+        <h2 className="text-xl font-semibold text-gray-700 mb-3">Página não encontrada</h2>
+        <p className="text-sm text-gray-500 mb-8">
+          A página que você está procurando não existe ou foi movida.
         </p>
         <Link
           href="/dashboard"
-          className="inline-block mt-6 bg-teal-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-teal-700 transition"
+          className="inline-flex items-center gap-2 bg-teal-600 text-white font-medium px-6 py-2.5 rounded-xl hover:bg-teal-700 transition"
         >
-          Voltar ao Dashboard
+          <ArrowLeft className="h-4 w-4" />
+          Voltar ao painel
         </Link>
       </div>
     </div>

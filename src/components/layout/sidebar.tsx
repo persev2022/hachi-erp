@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LocaleSelector } from "@/components/locale-selector";
 
 interface NavItem {
   name: string;
@@ -219,6 +220,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <span className="text-xs text-muted-foreground">Tema</span>
           <ThemeToggle />
         </div>
+        <LocaleSelector />
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full"

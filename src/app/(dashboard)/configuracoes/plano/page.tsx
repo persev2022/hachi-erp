@@ -25,6 +25,32 @@ export default function PlanoPage() {
   const [plans, setPlans] = React.useState<PlanData[]>([]);
   const [withinLimits, setWithinLimits] = React.useState(true);
   const [upgradeMsg, setUpgradeMsg] = React.useState("");
+  const [checkoutLoading, setCheckoutLoading] = React.useState(false);
+  const [pixData, setPixData] = React.useState<{ txid: string; chave: string; valor: string } | null>(null);
+
+  const handleCheckout = async (planId: string) => {
+    setCheckoutLoading(true);
+    setUpgradeMsg("");
+    setPixData(null);
+    try {
+      const res = await fetch("/api/platform/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId, paymentMethod: "pix" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPixData(data.data.pix);
+        setUpgradeMsg(`Pague via Pix para ativar o plano ${data.data.plan}. Valor: R$ ${data.data.price}`);
+      } else {
+        setUpgradeMsg(data.error || "Erro ao gerar pagamento");
+      }
+    } catch {
+      setUpgradeMsg("Erro de conexão");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   React.useEffect(() => {
     fetch("/api/platform/billing")
@@ -102,7 +128,7 @@ export default function PlanoPage() {
               {isCurrent ? (
                 <div className="mt-4 text-center text-sm font-medium text-teal-700 bg-teal-50 rounded py-2">Plano atual</div>
               ) : plan.price > (currentPlan?.price || 0) ? (
-                <button onClick={() => setUpgradeMsg(`Entre em contato para upgrade para o plano ${plan.name}.`)} className="mt-4 w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded transition-colors">
+                <button onClick={() => handleCheckout(plan.id)} className="mt-4 w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded transition-colors">
                   Upgrade
                 </button>
               ) : null}
@@ -114,6 +140,15 @@ export default function PlanoPage() {
       {upgradeMsg && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
           {upgradeMsg}
+          {pixData && (
+            <div className="mt-3 p-3 bg-white border rounded-lg">
+              <p className="font-medium text-gray-900 mb-1">Dados Pix:</p>
+              <p className="text-xs text-gray-600">Chave: <span className="font-mono">{pixData.chave}</span></p>
+              <p className="text-xs text-gray-600">Valor: R$ {pixData.valor}</p>
+              <p className="text-xs text-gray-600">ID: <span className="font-mono text-[10px]">{pixData.txid}</span></p>
+              <p className="text-[10px] text-gray-400 mt-2">Após pagamento confirmado, seu plano será ativado automaticamente.</p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Sidebar, MobileHeader } from "@/components/layout/sidebar";
 import { ToastProvider } from "@/components/ui/toast-simple";
 import { ThemeProvider } from "@/components/theme-provider";
+import { I18nProvider } from "@/components/i18n-provider";
 import { CommandSearch } from "@/components/command-search";
 import { SessionTimeout } from "@/components/session-timeout";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -18,6 +19,7 @@ export default function DashboardLayout({
 
   return (
     <ThemeProvider>
+      <I18nProvider>
       <ToastProvider>
         <div className="min-h-screen">
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -33,6 +35,7 @@ export default function DashboardLayout({
         <CommandSearch />
         <SessionTimeout />
       </ToastProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }
