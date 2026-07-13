@@ -150,22 +150,15 @@ export default function FormulariosPage() {
                   <ExternalLink className="h-4 w-4 text-muted-foreground" />
                 </a>
                 {link.status === "assinado" && (
-                  <button
-                    onClick={() => {
-                      const content = JSON.stringify({ ...link.dados, assinatura: link.assinatura }, null, 2);
-                      const blob = new Blob([content], { type: "application/json" });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = `${link.tipo}_${link.token.slice(0, 8)}_assinado.json`;
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }}
+                  <a
+                    href={`/api/formularios/${link.token}/pdf`}
+                    target="_blank"
+                    rel="noopener"
                     className="p-2 rounded-lg hover:bg-muted transition"
-                    title="Baixar documento assinado"
+                    title="Baixar PDF assinado"
                   >
                     <Download className="h-4 w-4 text-green-600" />
-                  </button>
+                  </a>
                 )}
               </div>
             </div>
