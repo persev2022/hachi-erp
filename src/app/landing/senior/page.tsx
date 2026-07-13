@@ -3,6 +3,16 @@ import * as React from "react";
 import Link from "next/link";
 
 /* ─── Hooks ─── */
+function useScrollY() {
+  const [scrollY, setScrollY] = React.useState(0);
+  React.useEffect(() => {
+    const handler = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+  return scrollY;
+}
+
 function useMouseParallax() {
   const [pos, setPos] = React.useState({ x: 0, y: 0 });
   React.useEffect(() => {
@@ -36,10 +46,16 @@ function useScrollReveal() {
 const animations = `
 @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes particleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+@supports (animation-timeline: scroll()) {
+  .parallax-scale { animation: scaleIn linear; animation-timeline: scroll(); animation-range: 0% 50%; }
+  @keyframes scaleIn { from { transform: scale(0.9); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
+}
 `;
 
 export default function SeniorLanding() {
   const mouse = useMouseParallax();
+  const scrollY = useScrollY();
   const problem = useScrollReveal();
   const solution = useScrollReveal();
   const features = useScrollReveal();
@@ -68,6 +84,22 @@ export default function SeniorLanding() {
       {/* HERO */}
       <section className="relative pt-32 pb-24 px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-40" style={{ background: "radial-gradient(circle at 20% 50%, rgba(139,92,246,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%)" }} />
+        {/* Parallax Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute w-72 h-72 rounded-full border border-violet-500/10 top-20 -left-20 will-change-transform" style={{ transform: `translateY(${scrollY * 0.06}px)` }} />
+          <div className="absolute w-48 h-48 border border-violet-500/10 rotate-45 top-40 right-10 will-change-transform" style={{ transform: `translateY(${scrollY * 0.1}px) rotate(${45 + scrollY * 0.02}deg)` }} />
+          <div className="absolute w-32 h-32 rounded-xl bg-violet-500/5 bottom-40 left-1/3 will-change-transform" style={{ transform: `translateY(${scrollY * -0.08}px) rotate(${12 + scrollY * 0.01}deg)` }} />
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="absolute rounded-full will-change-transform" style={{
+              width: `${3 + i}px`, height: `${3 + i}px`,
+              backgroundColor: `rgba(139,92,246,${0.3 + i * 0.08})`,
+              top: `${20 + i * 13}%`, left: `${15 + i * 16}%`,
+              animation: `particleFloat ${5 + i * 1.2}s ease-in-out infinite`,
+              animationDelay: `${i * 0.7}s`,
+              transform: `translateY(${scrollY * (0.04 + i * 0.025)}px)`,
+            }} />
+          ))}
+        </div>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative">
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-3.5 py-1.5 mb-6">

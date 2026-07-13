@@ -84,8 +84,8 @@
 
 ---
 
-## Prioridade de Execução
-
+## Prioridade de Execução\
+`
 ```
 FASE 0 (Consolidar Recovery)
     ↓

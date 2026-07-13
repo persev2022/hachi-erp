@@ -3,6 +3,16 @@ import * as React from "react";
 import Link from "next/link";
 
 /* ─── Hooks ─────────────────────────────────────────── */
+function useScrollY() {
+  const [scrollY, setScrollY] = React.useState(0);
+  React.useEffect(() => {
+    const handler = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+  return scrollY;
+}
+
 function useMouseParallax() {
   const [pos, setPos] = React.useState({ x: 0, y: 0 });
   React.useEffect(() => {
@@ -56,6 +66,23 @@ const animations = `
 @keyframes gradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes particleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+@keyframes glow { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.1); } }
+@keyframes orbit { 0% { transform: rotate(0deg) translateX(120px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(120px) rotate(-360deg); } }
+@keyframes gridPulse { 0%,100% { opacity: 0.03; } 50% { opacity: 0.08; } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes morphBlob { 0%,100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; } 50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+.card-3d { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.card-3d:hover { transform: perspective(800px) rotateX(-2deg) rotateY(3deg) translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+.btn-magnetic { transition: transform 0.2s ease; }
+.btn-magnetic:hover { transform: scale(1.03); }
+.btn-magnetic:active { transform: scale(0.97); }
+@supports (animation-timeline: scroll()) {
+  .parallax-scale { animation: scaleIn linear; animation-timeline: scroll(); animation-range: 0% 50%; }
+  @keyframes scaleIn { from { transform: scale(0.9); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
+}
 `;
 
 /* ─── Data ──────────────────────────────────────────── */
@@ -79,6 +106,7 @@ const plans = [
 /* ─── Page Component ────────────────────────────────── */
 export default function LandingPage() {
   const mouse = useMouseParallax();
+  const scrollY = useScrollY();
   const stats = useScrollReveal();
   const problem = useScrollReveal();
   const solution = useScrollReveal();
@@ -114,13 +142,57 @@ export default function LandingPage() {
       </nav>
 
       {/* ─── HERO ─── */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden" style={{ opacity: Math.max(0.3, 1 - scrollY / 800) }}>
         {/* Animated gradient mesh bg */}
         <div className="absolute inset-0 opacity-40" style={{
           background: "radial-gradient(circle at 20% 50%, rgba(13,148,136,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(245,158,11,0.08) 0%, transparent 50%)",
           backgroundSize: "200% 200%",
           animation: "gradient 12s ease infinite",
         }} />
+
+        {/* Parallax geometric shapes + Glow orbs + Grid */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Animated grid background */}
+          <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(13,148,136,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(13,148,136,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px", animation: "gridPulse 4s ease-in-out infinite" }} />
+
+          {/* Glow orbs */}
+          <div className="absolute w-96 h-96 rounded-full top-10 -right-32 will-change-transform" style={{ background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)", animation: "glow 6s ease-in-out infinite", filter: "blur(40px)", transform: `translateY(${scrollY * 0.04}px)` }} />
+          <div className="absolute w-80 h-80 rounded-full -bottom-20 -left-20 will-change-transform" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)", animation: "glow 8s ease-in-out infinite", animationDelay: "2s", filter: "blur(50px)", transform: `translateY(${scrollY * -0.03}px)` }} />
+          <div className="absolute w-64 h-64 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 will-change-transform" style={{ background: "radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)", animation: "glow 10s ease-in-out infinite", animationDelay: "4s", filter: "blur(60px)" }} />
+
+          {/* Morphing blob */}
+          <div className="absolute w-48 h-48 top-1/4 right-1/4 opacity-20 will-change-transform" style={{ background: "linear-gradient(135deg, rgba(13,148,136,0.3), rgba(99,102,241,0.2))", animation: "morphBlob 12s ease-in-out infinite", transform: `translateY(${scrollY * 0.06}px)` }} />
+
+          {/* Orbiting element */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div style={{ animation: "orbit 25s linear infinite" }}>
+              <div className="w-3 h-3 rounded-full bg-teal-400/30 shadow-lg shadow-teal-400/20" />
+            </div>
+          </div>
+
+          {/* Geometric shapes with scroll parallax */}
+          <div className="absolute w-72 h-72 rounded-full border border-teal-500/10 -top-10 -left-20 will-change-transform" style={{ transform: `translateY(${scrollY * 0.05}px)` }} />
+          <div className="absolute w-48 h-48 border border-indigo-500/10 rotate-45 top-40 right-10 will-change-transform" style={{ transform: `translateY(${scrollY * 0.1}px) rotate(${45 + scrollY * 0.02}deg)` }} />
+          <div className="absolute w-32 h-32 rounded-xl bg-teal-500/5 bottom-20 left-1/3 will-change-transform" style={{ transform: `translateY(${scrollY * -0.08}px) rotate(${12 + scrollY * 0.01}deg)` }} />
+
+          {/* Floating particles */}
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full will-change-transform"
+              style={{
+                width: `${2 + i * 0.8}px`,
+                height: `${2 + i * 0.8}px`,
+                backgroundColor: `rgba(13,148,136,${0.15 + i * 0.06})`,
+                top: `${10 + i * 11}%`,
+                left: `${8 + i * 12}%`,
+                animation: `particleFloat ${3 + i * 1.2}s ease-in-out infinite`,
+                animationDelay: `${i * 0.4}s`,
+                transform: `translateY(${scrollY * (0.03 + i * 0.02)}px)`,
+              }}
+            />
+          ))}
+        </div>
 
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative">
           {/* Left: Copy */}
@@ -139,21 +211,21 @@ export default function LandingPage() {
               A plataforma que transforma negócios desorganizados em máquinas de eficiência. De comunidades terapêuticas a restaurantes — uma base, infinitas verticais.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link href="/onboarding" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg">
+              <Link href="/onboarding" className="btn-magnetic inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-teal-500/20">
                 Começar grátis →
               </Link>
-              <Link href="#como-funciona" className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-4 rounded-xl border border-slate-200 transition-all">
+              <Link href="#como-funciona" className="btn-magnetic inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-4 rounded-xl border border-slate-200 transition-all hover:border-teal-300">
                 Ver como funciona
               </Link>
             </div>
           </div>
 
           {/* Right: 3D Dashboard Mock */}
-          <div className="relative" style={{ perspective: "1200px" }}>
+          <div className="relative parallax-scale" style={{ perspective: "1200px" }}>
             <div
-              className="relative transition-transform duration-200 ease-out"
+              className="relative transition-transform duration-200 ease-out will-change-transform"
               style={{
-                transform: `rotateY(${mouse.x * 4}deg) rotateX(${-mouse.y * 3}deg)`,
+                transform: `rotateY(${mouse.x * 4}deg) rotateX(${-mouse.y * 3}deg) translateY(${Math.max(-40, -scrollY * 0.08)}px)`,
                 animation: "float 6s ease-in-out infinite",
               }}
             >
@@ -226,7 +298,7 @@ export default function LandingPage() {
       <section ref={problem.ref} className="py-28 px-6 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(13,148,136,0.12),transparent_60%)]" />
         <div className="max-w-5xl mx-auto relative">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", transform: `translateY(${Math.max(-20, -(scrollY - 600) * 0.04)}px)` }}>
             Planilhas. WhatsApp. Caos.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14">
@@ -240,7 +312,7 @@ export default function LandingPage() {
                 className="rounded-2xl p-6 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm"
                 style={{
                   opacity: problem.visible ? 1 : 0,
-                  transform: problem.visible ? "translateY(0)" : "translateY(24px)",
+                  transform: problem.visible ? "translateX(0) translateY(0)" : `translateX(${i % 2 === 0 ? "-30px" : "30px"}) translateY(24px)`,
                   transition: `all 0.6s ease ${i * 150}ms`,
                 }}
               >
@@ -258,7 +330,7 @@ export default function LandingPage() {
       {/* ─── SOLUTION (4 Pillars) ─── */}
       <section ref={solution.ref} id="como-funciona" className="py-28 px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", transform: `translateY(${Math.max(-15, -(scrollY - 1200) * 0.03)}px)` }}>
             Um sistema que resolve 4 problemas de uma vez
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
@@ -270,10 +342,10 @@ export default function LandingPage() {
             ].map((s, i) => (
               <div
                 key={s.title}
-                className="rounded-2xl p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+                className="card-3d rounded-2xl p-6 bg-white border border-slate-200 shadow-sm"
                 style={{
                   opacity: solution.visible ? 1 : 0,
-                  transform: solution.visible ? "translateY(0)" : "translateY(24px)",
+                  transform: solution.visible ? `translateY(0) scale(1)` : `translateY(24px) scale(0.95)`,
                   transition: `all 0.5s ease ${i * 100}ms`,
                 }}
               >
@@ -345,9 +417,9 @@ export default function LandingPage() {
           </div>
           <div style={{ perspective: "1000px" }}>
             <div
-              className="transition-transform duration-300"
+              className="transition-transform duration-300 will-change-transform"
               style={{
-                transform: `rotateY(${mouse.x * 2}deg) rotateX(${-mouse.y * 2}deg)`,
+                transform: `rotateY(${mouse.x * 2}deg) rotateX(${-mouse.y * 2}deg) translateY(${Math.max(-30, -(scrollY - 2000) * 0.05)}px)`,
                 opacity: dashboard.visible ? 1 : 0,
                 transition: "opacity 0.8s ease, transform 0.3s ease",
               }}

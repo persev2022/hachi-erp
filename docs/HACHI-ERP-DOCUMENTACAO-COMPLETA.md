@@ -866,7 +866,7 @@ O Hachi ERP não é um sistema genérico adaptado, mas uma solução construída
 
 ### 15.3 Equipe e Governança
 
-O sistema foi projetado para operação por uma equipe multidisciplinar com 10 perfis de acesso distintos, garantindo que cada profissional acesse apenas as informações pertinentes à sua função, em conformidade com o princípio da necessidade de conhecimento (need-to-know) e as exigências éticas dos respectivos conselhos profissionais.
+O sistema foi projetado para operação por uma equipe multidisciplinar com 10 perfis de acesso distintos, garantindo que cada profissional acesse apenas as informações pertinentes à sua função, em conformidade com o princípio da necessidade de conhecimento (need-to-know) e as exigências éticas dos respectivos conselhos proão aconbtecissionais.
 
 ### 15.4 Sustentabilidade Tecnológica
 

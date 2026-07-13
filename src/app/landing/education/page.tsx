@@ -3,6 +3,16 @@ import * as React from "react";
 import Link from "next/link";
 
 /* ─── Hooks ─── */
+function useScrollY() {
+  const [scrollY, setScrollY] = React.useState(0);
+  React.useEffect(() => {
+    const handler = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+  return scrollY;
+}
+
 function useMouseParallax() {
   const [pos, setPos] = React.useState({ x: 0, y: 0 });
   React.useEffect(() => {
@@ -36,10 +46,16 @@ function useScrollReveal() {
 const animations = `
 @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes particleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+@supports (animation-timeline: scroll()) {
+  .parallax-scale { animation: scaleIn linear; animation-timeline: scroll(); animation-range: 0% 50%; }
+  @keyframes scaleIn { from { transform: scale(0.9); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
+}
 `;
 
 export default function EducationLanding() {
   const mouse = useMouseParallax();
+  const scrollY = useScrollY();
   const problem = useScrollReveal();
   const solution = useScrollReveal();
   const features = useScrollReveal();
