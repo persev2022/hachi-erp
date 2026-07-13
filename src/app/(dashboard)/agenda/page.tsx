@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast-simple";
+import { EmptyState } from "@/components/empty-state";
 import { useTerminology } from "@/hooks/use-terminology";
 
 interface Agendamento {
@@ -336,9 +337,7 @@ export default function AgendaPage() {
       {!loading && (
         <div className="bg-card border rounded-lg divide-y">
           {agendamentos.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              Nenhum agendamento para esta data.
-            </div>
+            <EmptyState module="agenda" />
           ) : (
             agendamentos.map((ag) => (
               <div key={ag.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 md:p-4 hover:bg-muted/30 transition">

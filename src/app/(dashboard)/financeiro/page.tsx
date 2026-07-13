@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast-simple";
 import { useTerminology } from "@/hooks/use-terminology";
+import { EmptyState } from "@/components/empty-state";
 
 interface Movimentacao {
   id: string;
@@ -329,8 +330,8 @@ export default function FinanceiroPage() {
               ))}
               {movimentacoes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Nenhuma movimentação encontrada.
+                  <TableCell colSpan={7} className="p-0">
+                    <EmptyState module="financeiro" />
                   </TableCell>
                 </TableRow>
               )}

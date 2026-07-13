@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTerminology } from "@/hooks/use-terminology";
+import { EmptyState } from "@/components/empty-state";
 
 
 type StatusPaciente = "ATIVO" | "ALTA" | "EVADIDO" | "TRANSFERIDO" | "OBITO";
@@ -247,13 +248,20 @@ export default function PacientesPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {pacientes.length === 0 && (
+              {pacientes.length === 0 && !busca && (
+                <TableRow>
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState module="pacientes" />
+                  </TableCell>
+                </TableRow>
+              )}
+              {pacientes.length === 0 && busca && (
                 <TableRow>
                   <TableCell
                     colSpan={6}
                     className="text-center text-muted-foreground py-8"
                   >
-                    Nenhum paciente encontrado.
+                    Nenhum resultado para &quot;{busca}&quot;
                   </TableCell>
                 </TableRow>
               )}

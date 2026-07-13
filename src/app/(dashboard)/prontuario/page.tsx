@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast-simple";
+import { EmptyState } from "@/components/empty-state";
 import { useTerminology } from "@/hooks/use-terminology";
 
 interface Evolucao {
@@ -305,9 +306,7 @@ export default function ProntuarioPage() {
             );
           })}
           {filtradas.length === 0 && !loading && (
-            <div className="text-center text-muted-foreground py-8">
-              Nenhuma evolução encontrada.
-            </div>
+            <EmptyState module="prontuario" />
           )}
         </div>
       )}

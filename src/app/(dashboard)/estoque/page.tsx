@@ -9,6 +9,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast-simple";
+import { EmptyState } from "@/components/empty-state";
 
 interface Item {
   id: string;
@@ -233,8 +234,8 @@ export default function EstoquePage() {
               })}
               {items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Nenhum item no estoque.
+                  <TableCell colSpan={7} className="p-0">
+                    <EmptyState module="estoque" />
                   </TableCell>
                 </TableRow>
               )}
