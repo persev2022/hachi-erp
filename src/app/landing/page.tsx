@@ -115,10 +115,10 @@ export default function LandingPage() {
   const dashboard = useScrollReveal();
   const pricing = useScrollReveal();
 
-  const countCode = useCountUp(28500, stats.visible);
-  const countPages = useCountUp(139, stats.visible);
-  const countApis = useCountUp(95, stats.visible);
-  const countTests = useCountUp(144, stats.visible);
+  const countCode = useCountUp(36700, stats.visible);
+  const countPages = useCountUp(167, stats.visible);
+  const countApis = useCountUp(111, stats.visible);
+  const countTests = useCountUp(46, stats.visible);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 antialiased overflow-x-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
