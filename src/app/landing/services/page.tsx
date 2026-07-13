@@ -45,6 +45,8 @@ function useScrollReveal() {
 }
 
 const animations = `
+@keyframes beam { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
+@keyframes gradient-text { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes particleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
@@ -92,9 +94,9 @@ export default function ServicesLanding() {
       </nav>
 
       {/* HERO */}
-        <GridPattern />
-        <Spotlight />
       <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        {/* Cursor spotlight */}
+        <div className="absolute inset-0 pointer-events-none transition-all duration-300" style={{ background: `radial-gradient(700px circle at ${50 + mouse.x * 30}% ${40 + mouse.y * 20}%, rgba(13,148,136,0.12), transparent 60%)` }} />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Glow orbs */}
           <div className="absolute w-80 h-80 rounded-full top-10 -right-20 will-change-transform" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)", animation: "glow 6s ease-in-out infinite", filter: "blur(40px)", transform: `translateY(${scrollY * 0.04}px)` }} />
@@ -229,6 +231,12 @@ export default function ServicesLanding() {
           </div>
         </div>
       </section>
+
+      {/* Beam separator */}
+      <div className="relative h-px w-full overflow-hidden my-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-400/30 to-transparent" />
+        <div className="absolute h-full w-1/4 bg-gradient-to-r from-transparent via-teal-500 to-transparent" style={{ animation: "beam 3s ease-in-out infinite" }} />
+      </div>
 
       {/* FEATURES */}
       <section ref={features.ref} className="py-28 px-6 bg-slate-50 border-y border-slate-100">

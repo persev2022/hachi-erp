@@ -46,6 +46,8 @@ function useScrollReveal() {
 
 /* ─── Animations ─── */
 const animations = `
+@keyframes beam { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
+@keyframes gradient-text { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
