@@ -192,6 +192,71 @@ export async function POST(req: NextRequest) {
       cpf: pacienteData.cpf,
     });
 
+    // Auto-generate contract document (if responsavel exists)
+    if (paciente && responsavel) {
+      try {
+        const { generateDocx } = await import("@/lib/documents/generator");
+        const { signDocument } = await import("@/lib/documents/signature");
+        const { formatDateBR, diasParaMeses, somarMeses, calcularPrimeiroVencimento } = await import("@/lib/documents/format");
+        const { toTitleCase, toSlug } = await import("@/lib/documents/format");
+        const { formatarValorContrato } = await import("@/lib/documents/valor");
+
+        const dataEntrada = new Date(pacienteData.dataAdmissao);
+        const meses = diasParaMeses(pacienteData.diasTratamento);
+        const matriculaFmt = formatarValorContrato(pacienteData.matriculaValor || 0);
+        const mensalidadeFmt = formatarValorContrato(pacienteData.mensalidadeValor || 0);
+        const totalNum = (pacienteData.matriculaValor || 0) + (pacienteData.mensalidadeValor || 0) * meses;
+        const primeiroVencimento = calcularPrimeiroVencimento(dataEntrada, pacienteData.diaVencimento || 5);
+
+        const docBuffer = generateDocx("CONTRATO", {
+          data_entrada: formatDateBR(dataEntrada),
+          nome_paciente: toTitleCase(pacienteData.nome),
+          cpf_paciente: pacienteData.cpf,
+          nasc_paciente: formatDateBR(new Date(pacienteData.dataNascimento)),
+          profissao_paciente: pacienteData.profissao || "",
+          estado_civil_paciente: pacienteData.estadoCivil.toLowerCase(),
+          endereco_rua: pacienteData.endereco || "",
+          bairro: pacienteData.bairro || "",
+          cidade: pacienteData.cidade || "",
+          uf: pacienteData.uf || "",
+          cep: pacienteData.cep || "",
+          nome_familiar: toTitleCase(responsavel.nome),
+          cpf_familiar: responsavel.cpf,
+          parentesco: responsavel.parentesco,
+          telefone: responsavel.telefone || "",
+          dias_tratamento: String(pacienteData.diasTratamento),
+          matricula: matriculaFmt,
+          mensalidade: mensalidadeFmt,
+          vencimento: formatDateBR(primeiroVencimento),
+          total: formatarValorContrato(totalNum),
+        });
+
+        // Sign the document
+        const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true, email: true, cpf: true, role: true } });
+        const signature = signDocument(
+          docBuffer,
+          { userId: session.userId, name: user?.name || "", cpf: user?.cpf || undefined, email: user?.email || "", role: user?.role || "", tenantId: session.tenantId || undefined },
+          { type: "CONTRATO", title: `Contrato - ${pacienteData.nome}` }
+        );
+
+        // Save document record
+        await prisma.documento.create({
+          data: {
+            pacienteId: paciente.id,
+            tipo: "CONTRATO",
+            titulo: `Contrato - ${pacienteData.nome}`,
+            arquivo: JSON.stringify({ signatureId: signature.id, signatureHash: signature.hash, signedAt: signature.signedAt }),
+            formato: "docx",
+            geradoPor: session.userId,
+            assinado: true,
+          },
+        });
+      } catch (contractError) {
+        // Don't fail patient creation if contract generation fails
+        console.error("Auto-contract generation failed:", contractError);
+      }
+    }
+
     return NextResponse.json(
       { success: true, data: paciente },
       { status: 201 }

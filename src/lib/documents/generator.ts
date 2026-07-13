@@ -50,6 +50,8 @@ export function generateDocx(
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
+    // Fix: prevent "undefined" from showing as squares
+    nullGetter() { return ""; },
   });
 
   // Filter out undefined values
