@@ -111,7 +111,7 @@ export default function FormularioPublicoPage() {
           <h1 className="text-xl font-bold text-gray-900">
             {formInfo.tipo === "reserva-vaga" ? "Solicitação de Reserva de Vaga e Pré-Cadastro" : "Ordem de Serviço — Transporte Assistido"}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">SAÚDE MENTAL 24H LTDA — CNPJ: 26.659.951/0001-60</p>
+          <p className="text-sm text-gray-500 mt-1">Preencha os dados para solicitar a reserva de vaga e iniciar o pré-cadastro.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
