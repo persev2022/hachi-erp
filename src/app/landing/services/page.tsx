@@ -47,6 +47,15 @@ const animations = `
 @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes particleFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+@keyframes glow { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.08); } }
+@keyframes orbit { 0% { transform: rotate(0deg) translateX(100px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); } }
+@keyframes gridPulse { 0%,100% { opacity: 0.03; } 50% { opacity: 0.07; } }
+@keyframes morphBlob { 0%,100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; } 50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }  }
+.card-3d { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.card-3d:hover { transform: perspective(800px) rotateX(-2deg) rotateY(3deg) translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+.btn-magnetic { transition: transform 0.2s ease; }
+.btn-magnetic:hover { transform: scale(1.03); }
+.btn-magnetic:active { transform: scale(0.97); }
 @supports (animation-timeline: scroll()) {
   .parallax-scale { animation: scaleIn linear; animation-timeline: scroll(); animation-range: 0% 50%; }
   @keyframes scaleIn { from { transform: scale(0.9); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
@@ -83,6 +92,21 @@ export default function ServicesLanding() {
 
       {/* HERO */}
       <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Glow orbs */}
+          <div className="absolute w-80 h-80 rounded-full top-10 -right-20 will-change-transform" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)", animation: "glow 6s ease-in-out infinite", filter: "blur(40px)", transform: `translateY(${scrollY * 0.04}px)` }} />
+          <div className="absolute w-64 h-64 rounded-full -bottom-10 -left-10 will-change-transform" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)", animation: "glow 8s ease-in-out infinite", animationDelay: "2s", filter: "blur(50px)", transform: `translateY(${scrollY * -0.03}px)` }} />
+          {/* Grid */}
+          <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px", animation: "gridPulse 4s ease-in-out infinite" }} />
+          {/* Blob */}
+          <div className="absolute w-40 h-40 top-1/3 right-1/4 opacity-[0.15] will-change-transform" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))", animation: "morphBlob 12s ease-in-out infinite", transform: `translateY(${scrollY * 0.05}px)` }} />
+          {/* Orbit */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div style={{ animation: "orbit 20s linear infinite" }}>
+              <div className="w-2.5 h-2.5 rounded-full bg-indigo-400/30" />
+            </div>
+          </div>
+        </div>
         <div className="absolute inset-0 opacity-40" style={{ background: "radial-gradient(circle at 20% 50%, rgba(99,102,241,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(139,92,246,0.1) 0%, transparent 50%)" }} />
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative">
           <div>
