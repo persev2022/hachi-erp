@@ -3,7 +3,7 @@ import { getSessionFromRequest } from "@/lib/auth";
 
 // Max file size: 2MB
 const MAX_SIZE = 2 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromRequest(req);

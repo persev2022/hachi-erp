@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 
-const SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback-secret-change-me");
+const SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET environment variable is required"); })());
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
