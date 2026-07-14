@@ -26,6 +26,8 @@ import {
   ShoppingCart,
   Truck,
   Wrench,
+  FileSignature,
+  UserPlus,
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -57,6 +59,8 @@ const navigation: NavItem[] = [
   { name: "PDV", href: "/pdv", icon: ShoppingCart, roles: ["ADMIN", "FINANCEIRO"], feature: "pdv" },
   { name: "Delivery", href: "/delivery", icon: Truck, roles: ["ADMIN", "COORDENADOR"], feature: "delivery" },
   { name: "Ferramentas", href: "/vertical", icon: Wrench, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO"] },
+  { name: "Captadores", href: "/captadores", icon: UserPlus, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"] },
+  { name: "Formulários", href: "/formularios", icon: FileSignature, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"] },
   { name: "Platform", href: "/admin-platform", icon: Shield, roles: ["ADMIN"] },
 ];
 
