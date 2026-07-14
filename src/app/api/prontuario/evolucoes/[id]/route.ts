@@ -19,12 +19,17 @@ export async function GET(
     const evolucao = await prisma.evolucao.findUnique({
       where: { id },
       include: {
-        paciente: { select: { id: true, nome: true, cpf: true } },
+        paciente: { select: { id: true, nome: true, cpf: true, tenantId: true } },
         profissional: { select: { id: true, name: true, role: true, crm: true, crp: true, coren: true } },
       },
     });
 
     if (!evolucao) {
+      return NextResponse.json({ success: false, error: "Evolução não encontrada" }, { status: 404 });
+    }
+
+    // Tenant isolation check
+    if (evolucao.paciente?.tenantId && evolucao.paciente.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Evolução não encontrada" }, { status: 404 });
     }
 
@@ -49,9 +54,14 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    const evolucao = await prisma.evolucao.findUnique({ where: { id } });
+    const evolucao = await prisma.evolucao.findUnique({ where: { id }, include: { paciente: { select: { tenantId: true } } } });
 
     if (!evolucao) {
+      return NextResponse.json({ success: false, error: "Evolução não encontrada" }, { status: 404 });
+    }
+
+    // Tenant isolation
+    if (evolucao.paciente?.tenantId && evolucao.paciente.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Evolução não encontrada" }, { status: 404 });
     }
 

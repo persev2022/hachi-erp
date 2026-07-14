@@ -39,10 +39,11 @@ export async function GET(
         id: true, name: true, email: true, role: true,
         cpf: true, crm: true, crp: true, coren: true,
         phone: true, active: true, createdAt: true,
+        tenantId: true,
       },
     });
 
-    if (!user) {
+    if (!user || (user.tenantId && user.tenantId !== session.tenantId)) {
       return NextResponse.json({ success: false, error: "Usuário não encontrado" }, { status: 404 });
     }
 

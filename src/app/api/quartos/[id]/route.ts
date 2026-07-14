@@ -26,7 +26,7 @@ export async function GET(
       },
     });
 
-    if (!quarto) {
+    if (!quarto || quarto.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Quarto não encontrado" }, { status: 404 });
     }
 
@@ -53,7 +53,7 @@ export async function PUT(
 
     const quarto = await prisma.quarto.findUnique({ where: { id } });
 
-    if (!quarto) {
+    if (!quarto || quarto.tenantId !== session.tenantId) {
       return NextResponse.json({ success: false, error: "Quarto não encontrado" }, { status: 404 });
     }
 

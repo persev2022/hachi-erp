@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/services/audit";
 import crypto from "crypto";
 
 export async function GET(req: NextRequest) {
@@ -65,6 +66,8 @@ export async function POST(req: NextRequest) {
         }),
       },
     });
+
+    await logAudit(session.userId, "CREATE", "Teleconsulta", id, { pacienteId, roomId });
 
     return NextResponse.json({
       success: true,

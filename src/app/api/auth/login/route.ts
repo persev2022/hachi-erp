@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict", // Changed from "lax" to "strict" for CSRF protection
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24, // 24 hours (matches JWT expiration)
     });
 
     return response;

@@ -20,7 +20,15 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network-first strategy
+  const url = new URL(event.request.url);
+
+  // NEVER cache API responses or sensitive routes
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/f/') || url.pathname.startsWith('/dashboard')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Network-first for everything else
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   );
