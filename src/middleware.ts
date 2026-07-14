@@ -93,7 +93,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Allow public paths
-  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
+  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path)) || pathname === "/admin") {
     const response = NextResponse.next();
     // Add CORS header for allowed API origins
     if (pathname.startsWith("/api/")) {
