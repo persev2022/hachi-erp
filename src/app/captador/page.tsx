@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -9,6 +9,7 @@ export default function CaptadorPage() {
   const [step, setStep] = React.useState<"form" | "success">("form");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [showWarning, setShowWarning] = React.useState(true);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -110,10 +111,30 @@ export default function CaptadorPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Warning popup */}
+          {showWarning && (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 relative">
+              <button onClick={() => setShowWarning(false)} className="absolute top-3 right-3 p-1 rounded hover:bg-amber-100 transition">
+                <X className="h-4 w-4 text-amber-600" />
+              </button>
+              <div className="flex gap-3">
+                <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-800 text-sm">Atenção</p>
+                  <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                    A falta do preenchimento de informações descumpre as normas do CT Persev. 
+                    Preencha com o máximo de acuracidade possível. Campos incompletos podem 
+                    atrasar o processo de admissão.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 1. Dados do Paciente */}
           <Section title="1. Dados do Paciente (Acolhido)">
-            <Row2><Field label="Nome completo *" name="pacienteNome" required /><Field label="CPF *" name="pacienteCpf" required /></Row2>
-            <Row2><Field label="RG" name="pacienteRg" /><Field label="Data de nascimento *" name="pacienteNascimento" type="date" required /></Row2>
+            <Row2><Field label="Nome completo *" name="pacienteNome" required /><Field label="CPF" name="pacienteCpf" /></Row2>
+            <Row2><Field label="RG" name="pacienteRg" /><Field label="Data de nascimento" name="pacienteNascimento" type="date" /></Row2>
             <Row2>
               <div><label className="text-xs font-medium text-gray-600">Sexo</label><select name="pacienteSexo" className="w-full border rounded-lg px-3 py-2 text-sm"><option>Masculino</option><option>Feminino</option></select></div>
               <Field label="Tipo sanguíneo" name="tipoSanguineo" />
@@ -154,10 +175,10 @@ export default function CaptadorPage() {
 
           {/* 3. Responsável Financeiro */}
           <Section title="3. Dados do Responsável Financeiro">
-            <Field label="Nome completo *" name="responsavelNome" required />
-            <Row2><Field label="CPF *" name="responsavelCpf" required /><Field label="RG" name="responsavelRg" /></Row2>
+            <Field label="Nome completo" name="responsavelNome" />
+            <Row2><Field label="CPF" name="responsavelCpf" /><Field label="RG" name="responsavelRg" /></Row2>
             <div><label className="text-xs font-medium text-gray-600">Parentesco</label><select name="responsavelParentesco" className="w-full border rounded-lg px-3 py-2 text-sm"><option>Mãe</option><option>Pai</option><option>Irmã(o)</option><option>Filho(a)</option><option>Esposa(o)</option><option>Outro</option></select></div>
-            <Row2><Field label="Telefone 1 (WhatsApp) *" name="responsavelTelefone" required /><Field label="Email" name="responsavelEmail" type="email" /></Row2>
+            <Row2><Field label="Telefone 1 (WhatsApp)" name="responsavelTelefone" /><Field label="Email" name="responsavelEmail" type="email" /></Row2>
             <Row2><Field label="Rua" name="respRua" /><Field label="Número" name="respNumero" /></Row2>
             <Row2><Field label="Bairro" name="respBairro" /><Field label="Cidade" name="respCidade" /></Row2>
             <Row2><Field label="UF" name="respUf" /><Field label="CEP" name="respCep" /></Row2>
@@ -165,7 +186,7 @@ export default function CaptadorPage() {
 
           {/* 4. Informações da Internação */}
           <Section title="4. Informações da Internação">
-            <div><label className="text-xs font-medium text-gray-600">Tipo de internação *</label><select name="tipoInternacao" required className="w-full border rounded-lg px-3 py-2 text-sm"><option value="">Selecione</option><option>Voluntária</option><option>Involuntária</option><option>Compulsória</option><option>Judicial</option></select></div>
+            <div><label className="text-xs font-medium text-gray-600">Tipo de internação</label><select name="tipoInternacao" className="w-full border rounded-lg px-3 py-2 text-sm"><option value="">Selecione</option><option>Voluntária</option><option>Involuntária</option><option>Compulsória</option><option>Judicial</option></select></div>
             <div><label className="text-xs font-medium text-gray-600">Quem está buscando tratamento?</label><select name="quemBusca" className="w-full border rounded-lg px-3 py-2 text-sm"><option>Próprio paciente</option><option>Família</option><option>Ordem judicial</option></select></div>
             <Row2>
               <div><label className="text-xs font-medium text-gray-600">Paciente sabe?</label><select name="pacienteSabe" className="w-full border rounded-lg px-3 py-2 text-sm"><option>Sim</option><option>Não</option></select></div>
@@ -190,7 +211,7 @@ export default function CaptadorPage() {
           {/* 6. Dados do Captador */}
           <Section title="6. Dados do Captador">
             <Field label="Nome do captador *" name="captadorNome" required />
-            <Row2><Field label="CPF *" name="captadorCpf" required /><Field label="Telefone *" name="captadorTelefone" required /></Row2>
+            <Row2><Field label="CPF" name="captadorCpf" /><Field label="Telefone" name="captadorTelefone" /></Row2>
             <Row2><Field label="Email" name="captadorEmail" type="email" /><Field label="Chave PIX para comissão" name="captadorPix" /></Row2>
           </Section>
 

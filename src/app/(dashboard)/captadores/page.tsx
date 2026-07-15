@@ -43,6 +43,20 @@ export default function CaptadoresPage() {
     finally { setActionLoading(null); }
   };
 
+  const handleNegar = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja recusar esta captação?")) return;
+    setActionLoading(id);
+    try {
+      const res = await fetch(`/api/captadores/${id}/negar`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        show("Captação recusada.", "success");
+        setCaptacoes((prev) => prev.map((c) => c.id === id ? { ...c, status: "recusado" } : c));
+      } else { show(data.error, "error"); }
+    } catch { show("Erro de conexão", "error"); }
+    finally { setActionLoading(null); }
+  };
+
   // Group by captador name
   const captadores = React.useMemo(() => {
     const map: Record<string, Captacao[]> = {};
@@ -72,9 +86,9 @@ export default function CaptadoresPage() {
           <Badge variant="outline" className="text-xs">{captacoes.length} captações</Badge>
         </div>
         <div className="flex gap-2">
-          {["todos", "pendente", "aceito"].map((f) => (
+          {["todos", "pendente", "aceito", "recusado"].map((f) => (
             <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-xs rounded-full border transition ${filter === f ? "bg-teal-600 text-white border-teal-600" : "border-gray-200 text-gray-600"}`}>
-              {f === "todos" ? "Todos" : f === "pendente" ? "Pendentes" : "Aceitos"}
+              {f === "todos" ? "Todos" : f === "pendente" ? "Pendentes" : f === "aceito" ? "Aceitos" : "Recusados"}
             </button>
           ))}
         </div>
@@ -133,10 +147,16 @@ export default function CaptadoresPage() {
                     <Download className="h-4 w-4 text-muted-foreground" />
                   </a>
                   {c.status === "pendente" && (
-                    <Button size="sm" onClick={() => handleAceitar(c.id)} disabled={actionLoading === c.id} className="bg-green-600 hover:bg-green-700">
-                      {actionLoading === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 mr-1" />}
-                      Aceitar
-                    </Button>
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => handleNegar(c.id)} disabled={actionLoading === c.id} className="text-red-600 border-red-200 hover:bg-red-50">
+                        {actionLoading === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3 mr-1" />}
+                        Negar
+                      </Button>
+                      <Button size="sm" onClick={() => handleAceitar(c.id)} disabled={actionLoading === c.id} className="bg-green-600 hover:bg-green-700">
+                        {actionLoading === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 mr-1" />}
+                        Aceitar
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
