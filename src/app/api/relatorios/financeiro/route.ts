@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
     }
 
     const tenantId = session.tenantId;
+    if (!tenantId) {
+      return NextResponse.json({ success: true, data: { periodos: [], resumo: { totalReceitas: 0, totalDespesas: 0, resultado: 0 } } });
+    }
     const { searchParams } = new URL(req.url);
     const meses = parseInt(searchParams.get("meses") || "6");
 
@@ -22,7 +25,7 @@ export async function GET(req: NextRequest) {
     const results = [];
 
     // Build tenant filter
-    const tenantFilter: any = tenantId ? { tenantId } : {};
+    const tenantFilter: any = { tenantId };
 
     for (let i = meses - 1; i >= 0; i--) {
       const start = new Date(now.getFullYear(), now.getMonth() - i, 1);

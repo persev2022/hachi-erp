@@ -21,10 +21,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Tenant isolation: verify paciente belongs to session tenant
-    const docWhere: any = { pacienteId };
-    if (session.tenantId) {
-      docWhere.paciente = { tenantId: session.tenantId };
+    if (!session.tenantId) {
+      return NextResponse.json({ success: true, data: [] });
     }
+    const docWhere: any = { pacienteId };
+    docWhere.paciente = { tenantId: session.tenantId };
 
     const documentos = await prisma.documento.findMany({
       where: docWhere,

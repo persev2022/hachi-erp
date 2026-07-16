@@ -52,8 +52,11 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
-    // Tenant isolation
-    if (session.tenantId) where.tenantId = session.tenantId;
+    // Tenant isolation — BLOCK if no tenant
+    if (!session.tenantId) {
+      return NextResponse.json({ success: true, data: [], pagination: { total: 0, page: 1, pageSize: 20, totalPages: 0 } });
+    }
+    where.tenantId = session.tenantId;
 
     if (pacienteId) where.pacienteId = pacienteId;
     if (tipo) where.tipo = tipo;

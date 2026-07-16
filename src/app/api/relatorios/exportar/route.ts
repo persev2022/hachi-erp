@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
         styleHeaderRow(sheet);
 
         const pacientes = await prisma.paciente.findMany({
-          where: { deletedAt: null },
+          where: { deletedAt: null, ...(session.tenantId ? { tenantId: session.tenantId } : { id: "none" }) },
           include: {
             quarto: { select: { numero: true } },
           },
@@ -88,6 +88,7 @@ export async function GET(req: NextRequest) {
         styleHeaderRow(sheet);
 
         const movimentacoes = await prisma.movimentacaoFinanceira.findMany({
+          where: session.tenantId ? { tenantId: session.tenantId } : { id: "none" },
           orderBy: { dataVencimento: "desc" },
           take: 1000, // Limit to prevent memory issues
         });
@@ -137,6 +138,7 @@ export async function GET(req: NextRequest) {
         styleHeaderRow(sheet);
 
         const quartos = await prisma.quarto.findMany({
+          where: session.tenantId ? { tenantId: session.tenantId } : { id: "none" },
           include: {
             pacientes: {
               where: { deletedAt: null, status: "ATIVO" },

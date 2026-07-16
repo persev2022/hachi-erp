@@ -12,7 +12,10 @@ export async function GET(req: NextRequest) {
 
     const tenantId = session.tenantId;
     // Tenant filter — only show data from the user's tenant
-    const tf = tenantId ? { tenantId } : {};
+    if (!tenantId) {
+      return NextResponse.json({ success: true, data: { kpis: { pacientesAtivos: 0, ocupacao: 0, agendamentosHoje: 0, receitaMes: 0, inadimplentes: 0, evolucoesPendentes: 0, estoqueBaixo: 0 }, proximosAgendamentos: [] } });
+    }
+    const tf = { tenantId };
 
     // Pacientes ativos (tenant-scoped)
     const pacientesAtivos = await prisma.paciente.count({
