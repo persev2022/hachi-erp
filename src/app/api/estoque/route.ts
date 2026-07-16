@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
     const where: any = {};
 
     // Tenant isolation
+    if (!session.tenantId) { return NextResponse.json({ success: true, data: [] }); }
     if (session.tenantId) {
       where.tenantId = session.tenantId;
     }

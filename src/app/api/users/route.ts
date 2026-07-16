@@ -114,6 +114,7 @@ export async function POST(req: NextRequest) {
         crm: parsed.data.crm,
         crp: parsed.data.crp,
         coren: parsed.data.coren,
+        tenantId: session.tenantId || undefined,
       },
       select: {
         id: true, name: true, email: true, role: true, active: true,

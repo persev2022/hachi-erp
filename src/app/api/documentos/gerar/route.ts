@@ -194,6 +194,23 @@ export async function POST(req: NextRequest) {
       fileName,
     });
 
+    // Save document record to database
+    try {
+      await prisma.documento.create({
+        data: {
+          pacienteId,
+          tipo: tipo.toUpperCase().replace(/-/g, "_") as any,
+          titulo: fileName.replace(".docx", ""),
+          arquivo: `base64:${Buffer.from(docBuffer).toString("base64").slice(0, 100)}...`, // Store reference (full file too large for DB)
+          formato: "docx",
+          geradoPor: session.userId,
+        },
+      });
+    } catch (e) {
+      // Don't block download if save fails
+      console.error("Failed to save document record:", e);
+    }
+
     // Return the docx file as download
     return new NextResponse(new Uint8Array(docBuffer), {
       status: 200,

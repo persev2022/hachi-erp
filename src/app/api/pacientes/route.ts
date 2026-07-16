@@ -80,9 +80,12 @@ export async function GET(req: NextRequest) {
       deletedAt: null,
     };
 
-    // Filter by tenant
+    // CRITICAL: Always filter by tenant. If no tenantId, return empty.
     if (session.tenantId) {
       where.tenantId = session.tenantId;
+    } else {
+      // User without tenant should see nothing
+      return NextResponse.json({ success: true, data: [], pagination: { total: 0, page: 1, pageSize: 20, totalPages: 0 } });
     }
 
     if (search) {
