@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth";
 import { logAudit } from "@/lib/services/audit";
+import { sanitizeObject } from "@/lib/security/sanitize";
 
 // Zod schema for creating a patient
 const createPacienteSchema = z.object({
@@ -160,12 +161,15 @@ export async function POST(req: NextRequest) {
 
     const { responsavel, ...pacienteData } = parsed.data;
 
+    // Sanitize all string inputs to prevent XSS
+    const sanitizedData = sanitizeObject(pacienteData as Record<string, unknown>) as typeof pacienteData;
+
     // Create patient + responsável in transaction
     const paciente = await prisma.$transaction(async (tx) => {
       const newPaciente = await tx.paciente.create({
         data: {
-          ...pacienteData,
-          email: pacienteData.email || null,
+          ...sanitizedData,
+          email: sanitizedData.email || null,
           ...(session.tenantId ? { tenantId: session.tenantId } : {}),
         },
       });
