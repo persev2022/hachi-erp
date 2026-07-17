@@ -22,11 +22,16 @@ export interface PlatformFeatures {
   quartos: boolean;
   prescricoes: boolean;
 
-  // Future modules
+  // Commercial modules
   crm: boolean;
   pdv: boolean;
   delivery: boolean;
   reservas: boolean;
+
+  // Specific modules
+  captadores: boolean;
+  formularios: boolean;
+  ferramentas: boolean;
 }
 
 // Vertical presets
@@ -47,6 +52,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: false,
+    captadores: true,
+    formularios: true,
+    ferramentas: false,
   },
   clinic: {
     financeiro: true,
@@ -64,6 +72,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: false,
+    captadores: false,
+    formularios: true,
+    ferramentas: true,
   },
   hotel: {
     financeiro: true,
@@ -81,6 +92,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: true,
+    captadores: false,
+    formularios: false,
+    ferramentas: true,
   },
   restaurant: {
     financeiro: true,
@@ -98,6 +112,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: true,
     delivery: true,
     reservas: false,
+    captadores: false,
+    formularios: false,
+    ferramentas: true,
   },
   senior: {
     financeiro: true,
@@ -115,6 +132,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: false,
+    captadores: false,
+    formularios: true,
+    ferramentas: true,
   },
   services: {
     financeiro: true,
@@ -132,6 +152,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: false,
+    captadores: false,
+    formularios: true,
+    ferramentas: true,
   },
   education: {
     financeiro: true,
@@ -149,6 +172,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: false,
+    captadores: false,
+    formularios: false,
+    ferramentas: true,
   },
   vet: {
     financeiro: true,
@@ -166,6 +192,9 @@ export const VERTICAL_FEATURES: Record<string, PlatformFeatures> = {
     pdv: false,
     delivery: false,
     reservas: false,
+    captadores: false,
+    formularios: false,
+    ferramentas: true,
   },
 };
 

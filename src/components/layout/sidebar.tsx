@@ -57,9 +57,9 @@ const navigation: NavItem[] = [
   { name: "Reservas", href: "/reservas", icon: CalendarCheck, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "reservas" },
   { name: "PDV", href: "/pdv", icon: ShoppingCart, roles: ["ADMIN", "FINANCEIRO"], feature: "pdv" },
   { name: "Delivery", href: "/delivery", icon: Truck, roles: ["ADMIN", "COORDENADOR"], feature: "delivery" },
-  { name: "Ferramentas", href: "/vertical", icon: Wrench, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO"] },
-  { name: "Captadores", href: "/captadores", icon: UserPlus, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"] },
-  { name: "Formulários", href: "/formularios", icon: FileSignature, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"] },
+  { name: "Ferramentas", href: "/vertical", icon: Wrench, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA", "FINANCEIRO"], feature: "ferramentas" },
+  { name: "Captadores", href: "/captadores", icon: UserPlus, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "captadores" },
+  { name: "Formulários", href: "/formularios", icon: FileSignature, roles: ["ADMIN", "COORDENADOR", "SECRETARIA"], feature: "formularios" },
 ];
 
 interface SidebarProps {
