@@ -19,6 +19,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
+    // Super admin only — verify by checking user email
+    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { email: true } });
+    const SUPER_ADMIN_EMAILS = ["admin@hachi.com"];
+    if (!user || !SUPER_ADMIN_EMAILS.includes(user.email)) {
+      return NextResponse.json({ success: false, error: "Acesso restrito ao super admin" }, { status: 403 });
+    }
+
     const tenants = await prisma.tenant.findMany({
       include: {
         _count: { select: { users: true } },

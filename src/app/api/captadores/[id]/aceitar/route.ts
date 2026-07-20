@@ -34,6 +34,13 @@ export async function POST(
 
     const dados = captacao.dados;
 
+    // Map estado civil from form to enum
+    const estadoCivilMap: Record<string, string> = {
+      "Solteiro(a)": "SOLTEIRO", "Casado(a)": "CASADO", "Divorciado(a)": "DIVORCIADO",
+      "Viúvo(a)": "VIUVO", "União Estável": "UNIAO_ESTAVEL",
+    };
+    const estadoCivil = (estadoCivilMap[dados.pacienteEstadoCivil] || "SOLTEIRO") as "SOLTEIRO" | "CASADO" | "DIVORCIADO" | "VIUVO" | "UNIAO_ESTAVEL";
+
     // Create patient automatically
     const paciente = await prisma.paciente.create({
       data: {
@@ -42,7 +49,7 @@ export async function POST(
         cpf: dados.pacienteCpf || `TEMP-${Date.now()}`,
         dataNascimento: dados.pacienteNascimento ? new Date(dados.pacienteNascimento) : new Date("1990-01-01"),
         sexo: dados.pacienteSexo === "Feminino" ? "F" : "M",
-        estadoCivil: dados.pacienteEstadoCivil || "SOLTEIRO",
+        estadoCivil,
         telefone: dados.pacienteTelefone || "",
         email: dados.pacienteEmail || "",
         endereco: dados.pacienteEndereco || "",

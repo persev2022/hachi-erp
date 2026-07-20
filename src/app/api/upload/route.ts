@@ -4,6 +4,7 @@ import { getSessionFromRequest } from "@/lib/auth";
 // Max file size: 2MB
 const MAX_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const BLOCKED_EXTENSIONS = [".exe", ".bat", ".cmd", ".sh", ".php", ".js", ".html", ".htm", ".svg", ".vbs", ".ps1", ".msi", ".dll"];
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromRequest(req);
@@ -22,6 +23,12 @@ export async function POST(req: NextRequest) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json({ success: false, error: "Tipo não permitido. Use JPEG, PNG ou WebP." }, { status: 400 });
+    }
+
+    // Block dangerous file extensions regardless of MIME type
+    const fileName = file.name.toLowerCase();
+    if (BLOCKED_EXTENSIONS.some(ext => fileName.includes(ext))) {
+      return NextResponse.json({ success: false, error: "Extensão de arquivo não permitida." }, { status: 400 });
     }
 
     if (file.size > MAX_SIZE) {
