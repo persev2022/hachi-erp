@@ -45,13 +45,17 @@ export function dataParaExtenso(date: Date | string): string {
   return `${d.getUTCDate()} de ${MESES[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
 }
 
-/** Parseia "dd/MM/yyyy" para Date. Lança erro se inválida. */
+/** Parseia "dd/MM/yyyy" para Date (UTC). Lança erro se inválida. */
 export function parseDateBR(str: string): Date {
+  // If it's already an ISO date or Date object, just parse it
+  if (str.includes("-") || str.includes("T")) {
+    return new Date(str);
+  }
   const match = str.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!match) throw new Error(`Formato inválido: "${str}". Use dd/MM/yyyy`);
   const [, d, m, a] = match.map(Number);
-  const date = new Date(a, m - 1, d);
-  if (date.getFullYear() !== a || date.getMonth() !== m - 1 || date.getDate() !== d) {
+  const date = new Date(Date.UTC(a, m - 1, d));
+  if (date.getUTCFullYear() !== a || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) {
     throw new Error(`Data inválida: "${str}"`);
   }
   return date;
@@ -62,18 +66,18 @@ export function diasParaMeses(dias: number): number {
   return Math.round(dias / 30);
 }
 
-/** Soma N meses a uma data. */
+/** Soma N meses a uma data (UTC-safe). */
 export function somarMeses(date: Date, meses: number): Date {
   const result = new Date(date);
-  const diaOriginal = result.getDate();
-  result.setMonth(result.getMonth() + meses);
-  if (result.getDate() !== diaOriginal) {
-    result.setDate(0);
+  const diaOriginal = result.getUTCDate();
+  result.setUTCMonth(result.getUTCMonth() + meses);
+  if (result.getUTCDate() !== diaOriginal) {
+    result.setUTCDate(0); // Go to last day of previous month
   }
   return result;
 }
 
-/** Calcula primeiro vencimento (sempre mês seguinte à entrada). */
+/** Calcula primeiro vencimento (sempre mês seguinte à entrada, UTC-safe). */
 export function calcularPrimeiroVencimento(dataEntrada: Date, diaVencimento: number): Date {
-  return new Date(dataEntrada.getFullYear(), dataEntrada.getMonth() + 1, diaVencimento);
+  return new Date(Date.UTC(dataEntrada.getUTCFullYear(), dataEntrada.getUTCMonth() + 1, diaVencimento));
 }
