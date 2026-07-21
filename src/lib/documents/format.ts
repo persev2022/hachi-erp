@@ -32,16 +32,17 @@ export function toTitleCase(name: string): string {
 /** Formata data (Date ou ISO string) para dd/MM/yyyy. */
 export function formatDateBR(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  const dia = String(d.getDate()).padStart(2, "0");
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const ano = d.getFullYear();
+  // Use UTC to avoid timezone shifts (dates stored as midnight UTC)
+  const dia = String(d.getUTCDate()).padStart(2, "0");
+  const mes = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const ano = d.getUTCFullYear();
   return `${dia}/${mes}/${ano}`;
 }
 
 /** Converte "dd/MM/yyyy" ou Date para formato extenso: "1 de junho de 2026" */
 export function dataParaExtenso(date: Date | string): string {
   const d = typeof date === "string" ? parseDateBR(date) : date;
-  return `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+  return `${d.getUTCDate()} de ${MESES[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
 }
 
 /** Parseia "dd/MM/yyyy" para Date. Lança erro se inválida. */
