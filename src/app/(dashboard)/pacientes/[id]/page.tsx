@@ -650,7 +650,39 @@ function DocumentosTab({ pacienteId, pacienteNome }: { pacienteId: string; pacie
                       </div>
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground uppercase">{doc.formato}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground uppercase">{doc.formato}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      title="Baixar documento"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/documentos/download?id=${doc.id}`);
+                          if (!res.ok) {
+                            const err = await res.json();
+                            alert(err.error || "Erro ao baixar documento");
+                            return;
+                          }
+                          const blob = await res.blob();
+                          const ext = doc.formato === "pdf" ? "pdf" : "docx";
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `${doc.titulo}.${ext}`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        } catch {
+                          alert("Erro de conexão ao baixar documento");
+                        }
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

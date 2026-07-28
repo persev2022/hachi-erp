@@ -194,14 +194,14 @@ export async function POST(req: NextRequest) {
       fileName,
     });
 
-    // Save document record to database
+    // Save document record to database (full base64 for future downloads)
     try {
       await prisma.documento.create({
         data: {
           pacienteId,
           tipo: tipo.toUpperCase().replace(/-/g, "_") as any,
           titulo: fileName.replace(".docx", ""),
-          arquivo: `base64:${Buffer.from(docBuffer).toString("base64").slice(0, 100)}...`, // Store reference (full file too large for DB)
+          arquivo: `base64:${Buffer.from(docBuffer).toString("base64")}`,
           formato: "docx",
           geradoPor: session.userId,
         },
