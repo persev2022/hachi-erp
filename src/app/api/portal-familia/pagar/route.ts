@@ -43,6 +43,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Safety check: if value seems to be in cents (less than 50), it's likely a parsing error
+    // Typical mensalidade is between 500 and 10000 BRL
+    // If the value is suspiciously low (< 10), warn that it needs to be reconfigured
+    if (valor < 10) {
+      return NextResponse.json(
+        { success: false, error: `Valor da mensalidade parece incorreto (R$ ${valor.toFixed(2).replace(".", ",")}). Peça à administração para corrigir o cadastro.` },
+        { status: 400 }
+      );
+    }
+
     // Get Pix key from settings
     let pixChave = process.env.PIX_CHAVE || "";
     let pixNome = "Hachi Clinica";

@@ -16,6 +16,21 @@ import {
 import { useTerminology } from "@/hooks/use-terminology";
 import { useToast } from "@/components/ui/toast-simple";
 
+/**
+ * Parse a currency value typed in BR format (e.g. "2.500,00" or "2500" or "2500.00").
+ * Handles the ambiguity of pt-BR locale where dots are thousands separators.
+ */
+function parseCurrencyValue(raw: string | null): number | undefined {
+  if (!raw || raw.trim() === "") return undefined;
+  let cleaned = raw.trim();
+  // If contains comma, treat it as decimal separator (BR format: "2.500,00" → "2500.00")
+  if (cleaned.includes(",")) {
+    cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+  }
+  const val = parseFloat(cleaned);
+  return isNaN(val) || val <= 0 ? undefined : val;
+}
+
 export default function NovoPacientePage() {
   const { show } = useToast();
   const router = useRouter();
@@ -63,7 +78,7 @@ export default function NovoPacientePage() {
       dataAdmissao: form.get("dataAdmissao"),
       diasTratamento: parseInt(form.get("diasTratamento") as string) || 90,
       quartoId: form.get("quartoId") || undefined,
-      mensalidadeValor: parseFloat(form.get("mensalidadeValor") as string) || undefined,
+      mensalidadeValor: parseCurrencyValue(form.get("mensalidadeValor") as string),
       diaVencimento: parseInt(form.get("diaVencimento") as string) || undefined,
     };
 
@@ -402,7 +417,7 @@ export default function NovoPacientePage() {
               <label className="text-sm font-medium text-foreground">
                 Mensalidade (R$)
               </label>
-              <Input name="mensalidadeValor" type="number" placeholder="0.00" min={0} step={0.01} />
+              <Input name="mensalidadeValor" type="text" inputMode="decimal" placeholder="Ex: 2500" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
