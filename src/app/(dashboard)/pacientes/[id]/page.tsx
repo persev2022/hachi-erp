@@ -23,6 +23,7 @@ import {
   FileText,
   Download,
   Plus,
+  UserMinus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -85,6 +86,13 @@ export default function PacienteDetailPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const [activeTab, setActiveTab] = React.useState<Tab>("resumo");
+
+  // Discharge (Alta) state
+  const [showAlta, setShowAlta] = React.useState(false);
+  const [altaMotivo, setAltaMotivo] = React.useState("");
+  const [altaObs, setAltaObs] = React.useState("");
+  const [altaLoading, setAltaLoading] = React.useState(false);
+  const [altaErro, setAltaErro] = React.useState("");
 
   // Extra data for tabs
   const [evolucoes, setEvolucoes] = React.useState<any[]>([]);
@@ -191,6 +199,11 @@ export default function PacienteDetailPage() {
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
+          {paciente.status === "ATIVO" && (
+            <Button variant="destructive" size="sm" onClick={() => setShowAlta(true)}>
+              <UserMinus className="h-4 w-4 mr-1" /> Dar Baixa
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={async () => {
             const res = await fetch(`/api/pacientes/${id}/exportar`);
             if (res.ok) {
@@ -481,6 +494,93 @@ export default function PacienteDetailPage() {
 
       {activeTab === "financeiro" && (
         <FinanceiroTab pacienteId={id} mensalidade={paciente.mensalidadeValor} vencimento={paciente.diaVencimento} />
+      )}
+
+      {/* Modal Dar Baixa */}
+      {showAlta && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAlta(false)}>
+          <div className="bg-background border rounded-xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Dar Baixa - {paciente.nome}</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowAlta(false)}>✕</Button>
+            </div>
+            <form
+              className="p-4 space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setAltaLoading(true);
+                setAltaErro("");
+                try {
+                  const res = await fetch(`/api/pacientes/${id}/alta`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ motivo: altaMotivo, observacoes: altaObs }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok || !data.success) {
+                    setAltaErro(data.error || "Erro ao registrar baixa");
+                    return;
+                  }
+                  // Success: reload patient data
+                  setShowAlta(false);
+                  setAltaMotivo("");
+                  setAltaObs("");
+                  window.location.reload();
+                } catch {
+                  setAltaErro("Erro de conexão");
+                } finally {
+                  setAltaLoading(false);
+                }
+              }}
+            >
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Motivo da baixa</label>
+                <select
+                  value={altaMotivo}
+                  onChange={(e) => setAltaMotivo(e.target.value)}
+                  required
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                >
+                  <option value="">Selecione...</option>
+                  <option value="ALTA">Alta médica</option>
+                  <option value="EVADIDO">Evasão</option>
+                  <option value="TRANSFERIDO">Transferência</option>
+                  <option value="OBITO">Óbito</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Observações / Detalhamento</label>
+                <textarea
+                  value={altaObs}
+                  onChange={(e) => setAltaObs(e.target.value)}
+                  required
+                  rows={3}
+                  placeholder="Descreva o motivo da baixa..."
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y"
+                />
+              </div>
+
+              {paciente.quarto && (
+                <div className="bg-amber-50 text-amber-800 text-sm p-3 rounded-lg">
+                  ⚠️ O quarto <strong>{paciente.quarto.numero}</strong> será liberado automaticamente.
+                </div>
+              )}
+
+              {altaErro && <p className="text-sm text-destructive">{altaErro}</p>}
+
+              <div className="flex gap-2 justify-end pt-2">
+                <Button type="button" variant="outline" onClick={() => setShowAlta(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="destructive" disabled={altaLoading || !altaMotivo || !altaObs}>
+                  {altaLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <UserMinus className="h-4 w-4 mr-1" />}
+                  Confirmar Baixa
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
