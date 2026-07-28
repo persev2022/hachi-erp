@@ -164,6 +164,81 @@ export async function listarSubscribers(page = 1) {
 }
 
 /**
+ * Busca detalhes completos de um subscriber por ID.
+ * GET /subscriber/{subscriber_id}/
+ */
+export async function buscarSubscriberPorId(subscriberId: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.get(`/subscriber/${subscriberId}/`);
+  return response.data;
+}
+
+/**
+ * Lista tags disponíveis.
+ * GET /tags/
+ */
+export async function listarTags(): Promise<any> {
+  const client = await getClient();
+  const response = await client.get("/tags/");
+  return response.data;
+}
+
+/**
+ * Adiciona tag a um subscriber.
+ * POST /subscriber/{subscriber_id}/tag/
+ */
+export async function adicionarTag(subscriberId: string, tagId: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.post(`/subscriber/${subscriberId}/tag/`, { tag_id: tagId });
+  return response.data;
+}
+
+/**
+ * Remove tag de um subscriber.
+ * DELETE /subscriber/{subscriber_id}/tag/{tag_id}/
+ */
+export async function removerTag(subscriberId: string, tagId: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.delete(`/subscriber/${subscriberId}/tag/${tagId}/`);
+  return response.data;
+}
+
+/**
+ * Atribui contato a um atendente.
+ * POST /subscriber/{subscriber_id}/assign/
+ */
+export async function atribuirAtendente(subscriberId: string, userId: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.post(`/subscriber/${subscriberId}/assign/`, { user_id: userId });
+  return response.data;
+}
+
+/**
+ * Define campo personalizado de um subscriber.
+ * POST /subscriber/{subscriber_id}/set_field/
+ */
+export async function definirCampo(subscriberId: string, fieldName: string, value: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.post(`/subscriber/${subscriberId}/set_field/`, {
+    field_name: fieldName,
+    value,
+  });
+  return response.data;
+}
+
+/**
+ * Envia subscriber para uma sequência.
+ * POST /subscriber/{subscriber_id}/send_sequence/
+ */
+export async function enviarSequencia(subscriberId: string, sequenceId: string): Promise<any> {
+  const client = await getClient();
+  const response = await client.post(`/subscriber/${subscriberId}/send_sequence/`, {
+    sequence_id: sequenceId,
+  });
+  return response.data;
+}
+
+/**
  * Busca informações de um contato pelo telefone.
  */
 export async function buscarContato(phone: string) {

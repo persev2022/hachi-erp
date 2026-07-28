@@ -107,9 +107,39 @@ export default function ComunicacaoPage() {
   // Fetch conversations
   const fetchConversas = React.useCallback(async () => {
     try {
+      // Fetch from local DB (all messages grouped by phone)
       const res = await fetch("/api/comunicacao/conversas");
       const data = await res.json();
       if (data.success) setConversas(data.data);
+
+      // Also try to fetch subscribers from BotConversa to enrich contacts
+      try {
+        const bcRes = await fetch("/api/comunicacao/contatos?action=subscribers");
+        const bcData = await bcRes.json();
+        if (bcData.success && bcData.data?.results) {
+          // Merge BotConversa contacts that don't have local conversations
+          const existingPhones = new Set(data.data?.map((c: Conversa) => c.telefone) || []);
+          const newContacts: Conversa[] = [];
+          for (const sub of bcData.data.results) {
+            const phone = (sub.phone || "").replace(/\D/g, "");
+            if (phone && !existingPhones.has(phone)) {
+              newContacts.push({
+                telefone: phone,
+                paciente: null,
+                ultimaMensagem: sub.last_interaction || "Contato BotConversa",
+                ultimaData: sub.updated_at || sub.created_at || new Date().toISOString(),
+                ultimoStatus: "",
+                totalMensagens: 0,
+                direcao: "enviada",
+                subscriberName: [sub.first_name, sub.last_name].filter(Boolean).join(" ") || undefined,
+              } as any);
+            }
+          }
+          if (newContacts.length > 0) {
+            setConversas((prev) => [...prev, ...newContacts]);
+          }
+        }
+      } catch {} // BotConversa fetch is optional enrichment
     } catch {} finally { setLoading(false); }
   }, []);
 
@@ -136,6 +166,16 @@ export default function ComunicacaoPage() {
       .then((d) => { if (d.success) setMensagens(d.data); })
       .catch(() => {})
       .finally(() => setLoadingMsgs(false));
+
+    // Auto-refresh messages every 10 seconds
+    const interval = setInterval(() => {
+      fetch(`/api/comunicacao/mensagens?telefone=${selectedPhone}`)
+        .then((r) => r.json())
+        .then((d) => { if (d.success) setMensagens(d.data); })
+        .catch(() => {});
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [selectedPhone]);
 
   // Auto scroll to bottom
@@ -207,7 +247,7 @@ export default function ComunicacaoPage() {
   });
 
   const selectedConversa = conversas.find((c) => c.telefone === selectedPhone);
-  const contactName = selectedConversa?.paciente?.nome || formatPhone(selectedPhone || "");
+  const contactName = selectedConversa?.paciente?.nome || (selectedConversa as any)?.subscriberName || formatPhone(selectedPhone || "");
 
   return (
     <div className="h-[calc(100vh-64px)] flex overflow-hidden">
@@ -264,7 +304,7 @@ export default function ComunicacaoPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium truncate">
-                      {c.paciente?.nome || formatPhone(c.telefone)}
+                      {c.paciente?.nome || (c as any).subscriberName || formatPhone(c.telefone)}
                     </p>
                     <span className="text-[10px] text-muted-foreground shrink-0">
                       {formatDate(c.ultimaData)}
@@ -467,6 +507,9 @@ function MessageBubble({ msg }: { msg: Mensagem }) {
   const st = statusIcon[msg.status];
   const StatusIcon = st?.icon || Check;
 
+  // Check if message is a media type
+  const isMedia = msg.mensagem.startsWith("[image]") || msg.mensagem.startsWith("[audio]") || msg.mensagem.startsWith("[video]") || msg.mensagem.startsWith("[document]");
+
   return (
     <div className={`flex ${isOut ? "justify-end" : "justify-start"}`}>
       <div
@@ -476,7 +519,14 @@ function MessageBubble({ msg }: { msg: Mensagem }) {
             : "bg-white dark:bg-card text-foreground rounded-tl-sm"
         }`}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{msg.mensagem}</p>
+        {isMedia ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground italic">
+            <FileText className="h-4 w-4" />
+            <span>{msg.mensagem}</span>
+          </div>
+        ) : (
+          <p className="text-sm whitespace-pre-wrap break-words">{msg.mensagem}</p>
+        )}
         <div className={`flex items-center gap-1 mt-1 ${isOut ? "justify-end" : "justify-start"}`}>
           <span className="text-[10px] text-muted-foreground">{formatTime(msg.createdAt)}</span>
           {isOut && <StatusIcon className={`h-3 w-3 ${st?.color || "text-gray-400"}`} />}
