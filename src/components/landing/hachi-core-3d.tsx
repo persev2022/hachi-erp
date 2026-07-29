@@ -2,7 +2,7 @@
 
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, ContactShadows, Text, Billboard } from "@react-three/drei";
+import { Float, Html } from "@react-three/drei";
 import * as THREE from "three";
 
 // ═══════════════════════════════════════════════════════════
@@ -50,18 +50,10 @@ function BrainGraph() {
   const groupRef = useRef<THREE.Group>(null);
   const nodesCount = 60;
 
-  const { nodes, synapses, linePositions } = useMemo(() => {
+  const { nodes, synapses } = useMemo(() => {
     const n = generateBrainPoints(nodesCount);
     const s = generateSynapses(n, 0.7);
-
-    // Create line geometry positions
-    const positions: number[] = [];
-    for (const [a, b] of s) {
-      positions.push(n[a].x, n[a].y, n[a].z);
-      positions.push(n[b].x, n[b].y, n[b].z);
-    }
-
-    return { nodes: n, synapses: s, linePositions: new Float32Array(positions) };
+    return { nodes: n, synapses: s };
   }, []);
 
   useFrame(({ clock }) => {
@@ -72,23 +64,15 @@ function BrainGraph() {
 
   return (
     <group ref={groupRef}>
-      {/* Synapse connections (glowing lines) */}
-      <lineSegments>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={linePositions.length / 3}
-            array={linePositions}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial color="#5eead4" transparent opacity={0.3} linewidth={1} />
-      </lineSegments>
+      {/* Synapse connections (lines between nodes) */}
+      {synapses.map(([a, b], i) => (
+        <SynapseLine key={i} start={nodes[a]} end={nodes[b]} />
+      ))}
 
       {/* Neural nodes (glowing spheres) */}
       {nodes.map((pos, i) => (
-        <mesh key={i} position={[pos.x, pos.y, pos.z]} castShadow>
-          <sphereGeometry args={[0.04 + Math.random() * 0.03, 12, 12]} />
+        <mesh key={i} position={[pos.x, pos.y, pos.z]}>
+          <sphereGeometry args={[0.04 + Math.random() * 0.02, 10, 10]} />
           <meshPhysicalMaterial
             color="#0d9488"
             emissive="#14b8a6"
@@ -99,6 +83,20 @@ function BrainGraph() {
         </mesh>
       ))}
     </group>
+  );
+}
+
+function SynapseLine({ start, end }: { start: THREE.Vector3; end: THREE.Vector3 }) {
+  const ref = useRef<THREE.Line>(null);
+  const geometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array([start.x, start.y, start.z, end.x, end.y, end.z]);
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, [start, end]);
+
+  return (
+    <primitive object={new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: "#5eead4", transparent: true, opacity: 0.35 }))} />
   );
 }
 
@@ -135,29 +133,21 @@ function OrbitingModules() {
           ]}>
             {/* Glowing sphere */}
             <mesh castShadow>
-              <sphereGeometry args={[0.08, 16, 16]} />
+              <sphereGeometry args={[0.1, 16, 16]} />
               <meshPhysicalMaterial
                 color="#0d9488"
                 emissive="#5eead4"
-                emissiveIntensity={1}
+                emissiveIntensity={1.5}
                 roughness={0.1}
                 metalness={0.8}
               />
             </mesh>
-            {/* Text label - always faces camera */}
-            <Billboard>
-              <Text
-                position={[0, 0.2, 0]}
-                fontSize={0.15}
-                color="#ffffff"
-                anchorX="center"
-                anchorY="middle"
-                outlineWidth={0.01}
-                outlineColor="#0d9488"
-              >
+            {/* HTML label */}
+            <Html center distanceFactor={8} style={{ pointerEvents: "none" }}>
+              <span className="text-[10px] font-semibold text-white bg-teal-700/80 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm">
                 {name}
-              </Text>
-            </Billboard>
+              </span>
+            </Html>
           </group>
         );
       })}
