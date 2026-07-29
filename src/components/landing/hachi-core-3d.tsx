@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useState } from "react";
+import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Float, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
@@ -175,52 +175,31 @@ function Scene() {
 
 export default function HachiCore3D() {
   return (
-    <ErrorBoundary3D>
-      <HachiCanvas />
-    </ErrorBoundary3D>
-  );
-}
+    <div style={{ width: "100%", height: "100%" }}>
+      <Canvas
+        camera={{ position: [0, 0, 4.5], fov: 55 }}
+        dpr={[1, 1.5]}
+        shadows
+        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        style={{ width: "100%", height: "100%", background: "transparent" }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.2;
+        }}
+      >
+        {/* Rich multi-light setup for depth and quality */}
+        <ambientLight intensity={0.3} color="#f0fdfa" />
+        <directionalLight position={[5, 8, 5]} intensity={2} castShadow color="#ffffff" />
+        <directionalLight position={[-6, 2, -2]} intensity={0.8} color="#14b8a6" />
+        <directionalLight position={[0, 3, -8]} intensity={1.2} color="#5eead4" />
+        <pointLight position={[0, -4, 2]} intensity={0.5} color="#99f6e4" />
+        <spotLight position={[2, 7, 4]} angle={0.35} penumbra={1} intensity={1.5} castShadow color="#ffffff" />
+        <pointLight position={[-4, 2, 4]} intensity={0.4} color="#67e8f9" />
 
-function ErrorBoundary3D({ children }: { children: React.ReactNode }) {
-  // Simple error boundary using React state
-  const [hasError, setHasError] = useState(false);
+        <Scene />
 
-  if (hasError) {
-    return <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-emerald-50" />;
-  }
-
-  return (
-    <div onError={() => setHasError(true)}>
-      {children}
+        <ContactShadows position={[0, -2.8, 0]} opacity={0.4} scale={12} blur={2.5} far={5} color="#0d9488" />
+      </Canvas>
     </div>
-  );
-}
-
-function HachiCanvas() {
-  return (
-    <Canvas
-      camera={{ position: [0, 0, 4.5], fov: 55 }}
-      dpr={[1, 1.5]}
-      shadows
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      style={{ width: "100%", height: "100%", background: "transparent" }}
-      onCreated={({ gl }) => {
-        gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 1.2;
-      }}
-    >
-      {/* Rich multi-light setup for depth and quality */}
-      <ambientLight intensity={0.3} color="#f0fdfa" />
-      <directionalLight position={[5, 8, 5]} intensity={2} castShadow color="#ffffff" />
-      <directionalLight position={[-6, 2, -2]} intensity={0.8} color="#14b8a6" />
-      <directionalLight position={[0, 3, -8]} intensity={1.2} color="#5eead4" />
-      <pointLight position={[0, -4, 2]} intensity={0.5} color="#99f6e4" />
-      <spotLight position={[2, 7, 4]} angle={0.35} penumbra={1} intensity={1.5} castShadow color="#ffffff" />
-      <pointLight position={[-4, 2, 4]} intensity={0.4} color="#67e8f9" />
-
-      <Scene />
-
-      <ContactShadows position={[0, -2.8, 0]} opacity={0.4} scale={12} blur={2.5} far={5} color="#0d9488" />
-    </Canvas>
   );
 }
