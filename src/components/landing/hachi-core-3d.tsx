@@ -164,7 +164,7 @@ function Scene() {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={1.8}>
       <GlassCore />
       <GlassRings />
       <OrbitingSpheres />
@@ -199,7 +199,7 @@ function ErrorBoundary3D({ children }: { children: React.ReactNode }) {
 function HachiCanvas() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 6], fov: 50 }}
+      camera={{ position: [0, 0, 4], fov: 60 }}
       dpr={[1, 1.5]}
       shadows
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}

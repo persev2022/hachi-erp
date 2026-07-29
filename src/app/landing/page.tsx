@@ -184,8 +184,8 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full mx-auto mt-4"
-        style={{ height: "500px", maxWidth: "800px" }}
+        className="relative z-10 w-full mx-auto mt-2"
+        style={{ height: "60vh", minHeight: "400px", maxHeight: "700px" }}
       >
         <div className="absolute inset-0">
           <HachiCore3D />
