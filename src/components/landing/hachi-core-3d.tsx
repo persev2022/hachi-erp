@@ -164,7 +164,7 @@ function Scene() {
   });
 
   return (
-    <group ref={groupRef} scale={1.5}>
+    <group ref={groupRef} scale={1.2}>
       <GlassCore />
       <GlassRings />
       <OrbitingSpheres />
@@ -177,7 +177,7 @@ export default function HachiCore3D() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <Canvas
-        camera={{ position: [0, 0, 4.5], fov: 55 }}
+        camera={{ position: [0, 0, 5.5], fov: 50 }}
         dpr={[1, 1.5]}
         shadows
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
