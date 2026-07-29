@@ -8,7 +8,7 @@ import Link from "next/link";
 // Lazy load 3D scene for performance
 const HachiCore3D = dynamic(() => import("@/components/landing/hachi-core-3d"), {
   ssr: false,
-  loading: () => <div className="absolute inset-0 bg-[#0a0a0f]" />,
+  loading: () => <div className="absolute inset-0 bg-white" />,
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -28,7 +28,7 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll({ target: containerRef });
 
   return (
-    <div ref={containerRef} className="bg-[#0a0a0f] text-white overflow-x-hidden">
+    <div ref={containerRef} className="bg-white text-gray-900 overflow-x-hidden">
       {/* Navigation */}
       <Nav />
 
@@ -80,29 +80,29 @@ function Nav() {
       animate={{ y: 0 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5" : ""
+        scrolled ? "bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm" : ""
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
             <span className="text-white font-bold text-sm">H</span>
           </div>
-          <span className="font-bold text-lg tracking-tight">HACHI</span>
+          <span className="font-bold text-lg tracking-tight text-gray-900">HACHI</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
-          <a href="#modulos" className="text-sm text-slate-400 hover:text-white transition">Módulos</a>
-          <a href="#ia" className="text-sm text-slate-400 hover:text-white transition">Inteligência</a>
-          <a href="#seguranca" className="text-sm text-slate-400 hover:text-white transition">Segurança</a>
-          <a href="#integracoes" className="text-sm text-slate-400 hover:text-white transition">Integrações</a>
+          <a href="#modulos" className="text-sm text-gray-500 hover:text-gray-900 transition">Módulos</a>
+          <a href="#ia" className="text-sm text-gray-500 hover:text-gray-900 transition">Inteligência</a>
+          <a href="#seguranca" className="text-sm text-gray-500 hover:text-gray-900 transition">Segurança</a>
+          <a href="#integracoes" className="text-sm text-gray-500 hover:text-gray-900 transition">Integrações</a>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm text-slate-400 hover:text-white transition">
+          <Link href="/login" className="text-sm text-gray-500 hover:text-gray-900 transition">
             Entrar
           </Link>
           <a
             href="#cta"
-            className="px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 transition-all shadow-lg shadow-indigo-500/25"
+            className="px-4 py-2 text-sm font-medium rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/25"
           >
             Agendar Demo
           </a>
@@ -126,8 +126,8 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         <HachiCore3D />
       </div>
 
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/30 via-transparent to-[#0a0a0f] z-10" />
+      {/* Subtle gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-transparent to-white z-10 pointer-events-none" />
 
       {/* Content */}
       <motion.div style={{ opacity, scale }} className="relative z-20 text-center px-6 max-w-4xl mx-auto">
@@ -136,9 +136,9 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-8">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs text-slate-300">Plataforma Inteligente de Gestão</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-200 bg-teal-50 mb-8">
+            <div className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
+            <span className="text-xs text-teal-700 font-medium">Plataforma Inteligente de Gestão</span>
           </div>
         </motion.div>
 
@@ -148,11 +148,9 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9]"
         >
-          <span className="bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-transparent">
-            Um cérebro.
-          </span>
+          <span className="text-gray-900">Um cérebro.</span>
           <br />
-          <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
             Toda sua operação.
           </span>
         </motion.h1>
@@ -161,7 +159,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed"
+          className="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed"
         >
           O HACHI substitui dezenas de sistemas por uma única plataforma com inteligência artificial que pensa, automatiza e escala junto com sua empresa.
         </motion.p>
@@ -174,11 +172,11 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         >
           <a
             href="#cta"
-            className="px-8 py-4 text-sm font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 transition-all shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50"
+            className="px-8 py-4 text-sm font-semibold rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-2xl shadow-teal-600/25 hover:shadow-teal-600/40 hover:scale-105"
           >
             Agendar Demonstração
           </a>
-          <a href="#modulos" className="px-8 py-4 text-sm font-medium rounded-full border border-white/10 hover:bg-white/5 transition-all">
+          <a href="#modulos" className="px-8 py-4 text-sm font-medium rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all">
             Explorar Módulos
           </a>
         </motion.div>
@@ -191,11 +189,11 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         transition={{ delay: 2 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
       >
-        <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1">
+        <div className="w-5 h-8 rounded-full border border-gray-300 flex items-start justify-center p-1">
           <motion.div
             animate={{ y: [0, 12, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1 h-2 rounded-full bg-white/60"
+            className="w-1 h-2 rounded-full bg-teal-500"
           />
         </div>
       </motion.div>
@@ -208,7 +206,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
 // ═══════════════════════════════════════════════════════════
 function ProblemSection() {
   return (
-    <section className="py-32 px-6">
+    <section className="py-32 px-6 bg-gray-50">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -217,12 +215,12 @@ function ProblemSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-medium text-indigo-400 mb-4">O PROBLEMA</p>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+          <p className="text-sm font-medium text-red-500 mb-4">O PROBLEMA</p>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900">
             Sua empresa usa{" "}
-            <span className="text-red-400">12 sistemas</span> que não conversam entre si.
+            <span className="text-red-500">12 sistemas</span> que não conversam entre si.
           </h2>
-          <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto">
             Planilhas, softwares isolados, retrabalho manual. Dados dispersos, decisões no escuro, equipe sobrecarregada.
           </p>
         </motion.div>
@@ -235,9 +233,9 @@ function ProblemSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-center"
+              className="p-4 rounded-xl border border-red-200 bg-red-50 text-center"
             >
-              <p className="text-sm text-red-300">{item}</p>
+              <p className="text-sm text-red-600 font-medium">{item}</p>
             </motion.div>
           ))}
         </div>
@@ -251,9 +249,8 @@ function ProblemSection() {
 // ═══════════════════════════════════════════════════════════
 function SolutionSection() {
   return (
-    <section className="py-32 px-6 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent" />
-      <div className="max-w-5xl mx-auto relative">
+    <section className="py-32 px-6">
+      <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -261,15 +258,15 @@ function SolutionSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-medium text-emerald-400 mb-4">A SOLUÇÃO</p>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+          <p className="text-sm font-medium text-teal-600 mb-4">A SOLUÇÃO</p>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900">
             Uma plataforma.{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">
               Inteligência infinita.
             </span>
           </h2>
-          <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
-            O HACHI centraliza ERP, CRM, Financeiro, Estoque, BI e Automações em um único ecossistema com IA integrada. Sem fragmentação. Sem retrabalho.
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto">
+            O HACHI centraliza ERP, CRM, Financeiro, Estoque, BI e Automações em um único ecossistema com IA integrada.
           </p>
         </motion.div>
 
@@ -285,11 +282,11 @@ function SolutionSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="p-8 rounded-2xl border border-white/5 bg-[#16161f] hover:border-indigo-500/30 transition-all group"
+              className="p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:border-teal-200 transition-all group"
             >
               <span className="text-3xl">{item.icon}</span>
-              <h3 className="mt-4 text-lg font-semibold">{item.title}</h3>
-              <p className="mt-2 text-sm text-slate-400">{item.desc}</p>
+              <h3 className="mt-4 text-lg font-semibold text-gray-900">{item.title}</h3>
+              <p className="mt-2 text-sm text-gray-500">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -303,13 +300,13 @@ function SolutionSection() {
 // ═══════════════════════════════════════════════════════════
 function ModulesSection() {
   const modules = [
-    { name: "ERP", desc: "Gestão completa da operação", color: "from-indigo-500 to-blue-500" },
+    { name: "ERP", desc: "Gestão completa da operação", color: "from-teal-500 to-blue-500" },
     { name: "CRM", desc: "Pipeline de vendas inteligente", color: "from-purple-500 to-pink-500" },
     { name: "Financeiro", desc: "Fluxo de caixa e DRE em tempo real", color: "from-emerald-500 to-teal-500" },
     { name: "Estoque", desc: "Controle com previsão de demanda", color: "from-amber-500 to-orange-500" },
     { name: "Analytics", desc: "BI com dashboards interativos", color: "from-cyan-500 to-blue-500" },
     { name: "Automação", desc: "Fluxos inteligentes sem código", color: "from-rose-500 to-red-500" },
-    { name: "Comercial", desc: "Propostas e contratos digitais", color: "from-violet-500 to-purple-500" },
+    { name: "Comercial", desc: "Propostas e contratos digitais", color: "from-violet-500 to-emerald-500" },
     { name: "Compras", desc: "Procurement automatizado", color: "from-lime-500 to-green-500" },
     { name: "Produção", desc: "Ordens e apontamentos", color: "from-sky-500 to-indigo-500" },
   ];
@@ -324,10 +321,10 @@ function ModulesSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-medium text-indigo-400 mb-4">MÓDULOS</p>
+          <p className="text-sm font-medium text-teal-600 mb-4">MÓDULOS</p>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Tudo que sua empresa precisa.{" "}
-            <span className="text-slate-500">Em um só lugar.</span>
+            <span className="text-gray-400">Em um só lugar.</span>
           </h2>
         </motion.div>
 
@@ -339,11 +336,11 @@ function ModulesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="group relative p-6 rounded-2xl border border-white/5 bg-[#16161f] hover:border-white/10 transition-all overflow-hidden"
+              className="group relative p-6 rounded-2xl border border-gray-100 bg-white shadow-sm hover:border-gray-200 transition-all overflow-hidden"
             >
               <div className={`absolute top-0 left-0 h-1 w-full bg-gradient-to-r ${mod.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
               <h3 className="text-lg font-semibold">{mod.name}</h3>
-              <p className="mt-1 text-sm text-slate-400">{mod.desc}</p>
+              <p className="mt-1 text-sm text-gray-500">{mod.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -358,7 +355,7 @@ function ModulesSection() {
 function AISection() {
   return (
     <section id="ia" className="py-32 px-6 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/10 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-teal-50 to-transparent" />
       <div className="max-w-5xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -367,12 +364,12 @@ function AISection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-medium text-purple-400 mb-4">INTELIGÊNCIA ARTIFICIAL</p>
+          <p className="text-sm font-medium text-teal-600 mb-4">INTELIGÊNCIA ARTIFICIAL</p>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             IA que não só analisa.{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Executa.</span>
+            <span className="bg-gradient-to-r from-teal-500 to-emerald-500 bg-clip-text text-transparent">Executa.</span>
           </h2>
-          <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto">
             Previsão de demanda, alertas inteligentes, automação de processos repetitivos e insights acionáveis em tempo real.
           </p>
         </motion.div>
@@ -390,10 +387,10 @@ function AISection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="p-6 rounded-2xl border border-purple-500/10 bg-purple-500/5"
+              className="p-6 rounded-2xl border border-teal-200 bg-teal-50"
             >
               <h3 className="font-semibold">{item.title}</h3>
-              <p className="mt-2 text-sm text-slate-400">{item.desc}</p>
+              <p className="mt-2 text-sm text-gray-500">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -415,12 +412,12 @@ function IntegrationsSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <p className="text-sm font-medium text-cyan-400 mb-4">INTEGRAÇÕES</p>
+          <p className="text-sm font-medium text-teal-500 mb-4">INTEGRAÇÕES</p>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Conecta com tudo.{" "}
-            <span className="text-slate-500">Sem fricção.</span>
+            <span className="text-gray-400">Sem fricção.</span>
           </h2>
-          <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto">
             APIs abertas, webhooks, Zapier, WhatsApp, Pix, NF-e, e-commerce. O HACHI se integra ao ecossistema que sua empresa já usa.
           </p>
         </motion.div>
@@ -433,8 +430,8 @@ function IntegrationsSection() {
           className="mt-16 grid grid-cols-3 md:grid-cols-6 gap-4"
         >
           {["WhatsApp", "Pix", "NF-e", "Zapier", "Google", "Stripe", "Slack", "Shopify", "Webhooks", "API REST", "OAuth", "SSO"].map((name, i) => (
-            <div key={name} className="p-4 rounded-xl border border-white/5 bg-[#16161f] flex items-center justify-center">
-              <span className="text-xs text-slate-400 font-medium">{name}</span>
+            <div key={name} className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-center">
+              <span className="text-xs text-gray-500 font-medium">{name}</span>
             </div>
           ))}
         </motion.div>
@@ -457,10 +454,10 @@ function SecuritySection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-medium text-emerald-400 mb-4">SEGURANÇA</p>
+          <p className="text-sm font-medium text-teal-600 mb-4">SEGURANÇA</p>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Segurança enterprise.{" "}
-            <span className="text-slate-500">Por padrão.</span>
+            <span className="text-gray-400">Por padrão.</span>
           </h2>
         </motion.div>
 
@@ -476,10 +473,10 @@ function SecuritySection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="p-6 rounded-2xl border border-emerald-500/10 bg-emerald-500/5"
+              className="p-6 rounded-2xl border border-teal-200 bg-teal-50"
             >
               <h3 className="font-semibold">{item.title}</h3>
-              <p className="mt-2 text-sm text-slate-400">{item.desc}</p>
+              <p className="mt-2 text-sm text-gray-500">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -494,7 +491,7 @@ function SecuritySection() {
 function CTASection() {
   return (
     <section id="cta" className="py-32 px-6 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-teal-50 to-transparent" />
       <div className="max-w-3xl mx-auto text-center relative">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -504,11 +501,11 @@ function CTASection() {
         >
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Pronto para centralizar{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-teal-500 to-purple-400 bg-clip-text text-transparent">
               toda sua operação?
             </span>
           </h2>
-          <p className="mt-6 text-lg text-slate-400">
+          <p className="mt-6 text-lg text-gray-500">
             Agende uma demonstração personalizada e descubra como o HACHI pode transformar sua gestão em 30 minutos.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -516,12 +513,12 @@ function CTASection() {
               href="https://wa.me/5548999990001?text=Quero%20agendar%20uma%20demonstração%20do%20HACHI"
               target="_blank"
               rel="noopener"
-              className="px-10 py-5 text-base font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 transition-all shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105"
+              className="px-10 py-5 text-base font-semibold rounded-full bg-gradient-to-r from-teal-500 to-teal-700 hover:from-teal-500 hover:to-emerald-500 transition-all shadow-2xl shadow-teal-600/25 hover:shadow-teal-600/40 hover:scale-105"
             >
               Agendar Demonstração Gratuita
             </a>
           </div>
-          <p className="mt-6 text-sm text-slate-500">Sem compromisso. Sem cartão de crédito.</p>
+          <p className="mt-6 text-sm text-gray-400">Sem compromisso. Sem cartão de crédito.</p>
         </motion.div>
       </div>
     </section>
@@ -533,22 +530,22 @@ function CTASection() {
 // ═══════════════════════════════════════════════════════════
 function Footer() {
   return (
-    <footer className="border-t border-white/5 py-12 px-6">
+    <footer className="border-t border-gray-100 py-12 px-6">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
             <span className="text-white font-bold text-xs">H</span>
           </div>
           <span className="font-bold tracking-tight">HACHI</span>
-          <span className="text-xs text-slate-500 ml-2">Platform</span>
+          <span className="text-xs text-gray-400 ml-2">Platform</span>
         </div>
-        <div className="flex items-center gap-6 text-sm text-slate-500">
-          <a href="#modulos" className="hover:text-white transition">Módulos</a>
-          <a href="#ia" className="hover:text-white transition">IA</a>
-          <a href="#seguranca" className="hover:text-white transition">Segurança</a>
-          <Link href="/login" className="hover:text-white transition">Login</Link>
+        <div className="flex items-center gap-6 text-sm text-gray-400">
+          <a href="#modulos" className="hover:text-gray-900 transition">Módulos</a>
+          <a href="#ia" className="hover:text-gray-900 transition">IA</a>
+          <a href="#seguranca" className="hover:text-gray-900 transition">Segurança</a>
+          <Link href="/login" className="hover:text-gray-900 transition">Login</Link>
         </div>
-        <p className="text-xs text-slate-600">© {new Date().getFullYear()} Hachi Platform. Todos os direitos reservados.</p>
+        <p className="text-xs text-gray-400">© {new Date().getFullYear()} Hachi Platform. Todos os direitos reservados.</p>
       </div>
     </footer>
   );
