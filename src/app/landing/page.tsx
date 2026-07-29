@@ -179,13 +179,13 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         </motion.div>
       </motion.div>
 
-      {/* 3D Scene - Large, centered below text */}
+      {/* 3D Scene - Large, centered below text with clear separation */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full mx-auto -mt-4"
-        style={{ height: "55vh", minHeight: "350px", maxHeight: "600px" }}
+        className="relative z-10 w-full mx-auto mt-12"
+        style={{ height: "450px" }}
       >
         <div className="w-full h-full">
           <HachiCore3D />
