@@ -151,9 +151,9 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95] drop-shadow-sm"
         >
-          <span className="text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">Um cérebro.</span>
+          <span className="text-white" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)" }}>Um cérebro.</span>
           <br />
-          <span className="bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent" style={{ filter: "drop-shadow(0 2px 10px rgba(13,148,136,0.4))" }}>
             Toda sua operação.
           </span>
         </motion.h1>
@@ -162,7 +162,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-5 text-base md:text-lg text-white/80 max-w-xl mx-auto leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]"
+          className="mt-5 text-base md:text-lg text-white max-w-xl mx-auto leading-relaxed" style={{ textShadow: "0 1px 10px rgba(0,0,0,0.5)" }}
         >
           O HACHI substitui dezenas de sistemas por uma única plataforma com IA que pensa, automatiza e escala.
         </motion.p>
