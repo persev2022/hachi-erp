@@ -5,28 +5,46 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
-// Generate brain-shaped nodes
+// Generate brain-shaped nodes - DENSE, with hemispheres and sulci (wrinkles)
 function generateBrainPoints(count: number): THREE.Vector3[] {
   const points: THREE.Vector3[] = [];
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = 1.1 + Math.sin(phi * 6) * 0.12 + Math.cos(theta * 4) * 0.08;
-    const x = r * 1.4 * Math.sin(phi) * Math.cos(theta);
-    const y = r * 0.95 * Math.cos(phi);
-    const z = r * 1.1 * Math.sin(phi) * Math.sin(theta);
-    points.push(new THREE.Vector3(x, y, z));
+
+    // Brain shape: wider than tall, with central fissure and gyri
+    let r = 1.0;
+    // Add gyri (bumps) - high frequency noise
+    r += Math.sin(phi * 8 + theta * 6) * 0.06;
+    r += Math.cos(phi * 5 - theta * 4) * 0.05;
+    r += Math.sin(phi * 12) * 0.03;
+
+    // Central fissure (dip at top center)
+    const centralDip = Math.exp(-Math.pow(Math.abs(Math.sin(theta)) - 0.5, 2) * 20) * 0.1;
+    r -= centralDip * (phi < Math.PI * 0.6 ? 1 : 0);
+
+    // Ellipsoid: brain is ~1.4x wider than tall, slightly deep
+    const x = r * 1.5 * Math.sin(phi) * Math.cos(theta);
+    const y = r * 1.0 * Math.cos(phi);
+    const z = r * 1.2 * Math.sin(phi) * Math.sin(theta);
+
+    // Concentrate more nodes in the cortex (outer surface)
+    const surfaceBias = 0.85 + Math.random() * 0.15;
+    points.push(new THREE.Vector3(x * surfaceBias, y * surfaceBias, z * surfaceBias));
   }
   return points;
 }
 
-// Connect nearby nodes
+// Connect nearby nodes - more connections for density
 function generateSynapses(nodes: THREE.Vector3[], maxDist: number, maxCount: number): [number, number][] {
   const connections: [number, number][] = [];
   for (let i = 0; i < nodes.length && connections.length < maxCount; i++) {
+    let connectionsForNode = 0;
     for (let j = i + 1; j < nodes.length && connections.length < maxCount; j++) {
+      if (connectionsForNode >= 5) break; // max 5 connections per node
       if (nodes[i].distanceTo(nodes[j]) < maxDist) {
         connections.push([i, j]);
+        connectionsForNode++;
       }
     }
   }
@@ -39,8 +57,8 @@ function BrainGraph() {
   const linesRef = useRef<THREE.Group>(null);
 
   const { nodes, synapses } = useMemo(() => {
-    const n = generateBrainPoints(80);
-    const s = generateSynapses(n, 0.65, 180);
+    const n = generateBrainPoints(300);
+    const s = generateSynapses(n, 0.45, 600);
     return { nodes: n, synapses: s };
   }, []);
 
@@ -83,11 +101,11 @@ function BrainGraph() {
       {/* Neural nodes */}
       {nodes.map((pos, i) => (
         <mesh key={i} position={[pos.x, pos.y, pos.z]}>
-          <sphereGeometry args={[0.035 + (i % 3) * 0.01, 10, 10]} />
+          <sphereGeometry args={[0.02 + (i % 4) * 0.005, 8, 8]} />
           <meshStandardMaterial
             color="#0d9488"
             emissive="#14b8a6"
-            emissiveIntensity={1.2}
+            emissiveIntensity={1.5}
           />
         </mesh>
       ))}
