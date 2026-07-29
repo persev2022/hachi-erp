@@ -125,15 +125,21 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
   const scale = useTransform(scrollProgress, [0, 0.15], [1, 0.95]);
 
   return (
-    <section className="relative flex flex-col items-center justify-start pt-24 pb-0">
-      {/* Content - Text on top with white background to block 3D behind */}
-      <motion.div style={{ opacity, scale }} className="relative z-20 text-center px-6 max-w-4xl mx-auto bg-white pb-4">
+    <section className="relative h-screen w-full">
+      {/* 3D — absolute, fills entire hero */}
+      <div className="absolute inset-0 z-0">
+        <HachiCore3D />
+      </div>
+
+      {/* Text overlay on top of 3D */}
+      <motion.div style={{ opacity, scale }} className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto pointer-events-none">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="pointer-events-auto"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-200 bg-teal-50 mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-200 bg-white/80 backdrop-blur-sm mb-6">
             <div className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
             <span className="text-xs text-teal-700 font-medium">Plataforma Inteligente de Gestão</span>
           </div>
@@ -143,7 +149,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95]"
+          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95] drop-shadow-sm"
         >
           <span className="text-gray-900">Um cérebro.</span>
           <br />
@@ -156,7 +162,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-5 text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed"
+          className="mt-5 text-base md:text-lg text-gray-600 max-w-xl mx-auto leading-relaxed"
         >
           O HACHI substitui dezenas de sistemas por uma única plataforma com IA que pensa, automatiza e escala.
         </motion.p>
@@ -165,7 +171,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.9 }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto"
         >
           <a
             href="#cta"
@@ -173,23 +179,10 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
           >
             Agendar Demonstração
           </a>
-          <a href="#modulos" className="px-8 py-4 text-sm font-medium rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all">
+          <a href="#modulos" className="px-8 py-4 text-sm font-medium rounded-full border border-gray-200 bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white transition-all">
             Explorar Módulos
           </a>
         </motion.div>
-      </motion.div>
-
-      {/* 3D Scene - Large, centered below text with clear separation */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full mx-auto"
-        style={{ height: "450px", marginTop: "-20px" }}
-      >
-        <div className="w-full h-full">
-          <HachiCore3D />
-        </div>
       </motion.div>
 
       {/* Scroll indicator */}
@@ -199,7 +192,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         transition={{ delay: 2.5 }}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20"
       >
-        <div className="w-5 h-8 rounded-full border border-gray-300 flex items-start justify-center p-1">
+        <div className="w-5 h-8 rounded-full border border-gray-300 bg-white/50 backdrop-blur-sm flex items-start justify-center p-1">
           <motion.div
             animate={{ y: [0, 12, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
