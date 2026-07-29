@@ -4,74 +4,80 @@ import { prisma } from "@/lib/prisma";
 /**
  * Webhook endpoint for BotConversa.
  * Handles:
- * 1. Message status updates (sent/delivered/read/failed)
- * 2. Incoming messages from contacts (message received)
- * 
+ * 1. Incoming messages from contacts (forwarded via Integration Block in flows)
+ * 2. Message status updates (sent/delivered/read/failed)
+ *
  * This endpoint is PUBLIC (no auth) — called by BotConversa servers.
+ * Accepts multiple field name variations to be resilient to different configs.
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Log webhook for debugging (remove in production)
-    console.log("[BotConversa Webhook]", JSON.stringify(body).slice(0, 500));
+    // Log full payload for debugging
+    console.log("[BotConversa Webhook]", JSON.stringify(body).slice(0, 800));
 
-    // ─── INCOMING MESSAGE ─────────────────────────────────
-    // BotConversa sends incoming messages with: phone, message, type, subscriber_id
-    if (body.message && body.phone) {
-      const phone = (body.phone || "").replace(/\D/g, "");
-      const message = body.message || body.text || body.value || "";
-      const messageType = body.type || "text"; // text, image, audio, video, document
-      const subscriberId = body.subscriber_id || body.subscriberId || null;
-      const subscriberName = body.subscriber_name || body.first_name || "";
+    // ─── TRY TO EXTRACT MESSAGE DATA ─────────────────────
+    // BotConversa Integration Block can send fields with various names.
+    // We try all common variations.
+    const phone = String(
+      body.phone || body.telefone || body.numero || body.number || body.cel || body.whatsapp || ""
+    ).replace(/\D/g, "");
 
-      if (phone && message) {
-        // Find tenant by looking at existing communications with this phone
-        let tenantId: string | null = null;
-        const existingComm = await prisma.comunicacao.findFirst({
-          where: { destinatario: phone },
-          select: { tenantId: true },
-          orderBy: { createdAt: "desc" },
-        });
-        tenantId = existingComm?.tenantId || null;
+    const message = String(
+      body.message || body.mensagem || body.last_input || body.texto ||
+      body.text || body.value || body.msg || body.input || ""
+    ).trim();
 
-        // If no existing comm, try to find via paciente/responsavel phone
-        if (!tenantId) {
-          const paciente = await prisma.paciente.findFirst({
-            where: {
-              OR: [
-                { telefone: { contains: phone.slice(-8) } },
-                { responsaveis: { some: { telefone: { contains: phone.slice(-8) } } } },
-              ],
-              deletedAt: null,
-            },
-            select: { tenantId: true, id: true },
-          });
-          tenantId = paciente?.tenantId || null;
-        }
+    const messageType = body.type || body.tipo || "text";
 
-        // Save incoming message
-        await prisma.comunicacao.create({
-          data: {
-            destinatario: phone,
-            canal: "WHATSAPP",
-            assunto: "RECEBIDA", // Use assunto field to mark direction
-            mensagem: messageType === "text" ? message : `[${messageType}] ${message}`,
-            status: "LIDA",
-            botconversaId: body.message_id || null,
-            tenantId,
+    // ─── SAVE INCOMING MESSAGE ────────────────────────────
+    if (phone.length >= 10 && message.length > 0) {
+      // Find tenant by looking at existing communications with this phone
+      let tenantId: string | null = null;
+      const existingComm = await prisma.comunicacao.findFirst({
+        where: { destinatario: phone },
+        select: { tenantId: true },
+        orderBy: { createdAt: "desc" },
+      });
+      tenantId = existingComm?.tenantId || null;
+
+      // If no existing comm, try to find via paciente/responsavel phone
+      if (!tenantId) {
+        const paciente = await prisma.paciente.findFirst({
+          where: {
+            OR: [
+              { telefone: { contains: phone.slice(-8) } },
+              { responsaveis: { some: { telefone: { contains: phone.slice(-8) } } } },
+            ],
+            deletedAt: null,
           },
+          select: { tenantId: true },
         });
+        tenantId = paciente?.tenantId || null;
       }
 
-      return NextResponse.json({ ok: true });
+      // Save incoming message
+      await prisma.comunicacao.create({
+        data: {
+          destinatario: phone,
+          canal: "WHATSAPP",
+          assunto: "RECEBIDA",
+          mensagem: messageType === "text" ? message : `[${messageType}] ${message}`,
+          status: "LIDA",
+          botconversaId: body.message_id || body.id || null,
+          tenantId,
+        },
+      });
+
+      return NextResponse.json({ ok: true, saved: true });
     }
 
     // ─── STATUS UPDATE ────────────────────────────────────
-    const { message_id, status } = body;
+    const messageId = body.message_id || body.messageId;
+    const status = body.status;
 
-    if (message_id && status) {
-      // Map BotConversa status to our status
+    if (messageId && status) {
       const statusMap: Record<string, string> = {
         sent: "ENVIADA",
         delivered: "ENTREGUE",
@@ -82,19 +88,23 @@ export async function POST(req: NextRequest) {
       const ourStatus = statusMap[status] || "ENVIADA";
 
       await prisma.comunicacao.updateMany({
-        where: { botconversaId: message_id },
+        where: { botconversaId: messageId },
         data: { status: ourStatus as any },
       });
+
+      return NextResponse.json({ ok: true, statusUpdated: true });
     }
 
-    return NextResponse.json({ ok: true });
+    // If we got data but couldn't parse it, log for debugging
+    console.log("[BotConversa Webhook] Unhandled payload — phone:", phone, "message:", message.slice(0, 50));
+    return NextResponse.json({ ok: true, unhandled: true });
   } catch (error) {
     console.error("BotConversa webhook error:", error);
     return NextResponse.json({ ok: true }); // Always 200 to avoid retries
   }
 }
 
-// Also handle GET for webhook verification (some platforms send GET to verify)
+// GET for webhook verification
 export async function GET() {
   return NextResponse.json({ status: "ok", service: "hachi-erp-botconversa-webhook" });
 }
