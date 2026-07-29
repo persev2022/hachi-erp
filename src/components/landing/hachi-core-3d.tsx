@@ -2,138 +2,181 @@
 
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, ContactShadows } from "@react-three/drei";
+import { Float, ContactShadows, Text, Billboard } from "@react-three/drei";
 import * as THREE from "three";
 
-/**
- * Central torus knot with advanced physical material (glass-like).
- */
-function GlassCore() {
-  const meshRef = useRef<THREE.Mesh>(null);
+// ═══════════════════════════════════════════════════════════
+// BRAIN GRAPH — Neural network shape made of nodes + synapses
+// Orbiting module labels around it
+// ═══════════════════════════════════════════════════════════
 
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = clock.getElapsedTime() * 0.12;
-      meshRef.current.rotation.y = clock.getElapsedTime() * 0.08;
-    }
-  });
+// Generate brain-shaped point cloud (ellipsoid with wrinkles)
+function generateBrainPoints(count: number): THREE.Vector3[] {
+  const points: THREE.Vector3[] = [];
+  for (let i = 0; i < count; i++) {
+    // Spherical distribution with brain-like deformation
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 1.2 + Math.sin(phi * 5) * 0.15 + Math.sin(theta * 3) * 0.1;
 
-  return (
-    <Float speed={1} rotationIntensity={0.2} floatIntensity={0.3}>
-      <mesh ref={meshRef} castShadow receiveShadow scale={1.4}>
-        <torusKnotGeometry args={[1, 0.38, 256, 64]} />
-        <meshPhysicalMaterial
-          color="#0d9488"
-          roughness={0.02}
-          metalness={0.85}
-          clearcoat={1}
-          clearcoatRoughness={0.02}
-          transparent
-          opacity={0.92}
-          sheen={1}
-          sheenRoughness={0.3}
-          sheenColor="#99f6e4"
-          reflectivity={1}
-        />
-      </mesh>
-    </Float>
-  );
+    // Ellipsoid shape (wider than tall, like a brain)
+    const x = r * 1.3 * Math.sin(phi) * Math.cos(theta);
+    const y = r * 0.9 * Math.cos(phi);
+    const z = r * 1.1 * Math.sin(phi) * Math.sin(theta);
+
+    points.push(new THREE.Vector3(x, y, z));
+  }
+  return points;
 }
 
-function OrbitingSpheres() {
+// Find connections between nearby nodes (synapses)
+function generateSynapses(nodes: THREE.Vector3[], maxDist: number): [number, number][] {
+  const connections: [number, number][] = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dist = nodes[i].distanceTo(nodes[j]);
+      if (dist < maxDist && connections.length < 200) {
+        connections.push([i, j]);
+      }
+    }
+  }
+  return connections;
+}
+
+/**
+ * Brain made of glowing nodes connected by synapse lines.
+ */
+function BrainGraph() {
   const groupRef = useRef<THREE.Group>(null);
-  const spheres = useMemo(() => [
-    { radius: 2.8, size: 0.2, speed: 0.3, phase: 0, y: 0.5, color: "#0d9488", roughness: 0.1, metalness: 1 },
-    { radius: 3.2, size: 0.15, speed: 0.25, phase: 1.2, y: -0.3, color: "#14b8a6", roughness: 0.3, metalness: 0.9 },
-    { radius: 2.5, size: 0.25, speed: 0.35, phase: 2.4, y: 0.8, color: "#99f6e4", roughness: 0.0, metalness: 1 },
-    { radius: 3.5, size: 0.12, speed: 0.2, phase: 3.6, y: -0.6, color: "#5eead4", roughness: 0.2, metalness: 0.8 },
-    { radius: 2.2, size: 0.18, speed: 0.4, phase: 4.8, y: 0.2, color: "#2dd4bf", roughness: 0.05, metalness: 1 },
-    { radius: 3.8, size: 0.1, speed: 0.15, phase: 5.5, y: -0.9, color: "#0f766e", roughness: 0.4, metalness: 0.7 },
-  ], []);
+  const nodesCount = 60;
+
+  const { nodes, synapses, linePositions } = useMemo(() => {
+    const n = generateBrainPoints(nodesCount);
+    const s = generateSynapses(n, 0.7);
+
+    // Create line geometry positions
+    const positions: number[] = [];
+    for (const [a, b] of s) {
+      positions.push(n[a].x, n[a].y, n[a].z);
+      positions.push(n[b].x, n[b].y, n[b].z);
+    }
+
+    return { nodes: n, synapses: s, linePositions: new Float32Array(positions) };
+  }, []);
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = clock.getElapsedTime() * 0.03;
+      groupRef.current.rotation.y = clock.getElapsedTime() * 0.05;
     }
   });
 
   return (
     <group ref={groupRef}>
-      {spheres.map((s, i) => (
-        <OrbitSphere key={i} {...s} />
+      {/* Synapse connections (glowing lines) */}
+      <lineSegments>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={linePositions.length / 3}
+            array={linePositions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <lineBasicMaterial color="#5eead4" transparent opacity={0.3} linewidth={1} />
+      </lineSegments>
+
+      {/* Neural nodes (glowing spheres) */}
+      {nodes.map((pos, i) => (
+        <mesh key={i} position={[pos.x, pos.y, pos.z]} castShadow>
+          <sphereGeometry args={[0.04 + Math.random() * 0.03, 12, 12]} />
+          <meshPhysicalMaterial
+            color="#0d9488"
+            emissive="#14b8a6"
+            emissiveIntensity={0.8}
+            roughness={0.2}
+            metalness={0.6}
+          />
+        </mesh>
       ))}
     </group>
   );
 }
 
-function OrbitSphere({ radius, size, speed, phase, y, color, roughness, metalness }: {
-  radius: number; size: number; speed: number; phase: number; y: number;
-  color: string; roughness: number; metalness: number;
-}) {
-  const ref = useRef<THREE.Mesh>(null);
+/**
+ * Module labels orbiting around the brain.
+ */
+const MODULES = [
+  "Financeiro", "CRM", "Estoque", "Comercial",
+  "Analytics", "Automação", "RH", "Tributário",
+  "Produção", "Compras", "Gestão", "IA",
+];
+
+function OrbitingModules() {
+  const groupRef = useRef<THREE.Group>(null);
+
   useFrame(({ clock }) => {
-    if (ref.current) {
-      const t = clock.getElapsedTime() * speed + phase;
-      ref.current.position.x = Math.cos(t) * radius;
-      ref.current.position.z = Math.sin(t) * radius;
-      ref.current.position.y = y + Math.sin(t * 1.5) * 0.4;
+    if (groupRef.current) {
+      groupRef.current.rotation.y = clock.getElapsedTime() * 0.08;
     }
   });
 
   return (
-    <mesh ref={ref} castShadow>
-      <sphereGeometry args={[size, 32, 32]} />
-      <meshPhysicalMaterial
-        color={color}
-        roughness={roughness}
-        metalness={metalness}
-        clearcoat={1}
-        clearcoatRoughness={0.1}
-        envMapIntensity={2}
-      />
-    </mesh>
+    <group ref={groupRef}>
+      {MODULES.map((name, i) => {
+        const angle = (i / MODULES.length) * Math.PI * 2;
+        const radius = 2.5 + (i % 2) * 0.4;
+        const y = (Math.sin(angle * 2) * 0.6);
+
+        return (
+          <group key={name} position={[
+            Math.cos(angle) * radius,
+            y,
+            Math.sin(angle) * radius,
+          ]}>
+            {/* Glowing sphere */}
+            <mesh castShadow>
+              <sphereGeometry args={[0.08, 16, 16]} />
+              <meshPhysicalMaterial
+                color="#0d9488"
+                emissive="#5eead4"
+                emissiveIntensity={1}
+                roughness={0.1}
+                metalness={0.8}
+              />
+            </mesh>
+            {/* Text label - always faces camera */}
+            <Billboard>
+              <Text
+                position={[0, 0.2, 0]}
+                fontSize={0.15}
+                color="#ffffff"
+                anchorX="center"
+                anchorY="middle"
+                outlineWidth={0.01}
+                outlineColor="#0d9488"
+              >
+                {name}
+              </Text>
+            </Billboard>
+          </group>
+        );
+      })}
+    </group>
   );
 }
 
-function GlassRings() {
-  const ring1Ref = useRef<THREE.Mesh>(null);
-  const ring2Ref = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    if (ring1Ref.current) {
-      ring1Ref.current.rotation.x = t * 0.08;
-      ring1Ref.current.rotation.z = t * 0.05;
-    }
-    if (ring2Ref.current) {
-      ring2Ref.current.rotation.y = t * 0.06;
-      ring2Ref.current.rotation.x = Math.PI / 3 + t * 0.04;
-    }
-  });
-
-  return (
-    <>
-      <mesh ref={ring1Ref} castShadow>
-        <torusGeometry args={[2.2, 0.04, 16, 100]} />
-        <meshPhysicalMaterial color="#0d9488" roughness={0.1} metalness={0.9} clearcoat={1} envMapIntensity={3} />
-      </mesh>
-      <mesh ref={ring2Ref} castShadow>
-        <torusGeometry args={[2.6, 0.03, 16, 100]} />
-        <meshPhysicalMaterial color="#5eead4" roughness={0.0} metalness={1} clearcoat={1} envMapIntensity={3} transparent opacity={0.7} />
-      </mesh>
-    </>
-  );
-}
-
-function AmbientParticles() {
-  const count = 80;
+/**
+ * Ambient particles for depth.
+ */
+function Particles() {
+  const count = 50;
   const ref = useRef<THREE.Points>(null);
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 12;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 8;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 12;
+      pos[i * 3] = (Math.random() - 0.5) * 10;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 6;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 10;
     }
     return pos;
   }, []);
@@ -147,28 +190,30 @@ function AmbientParticles() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial color="#0d9488" size={0.03} transparent opacity={0.4} sizeAttenuation />
+      <pointsMaterial color="#5eead4" size={0.02} transparent opacity={0.5} sizeAttenuation />
     </points>
   );
 }
 
+/**
+ * Mouse-reactive scene wrapper.
+ */
 function Scene() {
   const groupRef = useRef<THREE.Group>(null);
   const { pointer } = useThree();
 
   useFrame(() => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += (pointer.x * 0.4 - groupRef.current.rotation.y) * 0.015;
-      groupRef.current.rotation.x += (-pointer.y * 0.2 - groupRef.current.rotation.x) * 0.015;
+      groupRef.current.rotation.y += (pointer.x * 0.3 - groupRef.current.rotation.y) * 0.01;
+      groupRef.current.rotation.x += (-pointer.y * 0.15 - groupRef.current.rotation.x) * 0.01;
     }
   });
 
   return (
-    <group ref={groupRef} scale={1.2}>
-      <GlassCore />
-      <GlassRings />
-      <OrbitingSpheres />
-      <AmbientParticles />
+    <group ref={groupRef} scale={1.3}>
+      <BrainGraph />
+      <OrbitingModules />
+      <Particles />
     </group>
   );
 }
@@ -177,28 +222,24 @@ export default function HachiCore3D() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <Canvas
-        camera={{ position: [0, 0, 5.5], fov: 50 }}
+        camera={{ position: [0, 0, 6], fov: 50 }}
         dpr={[1, 1.5]}
-        shadows
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         style={{ width: "100%", height: "100%", background: "transparent" }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.2;
+          gl.toneMappingExposure = 1.3;
         }}
       >
-        {/* Rich multi-light setup for depth and quality */}
-        <ambientLight intensity={0.3} color="#f0fdfa" />
-        <directionalLight position={[5, 8, 5]} intensity={2} castShadow color="#ffffff" />
-        <directionalLight position={[-6, 2, -2]} intensity={0.8} color="#14b8a6" />
-        <directionalLight position={[0, 3, -8]} intensity={1.2} color="#5eead4" />
-        <pointLight position={[0, -4, 2]} intensity={0.5} color="#99f6e4" />
-        <spotLight position={[2, 7, 4]} angle={0.35} penumbra={1} intensity={1.5} castShadow color="#ffffff" />
-        <pointLight position={[-4, 2, 4]} intensity={0.4} color="#67e8f9" />
+        {/* Lighting */}
+        <ambientLight intensity={0.4} color="#f0fdfa" />
+        <directionalLight position={[5, 8, 5]} intensity={1.5} color="#ffffff" />
+        <directionalLight position={[-5, 2, -3]} intensity={0.7} color="#14b8a6" />
+        <pointLight position={[0, -3, 3]} intensity={0.5} color="#5eead4" />
+        <pointLight position={[3, 3, -3]} intensity={0.4} color="#99f6e4" />
+        <spotLight position={[0, 6, 4]} angle={0.5} penumbra={1} intensity={1} color="#ffffff" />
 
         <Scene />
-
-        <ContactShadows position={[0, -3.5, 0]} opacity={0.25} scale={12} blur={3} far={5} color="#0d9488" />
       </Canvas>
     </div>
   );
