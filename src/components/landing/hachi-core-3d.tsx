@@ -5,32 +5,50 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
-// Generate brain-shaped nodes - DENSE, with hemispheres and sulci (wrinkles)
+// Generate brain-shaped nodes - realistic brain silhouette with 2 hemispheres
 function generateBrainPoints(count: number): THREE.Vector3[] {
   const points: THREE.Vector3[] = [];
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
 
-    // Brain shape: wider than tall, with central fissure and gyri
-    let r = 1.0;
-    // Add gyri (bumps) - high frequency noise
-    r += Math.sin(phi * 8 + theta * 6) * 0.06;
-    r += Math.cos(phi * 5 - theta * 4) * 0.05;
-    r += Math.sin(phi * 12) * 0.03;
+    // Base ellipsoid
+    let x = Math.sin(phi) * Math.cos(theta);
+    let y = Math.cos(phi);
+    let z = Math.sin(phi) * Math.sin(theta);
 
-    // Central fissure (dip at top center)
-    const centralDip = Math.exp(-Math.pow(Math.abs(Math.sin(theta)) - 0.5, 2) * 20) * 0.1;
-    r -= centralDip * (phi < Math.PI * 0.6 ? 1 : 0);
+    // Scale to brain proportions: wide, short, medium depth
+    x *= 1.6;
+    y *= 1.15;
+    z *= 1.3;
 
-    // Ellipsoid: brain is ~1.4x wider than tall, slightly deep
-    const x = r * 1.5 * Math.sin(phi) * Math.cos(theta);
-    const y = r * 1.0 * Math.cos(phi);
-    const z = r * 1.2 * Math.sin(phi) * Math.sin(theta);
+    // Central longitudinal fissure — split into two hemispheres
+    // Deep groove at x≈0 when viewed from top
+    const fissureDepth = 0.2 * Math.exp(-x * x * 8) * (y > -0.3 ? 1 : 0);
+    if (x > 0) x += fissureDepth;
+    else x -= fissureDepth;
 
-    // Concentrate more nodes in the cortex (outer surface)
-    const surfaceBias = 0.85 + Math.random() * 0.15;
-    points.push(new THREE.Vector3(x * surfaceBias, y * surfaceBias, z * surfaceBias));
+    // Temporal lobe bulge (lower sides)
+    if (y < -0.2 && Math.abs(x) > 0.5) {
+      const bulge = 0.15 * Math.exp(-Math.pow(y + 0.5, 2) * 5);
+      x *= (1 + bulge);
+    }
+
+    // Frontal lobe (front is slightly bigger)
+    if (z > 0.3) z *= 1.1;
+
+    // Gyri (wrinkles) — high frequency displacement on surface
+    const gyri = Math.sin(theta * 8 + phi * 6) * 0.04
+               + Math.cos(theta * 5 - phi * 9) * 0.03
+               + Math.sin(theta * 12 + phi * 3) * 0.02;
+    const nr = 1 + gyri;
+    x *= nr;
+    y *= nr;
+    z *= nr;
+
+    // Keep nodes on surface (cortex)
+    const surfaceFactor = 0.9 + Math.random() * 0.1;
+    points.push(new THREE.Vector3(x * surfaceFactor, y * surfaceFactor, z * surfaceFactor));
   }
   return points;
 }
@@ -57,8 +75,8 @@ function BrainGraph() {
   const linesRef = useRef<THREE.Group>(null);
 
   const { nodes, synapses } = useMemo(() => {
-    const n = generateBrainPoints(300);
-    const s = generateSynapses(n, 0.45, 600);
+    const n = generateBrainPoints(400);
+    const s = generateSynapses(n, 0.4, 800);
     return { nodes: n, synapses: s };
   }, []);
 
@@ -141,16 +159,15 @@ function OrbitingModules() {
               <sphereGeometry args={[0.06, 12, 12]} />
               <meshStandardMaterial color="#0d9488" emissive="#5eead4" emissiveIntensity={2} />
             </mesh>
-            <Html center distanceFactor={10} style={{ pointerEvents: "none" }}>
+            <Html center distanceFactor={15} style={{ pointerEvents: "none" }}>
               <span style={{
-                fontSize: "9px",
+                fontSize: "7px",
                 fontWeight: 600,
                 color: "#fff",
-                background: "rgba(13,148,136,0.85)",
-                padding: "2px 8px",
-                borderRadius: "10px",
+                background: "rgba(13,148,136,0.9)",
+                padding: "1px 6px",
+                borderRadius: "8px",
                 whiteSpace: "nowrap",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               }}>
                 {name}
               </span>
