@@ -126,8 +126,8 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
 
   return (
     <section className="relative flex flex-col items-center justify-start pt-24 pb-0">
-      {/* Content - Text on top */}
-      <motion.div style={{ opacity, scale }} className="relative z-20 text-center px-6 max-w-4xl mx-auto">
+      {/* Content - Text on top with white background to block 3D behind */}
+      <motion.div style={{ opacity, scale }} className="relative z-20 text-center px-6 max-w-4xl mx-auto bg-white pb-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -184,8 +184,8 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full mx-auto mt-12"
-        style={{ height: "450px" }}
+        className="relative z-10 w-full mx-auto"
+        style={{ height: "450px", marginTop: "-20px" }}
       >
         <div className="w-full h-full">
           <HachiCore3D />
