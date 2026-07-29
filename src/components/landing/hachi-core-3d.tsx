@@ -237,7 +237,9 @@ export default function HachiCore3D() {
       </Canvas>
 
       {/* Module labels orbiting as CSS */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{`@keyframes orbitReverse { from { transform: translate(-50%,-50%) rotate(0deg) translateX(0px) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(-360deg) translateX(0px) rotate(360deg); } }`}</style>
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center", animation: "spin 30s linear infinite reverse" }}>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         <div style={{ position: "relative", width: "85%", maxWidth: "550px", height: "75%", maxHeight: "420px" }}>
           {MODULES.map((name, i) => {
             const angle = (i / MODULES.length) * Math.PI * 2 - Math.PI / 2;
@@ -249,14 +251,15 @@ export default function HachiCore3D() {
                 left: `${left}%`,
                 top: `${top}%`,
                 transform: "translate(-50%,-50%)",
-                fontSize: "8px",
+                fontSize: "11px",
                 fontWeight: 700,
                 color: "#fff",
-                background: "rgba(13,148,136,0.9)",
-                padding: "2px 7px",
-                borderRadius: "5px",
+                background: "rgba(13,148,136,0.92)",
+                padding: "4px 10px",
+                borderRadius: "6px",
                 whiteSpace: "nowrap",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                boxShadow: "0 2px 8px rgba(13,148,136,0.4)",
+                animation: `orbitReverse 25s linear infinite`,
               }}>
                 {name}
               </span>
