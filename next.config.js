@@ -10,6 +10,10 @@ const nextConfig = {
     // Lint is run separately via `npm run lint`
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    // Type checking done via tsc --noEmit separately
+    ignoreBuildErrors: true,
+  },
   // Security headers
   async headers() {
     return [

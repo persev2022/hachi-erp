@@ -80,12 +80,12 @@ export default function ConfiguracoesPage() {
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <section.icon className="h-5 w-5 text-primary" />
+                  {React.createElement(section.icon, { className: "h-5 w-5 text-primary" })}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-sm">{section.title}</h3>
-                    <Badge variant="outline" className={statusStyles[section.status]}>{section.status}</Badge>
+                    <Badge variant="outline" className={statusStyles[section.status] || ""}>{section.status}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{section.description}</p>
                   <ul className="mt-3 space-y-1">

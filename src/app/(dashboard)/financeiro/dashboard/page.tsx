@@ -601,7 +601,7 @@ function KPICard({
           )}
         </div>
         <div className={`h-9 w-9 rounded-lg ${bgColor} flex items-center justify-center shrink-0`}>
-          <Icon className={`h-4 w-4 ${color}`} />
+          {React.createElement(Icon, { className: `h-4 w-4 ${color}` })}
         </div>
       </div>
     </div>
