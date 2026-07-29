@@ -105,10 +105,10 @@ export default function ComunicacaoPage() {
   });
 
   // BotConversa Live Chat URL
-  const botconversaBaseUrl = "https://app.botconversa.com.br";
+  const botconversaBaseUrl = "https://app.botconversa.com.br/208113";
   const liveChatUrl = selectedContact
-    ? `${botconversaBaseUrl}/${selectedContact.live_chat}`
-    : `${botconversaBaseUrl}/live-chat/all`;
+    ? `${botconversaBaseUrl}/inbox?tab=all&status=all&chat_id=${selectedContact.id}`
+    : `${botconversaBaseUrl}/inbox?tab=all&status=all`;
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
@@ -138,7 +138,7 @@ export default function ComunicacaoPage() {
             <Send className="h-3.5 w-3.5 mr-1" /> Enviar
           </Button>
           <Button size="sm" variant="outline" asChild>
-            <a href={`${botconversaBaseUrl}/live-chat/all`} target="_blank" rel="noopener">
+            <a href={`${botconversaBaseUrl}/inbox?tab=all&status=all`} target="_blank" rel="noopener">
               <ExternalLink className="h-3.5 w-3.5 mr-1" /> Abrir BotConversa
             </a>
           </Button>
@@ -238,7 +238,7 @@ export default function ComunicacaoPage() {
                         <span className="text-xs">Enviar Mensagem</span>
                       </Button>
                       <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
-                        <a href={`${botconversaBaseUrl}/${selectedContact.live_chat}`} target="_blank" rel="noopener">
+                        <a href={`${botconversaBaseUrl}/inbox?tab=all&status=all&chat_id=${selectedContact.id}`} target="_blank" rel="noopener">
                           <ExternalLink className="h-5 w-5" />
                           <span className="text-xs">Ver Conversa Completa</span>
                         </a>
@@ -318,7 +318,7 @@ export default function ComunicacaoPage() {
                           <Send className="h-3 w-3 mr-1" /> Mensagem
                         </Button>
                         <Button size="sm" variant="outline" className="text-xs" asChild>
-                          <a href={`${botconversaBaseUrl}/${s.live_chat}`} target="_blank" rel="noopener">
+                          <a href={`${botconversaBaseUrl}/inbox?tab=all&status=all&chat_id=${s.id}`} target="_blank" rel="noopener">
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         </Button>
