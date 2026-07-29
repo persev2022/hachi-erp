@@ -149,13 +149,13 @@ export default function ComunicacaoPage() {
       <div className="flex-1 flex overflow-hidden">
         {viewMode === "livechat" ? (
           <>
-            {/* Contact sidebar for live chat */}
-            <div className="w-[280px] border-r flex flex-col bg-card hidden md:flex">
+            {/* Contact sidebar */}
+            <div className="w-full md:w-[320px] border-r flex flex-col bg-card">
               <div className="p-3 border-b">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar..."
+                    placeholder="Buscar contato..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9 h-8 text-xs"
@@ -168,51 +168,110 @@ export default function ComunicacaoPage() {
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
-                  <>
+                  filtered.slice(0, 50).map((s) => (
                     <button
-                      onClick={() => setSelectedContact(null)}
-                      className={`w-full text-left px-3 py-2 text-xs border-b hover:bg-muted/50 transition ${!selectedContact ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
+                      key={s.id}
+                      onClick={() => setSelectedContact(s)}
+                      className={`w-full text-left px-3 py-3 border-b hover:bg-muted/50 transition flex items-center gap-3 ${selectedContact?.id === s.id ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
                     >
-                      <p className="font-medium">📋 Todas as conversas</p>
+                      <div className="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        <User className="h-4 w-4 text-emerald-700" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{s.full_name}</p>
+                        <p className="text-[11px] text-muted-foreground">{formatPhone(s.phone)}</p>
+                      </div>
                     </button>
-                    {filtered.slice(0, 50).map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => setSelectedContact(s)}
-                        className={`w-full text-left px-3 py-2 border-b hover:bg-muted/50 transition flex items-center gap-2 ${selectedContact?.id === s.id ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
-                      >
-                        <div className="h-7 w-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                          <User className="h-3.5 w-3.5 text-emerald-700" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{s.full_name}</p>
-                          <p className="text-[10px] text-muted-foreground">{formatPhone(s.phone)}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </>
+                  ))
                 )}
               </div>
+              {totalCount > 20 && (
+                <div className="p-2 border-t flex justify-center gap-2">
+                  <Button size="sm" variant="ghost" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>←</Button>
+                  <span className="text-xs text-muted-foreground py-1">Pág {page}</span>
+                  <Button size="sm" variant="ghost" disabled={subscribers.length < 20} onClick={() => setPage(p => p + 1)}>→</Button>
+                </div>
+              )}
             </div>
 
-            {/* BotConversa Live Chat iframe */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex-1 relative bg-muted/20">
-                <iframe
-                  src={liveChatUrl}
-                  className="absolute inset-0 w-full h-full border-0"
-                  title="BotConversa Live Chat"
-                  allow="clipboard-write"
-                />
-              </div>
-              <div className="px-3 py-2 border-t bg-card flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  💡 Este é o Live Chat do BotConversa integrado. Todas as mensagens enviadas e recebidas aparecem aqui em tempo real.
-                </p>
-                <Button size="sm" variant="ghost" onClick={() => fetchSubscribers()}>
-                  <RefreshCw className="h-3 w-3 mr-1" /> Atualizar contatos
-                </Button>
-              </div>
+            {/* Right panel - Contact detail + quick actions */}
+            <div className="flex-1 flex flex-col hidden md:flex">
+              {!selectedContact ? (
+                <div className="flex-1 flex items-center justify-center bg-muted/10">
+                  <div className="text-center px-8">
+                    <MessageSquare className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
+                    <p className="text-muted-foreground font-medium">Selecione um contato</p>
+                    <p className="text-sm text-muted-foreground mt-1">Escolha na lista à esquerda para ver opções e enviar mensagens</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col">
+                  {/* Contact header */}
+                  <div className="p-6 border-b bg-card">
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <User className="h-7 w-7 text-emerald-700" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold">{selectedContact.full_name}</h2>
+                        <p className="text-sm text-muted-foreground">{formatPhone(selectedContact.phone)}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Desde {formatDate(selectedContact.created_at)}</p>
+                      </div>
+                    </div>
+                    {selectedContact.tags.length > 0 && (
+                      <div className="flex gap-1 mt-3">
+                        {selectedContact.tags.map((t) => (
+                          <Badge key={t.id} variant="outline" className="text-xs">{t.name}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="p-6 space-y-4 flex-1">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button className="h-auto py-4 flex-col gap-2" onClick={() => {
+                        setSendPhone(selectedContact.phone);
+                        setShowSendModal(true);
+                      }}>
+                        <Send className="h-5 w-5" />
+                        <span className="text-xs">Enviar Mensagem</span>
+                      </Button>
+                      <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+                        <a href={`${botconversaBaseUrl}/${selectedContact.live_chat}`} target="_blank" rel="noopener">
+                          <ExternalLink className="h-5 w-5" />
+                          <span className="text-xs">Ver Conversa Completa</span>
+                        </a>
+                      </Button>
+                    </div>
+
+                    {/* Quick send */}
+                    <div className="border rounded-lg p-4 space-y-3">
+                      <p className="text-sm font-medium">Envio rápido</p>
+                      <textarea
+                        value={sendMessage}
+                        onChange={(e) => setSendMessage(e.target.value)}
+                        placeholder="Digite uma mensagem..."
+                        rows={3}
+                        className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                      />
+                      <Button size="sm" className="w-full" disabled={!sendMessage.trim() || sending} onClick={() => {
+                        setSendPhone(selectedContact.phone);
+                        handleSend();
+                      }}>
+                        {sending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+                        Enviar para {selectedContact.first_name}
+                      </Button>
+                    </div>
+
+                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 rounded-lg p-3">
+                      <p className="text-xs text-amber-800 dark:text-amber-200">
+                        💡 Para ver o histórico completo de mensagens, clique em "Ver Conversa Completa" — abre direto no chat do BotConversa.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
