@@ -5,11 +5,16 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 
-// Lazy load 3D scene for performance
-const HachiCore3D = dynamic(() => import("@/components/landing/hachi-core-3d"), {
-  ssr: false,
-  loading: () => <div className="absolute inset-0 bg-white" />,
-});
+// Lazy load 3D scene — with error fallback so page still works if WebGL fails
+const HachiCore3D = dynamic(
+  () => import("@/components/landing/hachi-core-3d").catch(() => ({
+    default: () => <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-emerald-50" />,
+  })),
+  {
+    ssr: false,
+    loading: () => <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-emerald-50" />,
+  }
+);
 
 // ═══════════════════════════════════════════════════════════
 // DESIGN SYSTEM

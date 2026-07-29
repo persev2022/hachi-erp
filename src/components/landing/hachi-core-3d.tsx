@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useMemo, Suspense } from "react";
+import { useRef, useMemo, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, Environment, ContactShadows } from "@react-three/drei";
+import { Float, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 
 /**
@@ -25,15 +25,14 @@ function GlassCore() {
         <meshPhysicalMaterial
           color="#0d9488"
           roughness={0.05}
-          metalness={0.1}
+          metalness={0.8}
           clearcoat={1}
           clearcoatRoughness={0.05}
-          transmission={0.9}
-          thickness={1.5}
-          ior={1.5}
-          envMapIntensity={2}
+          envMapIntensity={1}
           transparent
-          opacity={0.95}
+          opacity={0.85}
+          sheen={1}
+          sheenColor="#5eead4"
         />
       </mesh>
     </Float>
@@ -175,16 +174,41 @@ function Scene() {
 
 export default function HachiCore3D() {
   return (
+    <ErrorBoundary3D>
+      <HachiCanvas />
+    </ErrorBoundary3D>
+  );
+}
+
+function ErrorBoundary3D({ children }: { children: React.ReactNode }) {
+  // Simple error boundary using React state
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-emerald-50" />;
+  }
+
+  return (
+    <div onError={() => setHasError(true)}>
+      {children}
+    </div>
+  );
+}
+
+function HachiCanvas() {
+  return (
     <Canvas
       camera={{ position: [0, 0, 7], fov: 42 }}
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
       shadows
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ background: "transparent" }}
+      onCreated={({ gl }) => {
+        gl.toneMapping = THREE.ACESFilmicToneMapping;
+        gl.toneMappingExposure = 1.2;
+      }}
     >
-      <Suspense fallback={null}>
-        <Environment preset="city" />
-      </Suspense>
+      {/* Rich lighting instead of environment map for reliability */}
 
       <ambientLight intensity={0.4} />
       <directionalLight position={[5, 8, 5]} intensity={1.5} castShadow color="#ffffff" />
