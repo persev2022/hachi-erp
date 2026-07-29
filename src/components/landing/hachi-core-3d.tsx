@@ -198,7 +198,7 @@ export default function HachiCore3D() {
 
         <Scene />
 
-        <ContactShadows position={[0, -2.8, 0]} opacity={0.4} scale={12} blur={2.5} far={5} color="#0d9488" />
+        <ContactShadows position={[0, -3.5, 0]} opacity={0.25} scale={12} blur={3} far={5} color="#0d9488" />
       </Canvas>
     </div>
   );
