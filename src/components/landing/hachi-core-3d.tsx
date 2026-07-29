@@ -2,174 +2,125 @@
 
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
+import { Html, Line } from "@react-three/drei";
 import * as THREE from "three";
 
-// ═══════════════════════════════════════════════════════════
-// BRAIN - lateral profile silhouette with dense network
-// Reference: neuroscience brain graph visualization
-// Colors: teal (#0d9488) to cyan (#22d3ee)
-// ═══════════════════════════════════════════════════════════
+// Brain lateral profile - parametric shape
+function brainShape(t: number): [number, number] {
+  // t goes from 0 to 2PI around the brain outline
+  // This creates the classic lateral brain silhouette
+  const cos = Math.cos;
+  const sin = Math.sin;
 
-// Brain profile: generate points that follow a brain silhouette (side view)
-function generateBrainProfile(count: number): THREE.Vector3[] {
-  const points: THREE.Vector3[] = [];
+  // Combine harmonics for brain shape
+  let x = 1.3 * cos(t) + 0.3 * cos(2 * t) - 0.1 * cos(3 * t);
+  let y = 1.0 * sin(t) + 0.2 * sin(2 * t) + 0.1 * sin(3 * t);
 
-  for (let i = 0; i < count; i++) {
-    // Use parametric approach: angle around brain profile
-    const t = Math.random() * Math.PI * 2;
-    const depthRand = (Math.random() - 0.5) * 0.6; // Z depth (thickness)
+  // Make top bigger (cerebrum dome)
+  if (y > 0) y *= 1.2;
 
-    // Brain profile shape (side view) using superellipse + modifications
-    // Frontal lobe: large, rounded top-front
-    // Occipital lobe: rounded back
-    // Temporal lobe: lower bulge
-    // Cerebellum: small bulge bottom-back
-    // Brain stem: thin extension downward
+  // Flatten bottom slightly
+  if (y < -0.3) y *= 0.8;
 
-    let x = 0, y = 0;
+  // Add frontal prominence
+  if (x > 0.5 && y > 0) { x += 0.15; y += 0.1; }
 
-    if (Math.random() < 0.85) {
-      // Main cerebrum (85% of nodes)
-      // Modified ellipse for brain profile
-      const angle = t;
-      // Base ellipse
-      let rx = 1.4; // wider
-      let ry = 1.1; // tall
-
-      // Flatten the bottom
-      if (Math.sin(angle) < 0) ry *= 0.7;
-
-      // Frontal prominence (front-top is bigger)
-      if (Math.cos(angle) > 0 && Math.sin(angle) > 0) {
-        rx *= 1.15;
-        ry *= 1.1;
-      }
-
-      x = rx * Math.cos(angle);
-      y = ry * Math.sin(angle);
-
-      // Push top-front up more (frontal lobe)
-      if (y > 0 && x > 0) y += 0.2;
-
-      // Indent bottom-center (sylvian fissure area)
-      if (y < -0.3 && Math.abs(x) < 0.5) y += 0.15;
-
-    } else if (Math.random() < 0.7) {
-      // Cerebellum (10% of nodes) - small round below back
-      const angle = Math.random() * Math.PI - Math.PI / 2;
-      x = -0.8 + Math.cos(angle) * 0.45;
-      y = -0.9 + Math.sin(angle) * 0.35;
-
-    } else {
-      // Brain stem (5% of nodes) - thin downward
-      x = -0.3 + (Math.random() - 0.5) * 0.2;
-      y = -1.1 - Math.random() * 0.5;
-    }
-
-    // Add surface noise for organic look
-    x += (Math.random() - 0.5) * 0.15;
-    y += (Math.random() - 0.5) * 0.12;
-
-    // Distribute within volume (not just surface)
-    const volumeFactor = 0.7 + Math.random() * 0.3;
-    points.push(new THREE.Vector3(
-      x * volumeFactor,
-      y * volumeFactor,
-      depthRand * volumeFactor
-    ));
-  }
-  return points;
+  return [x, y];
 }
 
-// Dense connections - each node connects to many nearby nodes
-function generateConnections(nodes: THREE.Vector3[], maxDist: number): [number, number][] {
-  const connections: [number, number][] = [];
+// Generate nodes on brain surface
+function generateBrainNodes(count: number): THREE.Vector3[] {
+  const nodes: THREE.Vector3[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const t = Math.random() * Math.PI * 2;
+    const [bx, by] = brainShape(t);
+
+    // Random radius from center to surface (fill the volume)
+    const r = 0.5 + Math.random() * 0.5; // mostly on surface
+    const x = bx * r;
+    const y = by * r;
+    const z = (Math.random() - 0.5) * 0.8 * r; // depth
+
+    nodes.push(new THREE.Vector3(x, y, z));
+  }
+  return nodes;
+}
+
+// Connect nearest neighbors
+function connectNodes(nodes: THREE.Vector3[]): [number, number][] {
+  const conns: [number, number][] = [];
+  const maxDist = 0.5;
+
   for (let i = 0; i < nodes.length; i++) {
-    // Each node connects to up to 8 nearest neighbors
-    const distances: { j: number; d: number }[] = [];
+    // Find nearest 6 nodes
+    const dists: { j: number; d: number }[] = [];
     for (let j = 0; j < nodes.length; j++) {
       if (i === j) continue;
       const d = nodes[i].distanceTo(nodes[j]);
-      if (d < maxDist) distances.push({ j, d });
+      if (d < maxDist) dists.push({ j, d });
     }
-    distances.sort((a, b) => a.d - b.d);
-    for (let k = 0; k < Math.min(8, distances.length); k++) {
-      const j = distances[k].j;
-      if (i < j) connections.push([i, j]); // avoid duplicates
+    dists.sort((a, b) => a.d - b.d);
+    for (let k = 0; k < Math.min(6, dists.length); k++) {
+      if (i < dists[k].j) conns.push([i, dists[k].j]);
     }
   }
-  // Deduplicate
-  const seen = new Set<string>();
-  return connections.filter(([a, b]) => {
-    const key = `${a}-${b}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+
+  // Dedupe
+  const set = new Set(conns.map(([a, b]) => `${a}-${b}`));
+  return [...set].map(s => { const [a, b] = s.split("-"); return [+a, +b]; });
 }
 
-function BrainNetwork() {
+function BrainMesh() {
   const groupRef = useRef<THREE.Group>(null);
-  const linesRef = useRef<THREE.Group>(null);
 
-  const { nodes, connections, lineObjects } = useMemo(() => {
-    const n = generateBrainProfile(250);
-    const c = generateConnections(n, 0.55);
-
-    const lines = c.map(([a, b]) => {
-      const geo = new THREE.BufferGeometry().setFromPoints([n[a], n[b]]);
-      const mat = new THREE.LineBasicMaterial({
-        color: new THREE.Color("#5eead4"),
-        transparent: true,
-        opacity: 0.4,
-      });
-      return new THREE.Line(geo, mat);
-    });
-
-    return { nodes: n, connections: c, lineObjects: lines };
+  const { nodes, connections } = useMemo(() => {
+    const n = generateBrainNodes(200);
+    const c = connectNodes(n);
+    return { nodes: n, connections: c };
   }, []);
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.3) * 0.15;
-    }
-    // Pulse synapses
-    if (linesRef.current) {
-      const t = clock.getElapsedTime();
-      linesRef.current.children.forEach((line, i) => {
-        const mat = (line as THREE.Line).material as THREE.LineBasicMaterial;
-        mat.opacity = 0.25 + Math.sin(t * 1.5 + i * 0.3) * 0.2;
-      });
+      // Gentle oscillation
+      groupRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.2) * 0.2;
     }
   });
 
   return (
     <group ref={groupRef}>
-      {/* Connections (synapses) */}
-      <group ref={linesRef}>
-        {lineObjects.map((line, i) => (
-          <primitive key={i} object={line} />
-        ))}
-      </group>
-
-      {/* Nodes (neurons) - gradient from teal to cyan based on position */}
-      {nodes.map((pos, i) => {
-        // Color gradient: left=teal, right=cyan (like the reference image)
-        const normalizedX = (pos.x + 1.5) / 3; // 0 to 1
+      {/* CONNECTIONS - using Line from drei for visible thick lines */}
+      {connections.map(([a, b], i) => {
+        const start = nodes[a];
+        const end = nodes[b];
+        // Color gradient based on position
+        const avgX = (start.x + end.x) / 2;
+        const t = (avgX + 1.5) / 3;
         const color = new THREE.Color().lerpColors(
-          new THREE.Color("#0d9488"),
-          new THREE.Color("#22d3ee"),
-          normalizedX
+          new THREE.Color("#0d9488"), new THREE.Color("#22d3ee"), t
+        );
+        return (
+          <Line
+            key={i}
+            points={[[start.x, start.y, start.z], [end.x, end.y, end.z]]}
+            color={color}
+            lineWidth={1}
+            transparent
+            opacity={0.6}
+          />
+        );
+      })}
+
+      {/* NODES - glowing spheres */}
+      {nodes.map((pos, i) => {
+        const t = (pos.x + 1.5) / 3;
+        const color = new THREE.Color().lerpColors(
+          new THREE.Color("#0d9488"), new THREE.Color("#22d3ee"), t
         );
         return (
           <mesh key={i} position={[pos.x, pos.y, pos.z]}>
-            <sphereGeometry args={[0.04, 10, 10]} />
-            <meshStandardMaterial
-              color={color}
-              emissive={color}
-              emissiveIntensity={1.5}
-            />
+            <sphereGeometry args={[0.04, 8, 8]} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2} />
           </mesh>
         );
       })}
@@ -177,38 +128,34 @@ function BrainNetwork() {
   );
 }
 
-// Orbiting module labels
 const MODULES = [
   "Financeiro", "CRM", "Estoque", "Comercial",
   "Analytics", "Automação", "RH", "Tributário",
   "Produção", "Compras", "Gestão", "IA",
 ];
 
-function OrbitingModules() {
-  const groupRef = useRef<THREE.Group>(null);
-
+function OrbitingLabels() {
+  const ref = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = clock.getElapsedTime() * 0.12;
-    }
+    if (ref.current) ref.current.rotation.y = clock.getElapsedTime() * 0.1;
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={ref}>
       {MODULES.map((name, i) => {
         const angle = (i / MODULES.length) * Math.PI * 2;
-        const radius = 2.2;
-        const y = Math.sin(angle * 1.5) * 0.5;
+        const r = 2.3;
+        const y = Math.sin(angle * 1.5) * 0.4;
         return (
-          <group key={name} position={[Math.cos(angle) * radius, y, Math.sin(angle) * radius]}>
+          <group key={name} position={[Math.cos(angle) * r, y, Math.sin(angle) * r]}>
             <mesh>
-              <sphereGeometry args={[0.05, 10, 10]} />
-              <meshStandardMaterial color="#0d9488" emissive="#5eead4" emissiveIntensity={2} />
+              <sphereGeometry args={[0.035, 8, 8]} />
+              <meshStandardMaterial color="#0d9488" emissive="#5eead4" emissiveIntensity={3} />
             </mesh>
-            <Html center distanceFactor={18} style={{ pointerEvents: "none" }}>
-              <span style={{ fontSize: "8px", fontWeight: 600, color: "#fff", background: "rgba(13,148,136,0.9)", padding: "2px 6px", borderRadius: "6px", whiteSpace: "nowrap" }}>
+            <Html center distanceFactor={25} style={{ pointerEvents: "none", userSelect: "none" }}>
+              <div style={{ fontSize: "6px", fontWeight: 700, color: "#fff", background: "rgba(13,148,136,0.95)", padding: "1px 4px", borderRadius: "4px", whiteSpace: "nowrap", lineHeight: 1.2 }}>
                 {name}
-              </span>
+              </div>
             </Html>
           </group>
         );
@@ -218,20 +165,19 @@ function OrbitingModules() {
 }
 
 function Scene() {
-  const groupRef = useRef<THREE.Group>(null);
+  const ref = useRef<THREE.Group>(null);
   const { pointer } = useThree();
-
   useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += (pointer.x * 0.2 - groupRef.current.rotation.y) * 0.008;
-      groupRef.current.rotation.x += (-pointer.y * 0.1 - groupRef.current.rotation.x) * 0.008;
+    if (ref.current) {
+      ref.current.rotation.y += (pointer.x * 0.15 - ref.current.rotation.y) * 0.005;
+      ref.current.rotation.x += (-pointer.y * 0.08 - ref.current.rotation.x) * 0.005;
     }
   });
 
   return (
-    <group ref={groupRef} scale={1.5}>
-      <BrainNetwork />
-      <OrbitingModules />
+    <group ref={ref} scale={1.6}>
+      <BrainMesh />
+      <OrbitingLabels />
     </group>
   );
 }
@@ -242,13 +188,12 @@ export default function HachiCore3D() {
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
         dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        gl={{ antialias: true, alpha: true }}
         style={{ width: "100%", height: "100%", background: "transparent" }}
       >
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[5, 5, 5]} intensity={1} color="#ffffff" />
-        <directionalLight position={[-3, 2, -2]} intensity={0.5} color="#14b8a6" />
-        <pointLight position={[0, -2, 3]} intensity={0.4} color="#22d3ee" />
+        <ambientLight intensity={0.2} />
+        <pointLight position={[3, 3, 3]} intensity={0.8} color="#ffffff" />
+        <pointLight position={[-3, -1, 2]} intensity={0.4} color="#22d3ee" />
         <Scene />
       </Canvas>
     </div>
