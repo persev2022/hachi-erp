@@ -125,23 +125,15 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
   const scale = useTransform(scrollProgress, [0, 0.15], [1, 0.95]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* 3D Background */}
-      <div className="absolute inset-0 z-0">
-        <HachiCore3D />
-      </div>
-
-      {/* Subtle gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-transparent to-white z-10 pointer-events-none" />
-
-      {/* Content */}
+    <section className="relative min-h-screen flex flex-col items-center justify-start pt-24 overflow-hidden">
+      {/* Content - Text on top */}
       <motion.div style={{ opacity, scale }} className="relative z-20 text-center px-6 max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-200 bg-teal-50 mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-200 bg-teal-50 mb-6">
             <div className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
             <span className="text-xs text-teal-700 font-medium">Plataforma Inteligente de Gestão</span>
           </div>
@@ -150,8 +142,8 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9]"
+          transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95]"
         >
           <span className="text-gray-900">Um cérebro.</span>
           <br />
@@ -163,17 +155,17 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed"
+          transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-5 text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed"
         >
-          O HACHI substitui dezenas de sistemas por uma única plataforma com inteligência artificial que pensa, automatiza e escala junto com sua empresa.
+          O HACHI substitui dezenas de sistemas por uma única plataforma com IA que pensa, automatiza e escala.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.1 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          transition={{ duration: 1, delay: 0.9 }}
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
             href="#cta"
@@ -187,12 +179,23 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         </motion.div>
       </motion.div>
 
+      {/* 3D Scene - Large, centered below text */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-3xl mx-auto mt-8"
+        style={{ height: "clamp(350px, 50vh, 550px)" }}
+      >
+        <HachiCore3D />
+      </motion.div>
+
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
+        transition={{ delay: 2.5 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20"
       >
         <div className="w-5 h-8 rounded-full border border-gray-300 flex items-start justify-center p-1">
           <motion.div

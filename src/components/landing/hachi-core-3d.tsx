@@ -13,26 +13,27 @@ function GlassCore() {
 
   useFrame(({ clock }) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x = clock.getElapsedTime() * 0.15;
-      meshRef.current.rotation.y = clock.getElapsedTime() * 0.1;
+      meshRef.current.rotation.x = clock.getElapsedTime() * 0.12;
+      meshRef.current.rotation.y = clock.getElapsedTime() * 0.08;
     }
   });
 
   return (
-    <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.4}>
-      <mesh ref={meshRef} castShadow>
-        <torusKnotGeometry args={[1, 0.35, 128, 32]} />
+    <Float speed={1} rotationIntensity={0.2} floatIntensity={0.3}>
+      <mesh ref={meshRef} castShadow receiveShadow scale={1.4}>
+        <torusKnotGeometry args={[1, 0.38, 256, 64]} />
         <meshPhysicalMaterial
           color="#0d9488"
-          roughness={0.05}
-          metalness={0.8}
+          roughness={0.02}
+          metalness={0.85}
           clearcoat={1}
-          clearcoatRoughness={0.05}
-          envMapIntensity={1}
+          clearcoatRoughness={0.02}
           transparent
-          opacity={0.85}
+          opacity={0.92}
           sheen={1}
-          sheenColor="#5eead4"
+          sheenRoughness={0.3}
+          sheenColor="#99f6e4"
+          reflectivity={1}
         />
       </mesh>
     </Float>
@@ -208,17 +209,18 @@ function HachiCanvas() {
         gl.toneMappingExposure = 1.2;
       }}
     >
-      {/* Rich lighting instead of environment map for reliability */}
-
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 8, 5]} intensity={1.5} castShadow color="#ffffff" />
-      <directionalLight position={[-5, 3, -3]} intensity={0.6} color="#0d9488" />
-      <pointLight position={[0, -5, -5]} intensity={0.4} color="#5eead4" />
-      <spotLight position={[3, 5, 3]} angle={0.4} penumbra={1} intensity={0.8} castShadow color="#ffffff" />
+      {/* Rich multi-light setup for depth and quality */}
+      <ambientLight intensity={0.3} color="#f0fdfa" />
+      <directionalLight position={[5, 8, 5]} intensity={2} castShadow color="#ffffff" />
+      <directionalLight position={[-6, 2, -2]} intensity={0.8} color="#14b8a6" />
+      <directionalLight position={[0, 3, -8]} intensity={1.2} color="#5eead4" />
+      <pointLight position={[0, -4, 2]} intensity={0.5} color="#99f6e4" />
+      <spotLight position={[2, 7, 4]} angle={0.35} penumbra={1} intensity={1.5} castShadow color="#ffffff" />
+      <pointLight position={[-4, 2, 4]} intensity={0.4} color="#67e8f9" />
 
       <Scene />
 
-      <ContactShadows position={[0, -2.5, 0]} opacity={0.3} scale={10} blur={2} far={4} color="#0d9488" />
+      <ContactShadows position={[0, -2.8, 0]} opacity={0.4} scale={12} blur={2.5} far={5} color="#0d9488" />
     </Canvas>
   );
 }
