@@ -2,24 +2,11 @@
 
 import { useRef, useMemo, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {
-  Float,
-  MeshTransmissionMaterial,
-  Environment,
-  ContactShadows,
-  MeshDistortMaterial,
-} from "@react-three/drei";
+import { Float, Environment, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 
-// ═══════════════════════════════════════════════════════════
-// HACHI CORE 3D — Advanced scene with glass, refraction,
-// realistic lighting, shadows and depth.
-// White/light background with teal (#0d9488) brand color.
-// ═══════════════════════════════════════════════════════════
-
 /**
- * Central glass torus knot — represents the AI core.
- * Uses transmission material for realistic glass refraction.
+ * Central torus knot with advanced physical material (glass-like).
  */
 function GlassCore() {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -34,36 +21,27 @@ function GlassCore() {
   return (
     <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.4}>
       <mesh ref={meshRef} castShadow>
-        <torusKnotGeometry args={[1, 0.35, 200, 32]} />
-        <MeshTransmissionMaterial
-          backside
-          samples={6}
-          thickness={0.5}
-          chromaticAberration={0.3}
-          anisotropy={0.3}
-          distortion={0.2}
-          distortionScale={0.5}
-          temporalDistortion={0.1}
-          iridescence={1}
-          iridescenceIOR={1}
-          iridescenceThicknessRange={[0, 1400]}
+        <torusKnotGeometry args={[1, 0.35, 128, 32]} />
+        <meshPhysicalMaterial
           color="#0d9488"
           roughness={0.05}
+          metalness={0.1}
+          clearcoat={1}
+          clearcoatRoughness={0.05}
+          transmission={0.9}
+          thickness={1.5}
           ior={1.5}
-          transmission={0.95}
+          envMapIntensity={2}
+          transparent
+          opacity={0.95}
         />
       </mesh>
     </Float>
   );
 }
 
-/**
- * Floating metallic spheres orbiting the core.
- * Each has unique material: brushed metal, mirror, matte.
- */
 function OrbitingSpheres() {
   const groupRef = useRef<THREE.Group>(null);
-
   const spheres = useMemo(() => [
     { radius: 2.8, size: 0.2, speed: 0.3, phase: 0, y: 0.5, color: "#0d9488", roughness: 0.1, metalness: 1 },
     { radius: 3.2, size: 0.15, speed: 0.25, phase: 1.2, y: -0.3, color: "#14b8a6", roughness: 0.3, metalness: 0.9 },
@@ -93,7 +71,6 @@ function OrbitSphere({ radius, size, speed, phase, y, color, roughness, metalnes
   color: string; roughness: number; metalness: number;
 }) {
   const ref = useRef<THREE.Mesh>(null);
-
   useFrame(({ clock }) => {
     if (ref.current) {
       const t = clock.getElapsedTime() * speed + phase;
@@ -118,9 +95,6 @@ function OrbitSphere({ radius, size, speed, phase, y, color, roughness, metalnes
   );
 }
 
-/**
- * Floating glass rings — adds depth and layered composition.
- */
 function GlassRings() {
   const ring1Ref = useRef<THREE.Mesh>(null);
   const ring2Ref = useRef<THREE.Mesh>(null);
@@ -141,37 +115,19 @@ function GlassRings() {
     <>
       <mesh ref={ring1Ref} castShadow>
         <torusGeometry args={[2.2, 0.04, 16, 100]} />
-        <meshPhysicalMaterial
-          color="#0d9488"
-          roughness={0.1}
-          metalness={0.9}
-          clearcoat={1}
-          envMapIntensity={3}
-        />
+        <meshPhysicalMaterial color="#0d9488" roughness={0.1} metalness={0.9} clearcoat={1} envMapIntensity={3} />
       </mesh>
       <mesh ref={ring2Ref} castShadow>
         <torusGeometry args={[2.6, 0.03, 16, 100]} />
-        <meshPhysicalMaterial
-          color="#5eead4"
-          roughness={0.0}
-          metalness={1}
-          clearcoat={1}
-          envMapIntensity={3}
-          transparent
-          opacity={0.7}
-        />
+        <meshPhysicalMaterial color="#5eead4" roughness={0.0} metalness={1} clearcoat={1} envMapIntensity={3} transparent opacity={0.7} />
       </mesh>
     </>
   );
 }
 
-/**
- * Subtle floating particles for ambient depth.
- */
 function AmbientParticles() {
   const count = 80;
   const ref = useRef<THREE.Points>(null);
-
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -183,9 +139,7 @@ function AmbientParticles() {
   }, []);
 
   useFrame(({ clock }) => {
-    if (ref.current) {
-      ref.current.rotation.y = clock.getElapsedTime() * 0.01;
-    }
+    if (ref.current) ref.current.rotation.y = clock.getElapsedTime() * 0.01;
   });
 
   return (
@@ -198,16 +152,12 @@ function AmbientParticles() {
   );
 }
 
-/**
- * Mouse-reactive group — smooth parallax following cursor.
- */
 function Scene() {
   const groupRef = useRef<THREE.Group>(null);
   const { pointer } = useThree();
 
   useFrame(() => {
     if (groupRef.current) {
-      // Smooth lerp to follow mouse
       groupRef.current.rotation.y += (pointer.x * 0.4 - groupRef.current.rotation.y) * 0.015;
       groupRef.current.rotation.x += (-pointer.y * 0.2 - groupRef.current.rotation.x) * 0.015;
     }
@@ -223,75 +173,28 @@ function Scene() {
   );
 }
 
-/**
- * Main export — Canvas with advanced lighting, environment map,
- * shadows, and white/light background.
- */
 export default function HachiCore3D() {
   return (
     <Canvas
       camera={{ position: [0, 0, 7], fov: 42 }}
       dpr={[1, 2]}
       shadows
-      gl={{
-        antialias: true,
-        alpha: true,
-        powerPreference: "high-performance",
-        toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.2,
-      }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ background: "transparent" }}
     >
-      {/* Environment for realistic reflections */}
       <Suspense fallback={null}>
         <Environment preset="city" />
       </Suspense>
 
-      {/* Lighting setup for depth and drama */}
       <ambientLight intensity={0.4} />
-
-      {/* Key light — warm directional */}
-      <directionalLight
-        position={[5, 8, 5]}
-        intensity={1.5}
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.001}
-        color="#ffffff"
-      />
-
-      {/* Fill light — cool teal from the left */}
-      <directionalLight
-        position={[-5, 3, -3]}
-        intensity={0.6}
-        color="#0d9488"
-      />
-
-      {/* Rim light — subtle backlight */}
+      <directionalLight position={[5, 8, 5]} intensity={1.5} castShadow color="#ffffff" />
+      <directionalLight position={[-5, 3, -3]} intensity={0.6} color="#0d9488" />
       <pointLight position={[0, -5, -5]} intensity={0.4} color="#5eead4" />
+      <spotLight position={[3, 5, 3]} angle={0.4} penumbra={1} intensity={0.8} castShadow color="#ffffff" />
 
-      {/* Spot for dramatic highlight */}
-      <spotLight
-        position={[3, 5, 3]}
-        angle={0.4}
-        penumbra={1}
-        intensity={0.8}
-        castShadow
-        color="#ffffff"
-      />
-
-      {/* Scene */}
       <Scene />
 
-      {/* Contact shadows for grounding */}
-      <ContactShadows
-        position={[0, -2.5, 0]}
-        opacity={0.3}
-        scale={10}
-        blur={2}
-        far={4}
-        color="#0d9488"
-      />
+      <ContactShadows position={[0, -2.5, 0]} opacity={0.3} scale={10} blur={2} far={4} color="#0d9488" />
     </Canvas>
   );
 }
