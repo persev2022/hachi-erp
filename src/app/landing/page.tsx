@@ -125,7 +125,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
   const scale = useTransform(scrollProgress, [0, 0.15], [1, 0.95]);
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-start pt-24 overflow-hidden">
+    <section className="relative flex flex-col items-center justify-start pt-24 pb-0">
       {/* Content - Text on top */}
       <motion.div style={{ opacity, scale }} className="relative z-20 text-center px-6 max-w-4xl mx-auto">
         <motion.div
@@ -216,7 +216,7 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
 // ═══════════════════════════════════════════════════════════
 function ProblemSection() {
   return (
-    <section className="py-32 px-6 bg-gray-50">
+    <section className="py-32 px-6">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
