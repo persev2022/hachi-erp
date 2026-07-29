@@ -184,10 +184,12 @@ function HeroSection({ scrollProgress }: { scrollProgress: any }) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-3xl mx-auto mt-8"
-        style={{ height: "clamp(350px, 50vh, 550px)" }}
+        className="relative z-10 w-full mx-auto mt-4"
+        style={{ height: "500px", maxWidth: "800px" }}
       >
-        <HachiCore3D />
+        <div className="absolute inset-0">
+          <HachiCore3D />
+        </div>
       </motion.div>
 
       {/* Scroll indicator */}

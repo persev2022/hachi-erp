@@ -199,11 +199,11 @@ function ErrorBoundary3D({ children }: { children: React.ReactNode }) {
 function HachiCanvas() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 7], fov: 42 }}
+      camera={{ position: [0, 0, 6], fov: 50 }}
       dpr={[1, 1.5]}
       shadows
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      style={{ background: "transparent" }}
+      style={{ width: "100%", height: "100%", background: "transparent" }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.2;
