@@ -24,16 +24,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Mensagem é obrigatória" }, { status: 400 });
     }
 
-    // Get API key
+    // Get API key — supports OpenAI or NVIDIA NIM
     let apiKey = process.env.OPENAI_API_KEY || "";
-    if (!apiKey) {
+    let provider: "openai" | "nvidia" | "none" = "none";
+    let baseUrl = "https://api.openai.com/v1";
+    let model = "gpt-4o-mini";
+
+    // Check for NVIDIA API key first (preferred if set)
+    const nvidiaKey = process.env.NVIDIA_API_KEY || "";
+    if (nvidiaKey) {
+      apiKey = nvidiaKey;
+      provider = "nvidia";
+      baseUrl = "https://integrate.api.nvidia.com/v1";
+      model = process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct";
+    } else if (apiKey) {
+      provider = "openai";
+    } else {
+      // Try from SystemConfig
       const config = await prisma.systemConfig.findUnique({ where: { key: "integracoes" } });
       if (config) {
-        try { const s = JSON.parse(config.value); apiKey = s.openai?.apiKey || ""; } catch {}
+        try {
+          const s = JSON.parse(config.value);
+          if (s.nvidia?.apiKey) {
+            apiKey = s.nvidia.apiKey;
+            provider = "nvidia";
+            baseUrl = "https://integrate.api.nvidia.com/v1";
+            model = s.nvidia.model || "meta/llama-3.1-70b-instruct";
+          } else if (s.openai?.apiKey) {
+            apiKey = s.openai.apiKey;
+            provider = "openai";
+          }
+        } catch {}
       }
     }
 
-    if (!apiKey) {
+    if (provider === "none") {
       // FALLBACK: Respond using real data without OpenAI
       const response = generateLocalResponse(message, {
         pacientesAtivos, 
@@ -77,12 +102,12 @@ Dados atuais do sistema:
 
 Se perguntarem sobre previsão, use os dados para projetar. Se perguntarem algo fora do escopo, diga que só responde sobre dados do sistema.`;
 
-    // Call OpenAI
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Call AI provider (OpenAI or NVIDIA NIM — same format)
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model,
         messages: [
           { role: "system", content: systemContext },
           { role: "user", content: message },
@@ -94,8 +119,8 @@ Se perguntarem sobre previsão, use os dados para projetar. Se perguntarem algo 
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("OpenAI error:", err);
-      return NextResponse.json({ success: true, data: { response: "Erro ao consultar a IA. Verifique a chave da API." } });
+      console.error(`${provider} AI error:`, err);
+      return NextResponse.json({ success: true, data: { response: `Erro ao consultar a IA (${provider}). Verifique a chave da API.` } });
     }
 
     const result = await response.json();
