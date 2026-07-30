@@ -54,7 +54,7 @@ async function fetchTerminology(): Promise<Terminology> {
         paciente: t.paciente || "Paciente",
         pacientes: t.paciente ? `${t.paciente}s` : "Pacientes",
         evolucao: t.evolucao || "Evolução",
-        evolucoes: t.evolucao ? `${t.evolucao}s` : "Evoluções",
+        evolucoes: t.evolucao ? (t.evolucao.endsWith("ão") ? t.evolucao.replace(/ão$/, "ões") : `${t.evolucao}s`) : "Evoluções",
         admissao: t.admissao || "Admissão",
         alta: t.alta || "Alta",
         quarto: t.quarto || "Quarto",

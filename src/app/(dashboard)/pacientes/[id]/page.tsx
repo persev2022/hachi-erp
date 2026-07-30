@@ -85,7 +85,16 @@ export default function PacienteDetailPage() {
   const [paciente, setPaciente] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
-  const [activeTab, setActiveTab] = React.useState<Tab>("resumo");
+  const [activeTab, setActiveTab] = React.useState<Tab>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab && ["resumo", "evolucoes", "prescricoes", "documentos", "agenda", "financeiro"].includes(tab)) {
+        return tab as Tab;
+      }
+    }
+    return "resumo";
+  });
 
   // Discharge (Alta) state
   const [showAlta, setShowAlta] = React.useState(false);

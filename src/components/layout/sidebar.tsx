@@ -129,7 +129,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   function getNavLabel(item: NavItem): string {
     if (!terminology) return item.name;
     if (item.href === "/pacientes") return terminology.paciente ? `${terminology.paciente}s` : item.name;
-    if (item.href === "/prontuario") return terminology.evolucao ? `${terminology.evolucao}s` : item.name;
+    if (item.href === "/prontuario") return terminology.evolucao ? (terminology.evolucao.endsWith("ão") ? terminology.evolucao.replace(/ão$/, "ões") : `${terminology.evolucao}s`) : item.name;
     if (item.href === "/quartos") return terminology.quartos || item.name;
     return item.name;
   }

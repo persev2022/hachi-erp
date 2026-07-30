@@ -278,7 +278,7 @@ export default function ProntuarioPage() {
             const config = tipoConfig[ev.tipo] || tipoConfig.MEDICA;
             const Icon = config.icon;
             return (
-              <div key={ev.id} className="bg-card border rounded-lg p-4 md:p-5 hover:shadow-sm transition">
+              <div key={ev.id} className="bg-card border rounded-lg p-4 md:p-5 hover:shadow-sm hover:border-primary/30 transition cursor-pointer" onClick={() => window.location.href = `/pacientes/${ev.pacienteId}?tab=evolucoes`}>
                 <div className="flex items-start gap-3 md:gap-4">
                   <div className={`h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center shrink-0 ${config.color}`}>
                     <Icon className="h-4 w-4 md:h-5 md:w-5" />
