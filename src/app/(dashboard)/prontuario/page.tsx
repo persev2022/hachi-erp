@@ -154,10 +154,16 @@ export default function ProntuarioPage() {
             {`${terms.evolucoes} clínicas e histórico dos ${terms.pacientes.toLowerCase()}`}
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {terms.novaEvolucao}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {terms.novaEvolucao}
+          </Button>
+          <Button variant="outline" onClick={() => window.location.href = "/prontuario/avaliacao"}>
+            <FileHeart className="h-4 w-4 mr-2" />
+            Avaliação Multidisciplinar
+          </Button>
+        </div>
       </div>
 
       {/* Modal de Nova Evolução */}
