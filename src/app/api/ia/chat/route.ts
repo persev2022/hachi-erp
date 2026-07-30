@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       apiKey = nvidiaKey;
       provider = "nvidia";
       baseUrl = "https://integrate.api.nvidia.com/v1";
-      model = process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct";
+      model = process.env.NVIDIA_MODEL || "nvidia/llama-3.3-nemotron-super-49b-v1";
     } else if (apiKey) {
       provider = "openai";
     } else {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
             apiKey = s.nvidia.apiKey;
             provider = "nvidia";
             baseUrl = "https://integrate.api.nvidia.com/v1";
-            model = s.nvidia.model || "meta/llama-3.1-70b-instruct";
+            model = s.nvidia.model || "nvidia/llama-3.3-nemotron-super-49b-v1";
           } else if (s.openai?.apiKey) {
             apiKey = s.openai.apiKey;
             provider = "openai";
