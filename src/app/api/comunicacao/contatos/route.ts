@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import {
   listarSubscribers,
   buscarSubscriberPorTelefone,
@@ -21,6 +22,16 @@ export async function GET(req: NextRequest) {
     const session = await getSessionFromRequest(req);
     if (!session) {
       return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+    }
+
+    // TENANT ISOLATION: BotConversa is ONLY for the tenant that owns the account
+    // Other tenants must NOT see these contacts
+    if (session.tenantId) {
+      const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId }, select: { slug: true } });
+      // Only ct-persev has BotConversa configured
+      if (tenant?.slug !== "ct-persev") {
+        return NextResponse.json({ success: true, data: { results: [], count: 0 } });
+      }
     }
 
     const { searchParams } = new URL(req.url);

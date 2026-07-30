@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
             canal: "WHATSAPP",
             mensagem: parsed.data.mensagem,
             status: "FALHA",
+            tenantId: session.tenantId || null,
           },
         });
         return NextResponse.json(
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
           mensagem: parsed.data.mensagem,
           status: "ENVIADA",
           botconversaId: botconversaResponse?.id || null,
+          tenantId: session.tenantId || null,
         },
       });
 
@@ -120,6 +122,7 @@ export async function POST(req: NextRequest) {
           canal: "WHATSAPP",
           mensagem: `[Fluxo: ${parsed.data.flowId}]`,
           status: "ENVIADA",
+          tenantId: session.tenantId || null,
         },
       });
 

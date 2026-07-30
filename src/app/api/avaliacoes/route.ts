@@ -6,6 +6,8 @@ import { logAudit } from "@/lib/services/audit";
 
 // Roles that can create/view assessments
 const ALLOWED_ROLES = ["ADMIN", "COORDENADOR", "PSICOLOGO", "TERAPEUTA"];
+// Verticals that have access to assessments
+const ALLOWED_VERTICALS = ["recovery", "senior"];
 
 const avaliacaoSchema = z.object({
   pacienteId: z.string().uuid(),
@@ -76,6 +78,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Sem permissão. Apenas Admin, Coordenador, Psicólogo e Terapeuta podem registrar avaliações." }, { status: 403 });
     }
 
+    // Check vertical - only recovery and senior have assessments
+    if (session.tenantId) {
+      const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId }, select: { vertical: true } });
+      if (!tenant || !ALLOWED_VERTICALS.includes(tenant.vertical)) {
+        return NextResponse.json({ success: false, error: "Recurso não disponível para esta vertical" }, { status: 403 });
+      }
+    }
+
     const body = await req.json();
     const parsed = avaliacaoSchema.safeParse(body);
 
@@ -140,6 +150,14 @@ export async function GET(req: NextRequest) {
 
     if (!ALLOWED_ROLES.includes(session.role)) {
       return NextResponse.json({ success: false, error: "Sem permissão" }, { status: 403 });
+    }
+
+    // Check vertical
+    if (session.tenantId) {
+      const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId }, select: { vertical: true } });
+      if (!tenant || !ALLOWED_VERTICALS.includes(tenant.vertical)) {
+        return NextResponse.json({ success: false, error: "Recurso não disponível para esta vertical" }, { status: 403 });
+      }
     }
 
     const { searchParams } = new URL(req.url);
