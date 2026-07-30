@@ -376,51 +376,7 @@ export default function PacienteDetailPage() {
       )}
 
       {activeTab === "evolucoes" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.open(`/api/relatorios/pdf?type=evolucoes&pacienteId=${id}`, "_blank")}>
-              <FileText className="h-3.5 w-3.5 mr-1" /> PDF Evoluções
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => window.location.href = "/prontuario/avaliacao"}>
-              <FileHeart className="h-3.5 w-3.5 mr-1" /> Avaliação
-            </Button>
-          </div>
-          {loadingTab ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : evolucoes.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Nenhuma evolução registrada.</p>
-          ) : (
-            evolucoes.map((ev) => {
-              const Icon = tipoEvolucaoIcon[ev.tipo] || FileHeart;
-              return (
-                <Card key={ev.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <Icon className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline">{ev.tipo}</Badge>
-                          <span className="text-xs text-muted-foreground">{formatDateTime(ev.createdAt)}</span>
-                          {ev.assinado && (
-                            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
-                              Assinado
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm mt-2 leading-relaxed">{ev.conteudo}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {ev.profissional?.name} ({ev.profissional?.role})
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </div>
+        <EvolucaoTab pacienteId={id} pacienteNome={paciente.nome} evolucoes={evolucoes} loadingTab={loadingTab} />
       )}
 
       {activeTab === "prescricoes" && (
@@ -1113,6 +1069,167 @@ function FinanceiroTab({ pacienteId, mensalidade, vencimento }: { pacienteId: st
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVOLUÇÃO TAB — Visualização completa + insights IA
+// ═══════════════════════════════════════════════════════════
+function EvolucaoTab({ pacienteId, pacienteNome, evolucoes, loadingTab }: { pacienteId: string; pacienteNome: string; evolucoes: any[]; loadingTab: boolean }) {
+  const [insight, setInsight] = React.useState<string | null>(null);
+  const [loadingInsight, setLoadingInsight] = React.useState(false);
+  const [expandedId, setExpandedId] = React.useState<string | null>(null);
+
+  // Compute stats
+  const totalEvolucoes = evolucoes.length;
+  const assinadas = evolucoes.filter((e) => e.assinado).length;
+  const porTipo = evolucoes.reduce((acc: Record<string, number>, e) => { acc[e.tipo] = (acc[e.tipo] || 0) + 1; return acc; }, {});
+  const ultimaEvolucao = evolucoes[0]?.createdAt;
+
+  // Fetch AI insight about this patient
+  const fetchInsight = React.useCallback(async () => {
+    if (evolucoes.length === 0) return;
+    setLoadingInsight(true);
+    try {
+      const res = await fetch("/api/ia/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Analise as evoluções deste paciente "${pacienteNome}" e dê insights sobre o progresso do tratamento. Últimas evoluções: ${evolucoes.slice(0, 5).map((e) => `[${e.tipo}] ${e.conteudo?.slice(0, 80)}`).join(" | ")}`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) setInsight(data.data.response);
+    } catch {}
+    finally { setLoadingInsight(false); }
+  }, [evolucoes, pacienteNome]);
+
+  React.useEffect(() => { if (evolucoes.length > 0 && !insight) fetchInsight(); }, [evolucoes.length]);
+
+  const tipoColors: Record<string, string> = {
+    MEDICA: "bg-blue-100 text-blue-700 border-blue-200",
+    PSICOLOGICA: "bg-purple-100 text-purple-700 border-purple-200",
+    ENFERMAGEM: "bg-pink-100 text-pink-700 border-pink-200",
+    TERAPEUTICA: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    SOCIAL: "bg-orange-100 text-orange-700 border-orange-200",
+    NUTRICIONAL: "bg-amber-100 text-amber-700 border-amber-200",
+  };
+
+  if (loadingTab) return <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="space-y-4">
+      {/* Actions */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">{totalEvolucoes} evolução(ões) registrada(s)</p>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.open(`/api/relatorios/pdf?type=evolucoes&pacienteId=${pacienteId}`, "_blank")}>
+            <FileText className="h-3.5 w-3.5 mr-1" /> PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.location.href = "/prontuario/avaliacao"}>
+            <FileHeart className="h-3.5 w-3.5 mr-1" /> Avaliação
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      {totalEvolucoes > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-card border rounded-lg p-3 text-center">
+            <p className="text-lg font-bold">{totalEvolucoes}</p>
+            <p className="text-[10px] text-muted-foreground">Total</p>
+          </div>
+          <div className="bg-card border rounded-lg p-3 text-center">
+            <p className="text-lg font-bold text-emerald-600">{assinadas}</p>
+            <p className="text-[10px] text-muted-foreground">Assinadas</p>
+          </div>
+          <div className="bg-card border rounded-lg p-3 text-center">
+            <p className="text-lg font-bold text-amber-600">{totalEvolucoes - assinadas}</p>
+            <p className="text-[10px] text-muted-foreground">Pendentes</p>
+          </div>
+          <div className="bg-card border rounded-lg p-3 text-center">
+            <p className="text-lg font-bold">{Object.keys(porTipo).length}</p>
+            <p className="text-[10px] text-muted-foreground">Tipos</p>
+          </div>
+        </div>
+      )}
+
+      {/* Type breakdown */}
+      {Object.keys(porTipo).length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(porTipo).map(([tipo, count]) => (
+            <Badge key={tipo} variant="outline" className={`${tipoColors[tipo] || ""} text-xs`}>
+              {tipo}: {count as number}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* AI Insights */}
+      {(insight || loadingInsight) && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-2">
+              <Brain className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-primary mb-1">Insight IA</p>
+                {loadingInsight ? (
+                  <div className="flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /><span className="text-xs text-muted-foreground">Analisando evoluções...</span></div>
+                ) : (
+                  <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{insight}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Evolution Timeline */}
+      {evolucoes.length === 0 ? (
+        <div className="text-center py-8">
+          <FileHeart className="h-10 w-10 mx-auto text-muted-foreground/30 mb-2" />
+          <p className="text-muted-foreground">Nenhuma evolução registrada.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {evolucoes.map((ev) => {
+            const isExpanded = expandedId === ev.id;
+            const Icon = tipoEvolucaoIcon[ev.tipo] || FileHeart;
+            return (
+              <Card key={ev.id} className="cursor-pointer hover:border-primary/20 transition" onClick={() => setExpandedId(isExpanded ? null : ev.id)}>
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${ev.tipo === "MEDICA" ? "bg-blue-100" : ev.tipo === "PSICOLOGICA" ? "bg-purple-100" : ev.tipo === "ENFERMAGEM" ? "bg-pink-100" : ev.tipo === "TERAPEUTICA" ? "bg-emerald-100" : "bg-gray-100"}`}>
+                      <Icon className="h-4 w-4 text-foreground/70" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className={`text-[10px] ${tipoColors[ev.tipo] || ""}`}>{ev.tipo}</Badge>
+                          <span className="text-xs text-muted-foreground">{formatDateTime(ev.createdAt)}</span>
+                          {ev.assinado && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
+                        </div>
+                        <span className="text-xs text-muted-foreground">{ev.profissional?.name?.split(" ")[0]}</span>
+                      </div>
+                      {/* Preview or full content */}
+                      <p className={`text-sm mt-1.5 leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}>
+                        {ev.conteudo}
+                      </p>
+                      {isExpanded && (
+                        <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
+                          <span>Profissional: {ev.profissional?.name} ({ev.profissional?.role})</span>
+                          {ev.assinado && ev.assinadoEm && <span className="ml-3">Assinado em: {formatDate(ev.assinadoEm)}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
