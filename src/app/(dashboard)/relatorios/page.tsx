@@ -105,6 +105,9 @@ export default function RelatoriosPage() {
         <a href="/api/relatorios/pdf?type=clinico" target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-muted transition">
           <FileText className="h-4 w-4" /> Clínico (PDF)
         </a>
+        <a href="/api/relatorios/pdf?type=evolucoes" target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-muted transition">
+          <FileText className="h-4 w-4" /> Evoluções (PDF)
+        </a>
       </div>
 
       {/* KPIs */}

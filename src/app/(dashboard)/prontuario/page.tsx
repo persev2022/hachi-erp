@@ -163,6 +163,10 @@ export default function ProntuarioPage() {
             <FileHeart className="h-4 w-4 mr-2" />
             Avaliação Multidisciplinar
           </Button>
+          <Button variant="outline" onClick={() => window.open("/api/relatorios/pdf?type=evolucoes", "_blank")}>
+            <Clock className="h-4 w-4 mr-2" />
+            Relatório PDF
+          </Button>
         </div>
       </div>
 

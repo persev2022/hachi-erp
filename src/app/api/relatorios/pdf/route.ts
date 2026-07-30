@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
     html = await generateOcupacao(tf, tenantId);
   } else if (type === "clinico") {
     html = await generateClinico(tf, tenantId);
+  } else if (type === "evolucoes") {
+    html = await generateEvolucoes(tf, tenantId, searchParams.get("pacienteId"));
   } else {
     html = wrapHtml("Relatório", "<p>Tipo não reconhecido</p>");
   }
@@ -186,6 +188,76 @@ async function generateClinico(tf: any, tenantId: string | null) {
   return wrapHtml("Relatório Clínico", content);
 }
 
+async function generateEvolucoes(tf: any, tenantId: string | null, pacienteId: string | null) {
+  const where: any = {};
+  if (tenantId) where.paciente = { tenantId };
+  if (pacienteId) where.pacienteId = pacienteId;
+
+  const evolucoes = await prisma.evolucao.findMany({
+    where,
+    include: {
+      paciente: { select: { nome: true } },
+      profissional: { select: { name: true, role: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+
+  const byTipo = evolucoes.reduce((acc: Record<string, number>, e) => {
+    acc[e.tipo] = (acc[e.tipo] || 0) + 1;
+    return acc;
+  }, {});
+
+  const tipoLabels: Record<string, string> = {
+    MEDICA: "Médica", PSICOLOGICA: "Psicológica", ENFERMAGEM: "Enfermagem",
+    TERAPEUTICA: "Terapêutica", SOCIAL: "Social", NUTRICIONAL: "Nutricional",
+  };
+
+  const pacienteNome = pacienteId && evolucoes.length > 0 ? evolucoes[0].paciente.nome : "Todos os pacientes";
+  const assinadas = evolucoes.filter((e) => e.assinado).length;
+
+  const content = `
+    <div class="kpis">
+      <div class="kpi teal"><div class="kpi-value">${evolucoes.length}</div><div class="kpi-label">Total Evoluções</div></div>
+      <div class="kpi green"><div class="kpi-value">${assinadas}</div><div class="kpi-label">Assinadas</div></div>
+      <div class="kpi yellow"><div class="kpi-value">${evolucoes.length - assinadas}</div><div class="kpi-label">Pendentes Assinatura</div></div>
+      <div class="kpi blue"><div class="kpi-value">${Object.keys(byTipo).length}</div><div class="kpi-label">Tipos Diferentes</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Distribuição por Tipo</h2>
+      <table>
+        <thead><tr><th>Tipo</th><th>Quantidade</th><th>Proporção</th></tr></thead>
+        <tbody>
+          ${Object.entries(byTipo).map(([tipo, count]) => `<tr>
+            <td><strong>${tipoLabels[tipo] || tipo}</strong></td>
+            <td>${count}</td>
+            <td><div class="bar" style="width: ${(count as number / evolucoes.length) * 100}%"></div> ${Math.round((count as number / evolucoes.length) * 100)}%</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Registro Detalhado${pacienteId ? ` — ${pacienteNome}` : ""}</h2>
+      <table>
+        <thead><tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Profissional</th><th>Conteúdo</th><th>Status</th></tr></thead>
+        <tbody>
+          ${evolucoes.map((e) => `<tr>
+            <td style="white-space:nowrap">${new Date(e.createdAt).toLocaleDateString("pt-BR")}</td>
+            <td>${e.paciente.nome.split(" ").slice(0, 2).join(" ")}</td>
+            <td><span class="badge badge-teal">${tipoLabels[e.tipo] || e.tipo}</span></td>
+            <td>${e.profissional.name}</td>
+            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis">${e.conteudo.slice(0, 120)}${e.conteudo.length > 120 ? "..." : ""}</td>
+            <td>${e.assinado ? '<span class="badge badge-green">Assinada</span>' : '<span class="badge badge-yellow">Pendente</span>'}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>`;
+
+  return wrapHtml(`Relatório de Evoluções${pacienteId ? ` — ${pacienteNome}` : ""}`, content);
+}
+
 function wrapHtml(title: string, content: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -218,6 +290,7 @@ function wrapHtml(title: string, content: string): string {
     .badge-red { background: #fee2e2; color: #991b1b; }
     .badge-yellow { background: #fef3c7; color: #92400e; }
     .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-teal { background: #ccfbf1; color: #0f766e; }
     .bar { display: inline-block; height: 8px; background: #0D9488; border-radius: 4px; min-width: 4px; vertical-align: middle; margin-right: 8px; }
     .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #9ca3af; text-align: center; }
     @media print { body { padding: 0; } .kpis { break-inside: avoid; } }
