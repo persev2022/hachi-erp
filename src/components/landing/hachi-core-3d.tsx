@@ -47,12 +47,19 @@ function HelixStrand({ points, color }: { points: THREE.Vector3[]; color: string
     <mesh geometry={geometry} castShadow receiveShadow>
       <meshPhysicalMaterial
         color={color}
-        roughness={0.15}
-        metalness={0.9}
+        roughness={0.08}
+        metalness={0.95}
         clearcoat={1}
-        clearcoatRoughness={0.05}
+        clearcoatRoughness={0.02}
         emissive={color}
-        emissiveIntensity={0.3}
+        emissiveIntensity={0.2}
+        sheen={1}
+        sheenRoughness={0.2}
+        sheenColor="#99f6e4"
+        iridescence={0.8}
+        iridescenceIOR={1.3}
+        reflectivity={1}
+        envMapIntensity={1.5}
       />
     </mesh>
   );
@@ -85,12 +92,12 @@ function BasePairRungs({ helix1, helix2, count }: { helix1: THREE.Vector3[]; hel
           <RungTube start={rung.start} end={rung.end} color={rung.midColor} />
           {/* Glowing sphere at each connection point */}
           <mesh position={rung.start.toArray() as [number, number, number]} castShadow>
-            <sphereGeometry args={[0.06, 16, 16]} />
-            <meshPhysicalMaterial color={rung.midColor} emissive={rung.midColor} emissiveIntensity={1.5} roughness={0.1} metalness={0.8} clearcoat={1} />
+            <sphereGeometry args={[0.065, 20, 20]} />
+            <meshPhysicalMaterial color={rung.midColor} emissive={rung.midColor} emissiveIntensity={1.2} roughness={0.05} metalness={0.9} clearcoat={1} clearcoatRoughness={0.01} iridescence={0.5} iridescenceIOR={1.5} />
           </mesh>
           <mesh position={rung.end.toArray() as [number, number, number]} castShadow>
-            <sphereGeometry args={[0.06, 16, 16]} />
-            <meshPhysicalMaterial color={rung.midColor} emissive={rung.midColor} emissiveIntensity={1.5} roughness={0.1} metalness={0.8} clearcoat={1} />
+            <sphereGeometry args={[0.065, 20, 20]} />
+            <meshPhysicalMaterial color={rung.midColor} emissive={rung.midColor} emissiveIntensity={1.2} roughness={0.05} metalness={0.9} clearcoat={1} clearcoatRoughness={0.01} iridescence={0.5} iridescenceIOR={1.5} />
           </mesh>
         </group>
       ))}
@@ -106,7 +113,7 @@ function RungTube({ start, end, color }: { start: THREE.Vector3; end: THREE.Vect
 
   return (
     <mesh geometry={geometry} castShadow>
-      <meshPhysicalMaterial color={color} emissive={color} emissiveIntensity={0.8} roughness={0.2} metalness={0.7} clearcoat={0.5} transparent opacity={0.85} />
+      <meshPhysicalMaterial color={color} emissive={color} emissiveIntensity={0.6} roughness={0.1} metalness={0.85} clearcoat={1} clearcoatRoughness={0.03} sheen={0.5} sheenColor="#5eead4" transparent opacity={0.9} />
     </mesh>
   );
 }
@@ -258,26 +265,31 @@ export default function HachiCore3D() {
         style={{ width: "100%", height: "100%", background: "transparent" }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.4;
+          gl.toneMappingExposure = 1.5;
+          gl.shadowMap.type = THREE.PCFSoftShadowMap;
         }}
       >
-        {/* Ambient */}
-        <ambientLight intensity={0.25} color="#f0fdfa" />
+        {/* Studio lighting setup — cinema quality */}
+        {/* Key light — bright white, creates main highlights */}
+        <directionalLight position={[4, 6, 4]} intensity={2.5} castShadow color="#ffffff" shadow-mapSize={[2048, 2048]} shadow-bias={-0.0001} />
 
-        {/* Key light - warm white from top right */}
-        <directionalLight position={[4, 6, 4]} intensity={2} castShadow color="#ffffff" shadow-mapSize={[1024, 1024]} />
+        {/* Fill light — softer, teal tinted, from opposite side */}
+        <directionalLight position={[-5, 3, -3]} intensity={1} color="#14b8a6" />
 
-        {/* Fill light - teal from left */}
-        <directionalLight position={[-4, 2, -2]} intensity={0.8} color="#14b8a6" />
+        {/* Rim/back light — creates edge definition (cinema technique) */}
+        <directionalLight position={[0, -2, -6]} intensity={1.2} color="#22d3ee" />
 
-        {/* Rim light - cyan backlight */}
-        <directionalLight position={[0, -3, -5]} intensity={0.6} color="#22d3ee" />
+        {/* Top hair light — highlights the top edges */}
+        <spotLight position={[0, 10, 2]} angle={0.3} penumbra={0.8} intensity={2} castShadow color="#ffffff" distance={20} />
 
-        {/* Top spotlight for dramatic highlight */}
-        <spotLight position={[0, 8, 3]} angle={0.4} penumbra={1} intensity={1.5} castShadow color="#ffffff" />
+        {/* Bottom bounce — simulates floor reflection */}
+        <pointLight position={[0, -5, 3]} intensity={0.6} color="#99f6e4" />
 
-        {/* Bottom cool accent */}
-        <pointLight position={[0, -4, 2]} intensity={0.4} color="#5eead4" />
+        {/* Side kicker — adds depth on left side */}
+        <pointLight position={[-4, 0, 2]} intensity={0.5} color="#5eead4" />
+
+        {/* Ambient — very low, keeps shadows not pitch black */}
+        <ambientLight intensity={0.15} color="#f0fdfa" />
 
         <Scene />
       </Canvas>
