@@ -377,6 +377,14 @@ export default function PacienteDetailPage() {
 
       {activeTab === "evolucoes" && (
         <div className="space-y-3">
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.open(`/api/relatorios/pdf?type=evolucoes&pacienteId=${id}`, "_blank")}>
+              <FileText className="h-3.5 w-3.5 mr-1" /> PDF Evoluções
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = "/prontuario/avaliacao"}>
+              <FileHeart className="h-3.5 w-3.5 mr-1" /> Avaliação
+            </Button>
+          </div>
           {loadingTab ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
