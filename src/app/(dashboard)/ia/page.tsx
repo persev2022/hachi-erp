@@ -98,13 +98,7 @@ export default function IAPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {insights.automacoes.map((a) => (
-                    <div key={a.id} className="p-4 rounded-lg border hover:border-primary/30 transition">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{a.nome}</p>
-                        <Badge variant="outline" className="text-[10px]">Disponível</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{a.descricao}</p>
-                    </div>
+                    <AutomacaoCard key={a.id} automacao={a} />
                   ))}
                 </div>
               </CardContent>
@@ -142,6 +136,28 @@ export default function IAPage() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function AutomacaoCard({ automacao }: { automacao: { id: string; nome: string; descricao: string; status: string } }) {
+  const [ativo, setAtivo] = React.useState(false);
+
+  return (
+    <div className={`p-4 rounded-lg border transition ${ativo ? "border-primary/50 bg-primary/5" : "hover:border-primary/30"}`}>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">{automacao.nome}</p>
+        <button
+          onClick={() => setAtivo(!ativo)}
+          className={`relative w-10 h-5 rounded-full transition-colors ${ativo ? "bg-primary" : "bg-gray-200"}`}
+        >
+          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${ativo ? "left-5.5 translate-x-0.5" : "left-0.5"}`} style={{ left: ativo ? "22px" : "2px" }} />
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">{automacao.descricao}</p>
+      {ativo && (
+        <p className="text-[10px] text-primary font-medium mt-2">✓ Automação ativa — executará automaticamente</p>
+      )}
     </div>
   );
 }
