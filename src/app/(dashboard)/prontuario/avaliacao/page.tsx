@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast-simple";
 
 export default function AvaliacaoPage() {
   const { show } = useToast();
+  const [tipoFicha, setTipoFicha] = React.useState<"" | "INDIVIDUAL" | "SEMANAL">("");
   const [pacientes, setPacientes] = React.useState<{ id: string; nome: string }[]>([]);
   const [selectedPaciente, setSelectedPaciente] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
@@ -113,9 +114,34 @@ export default function AvaliacaoPage() {
         <Button variant="ghost" size="icon" asChild><Link href="/prontuario"><ArrowLeft className="h-4 w-4" /></Link></Button>
         <div>
           <h1 className="text-xl md:text-2xl font-bold">Avaliação Multidisciplinar</h1>
-          <p className="text-sm text-muted-foreground">Ficha semanal do acolhido</p>
+          <p className="text-sm text-muted-foreground">{tipoFicha === "INDIVIDUAL" ? "Ficha do Acolhido" : tipoFicha === "SEMANAL" ? "Relatório Semanal do Centro" : "Escolha o tipo de avaliação"}</p>
         </div>
       </div>
+
+      {/* Type Selection */}
+      {!tipoFicha && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+          <button onClick={() => setTipoFicha("INDIVIDUAL")} className="p-6 rounded-xl border-2 border-teal-200 hover:border-teal-400 hover:bg-teal-50 transition text-left space-y-2">
+            <div className="text-2xl">👤</div>
+            <h3 className="font-semibold text-lg">Ficha do Acolhido</h3>
+            <p className="text-sm text-muted-foreground">Avaliação individual semanal — consciência emocional, reatividade, participação, riscos e intervenções.</p>
+          </button>
+          <button onClick={() => setTipoFicha("SEMANAL")} className="p-6 rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition text-left space-y-2">
+            <div className="text-2xl">🏢</div>
+            <h3 className="font-semibold text-lg">Relatório Semanal</h3>
+            <p className="text-sm text-muted-foreground">Visão geral do centro — panorama, adesão, mapa de risco, intervenções, resultados e plano de ação.</p>
+          </button>
+        </div>
+      )}
+
+      {/* Back to selection */}
+      {tipoFicha && !score && (
+        <Button variant="ghost" size="sm" onClick={() => setTipoFicha("")} className="text-xs">
+          ← Trocar tipo de avaliação
+        </Button>
+      )}
+
+      {tipoFicha === "INDIVIDUAL" && (<>
 
       {/* Score result */}
       {score !== null && (
@@ -258,6 +284,166 @@ export default function AvaliacaoPage() {
           Registrar Avaliação
         </Button>
       </div>
+      </>)}
+
+      {/* RELATÓRIO SEMANAL */}
+      {tipoFicha === "SEMANAL" && (
+        <RelatorioSemanal show={show} />
+      )}
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// RELATÓRIO SEMANAL COMPONENT
+// ═══════════════════════════════════════════════════════════
+function RelatorioSemanal({ show }: { show: (msg: string, type: string) => void }) {
+  const [submitting, setSubmitting] = React.useState(false);
+  const [done, setDone] = React.useState(false);
+  const [form, setForm] = React.useState({
+    semanaInicio: new Date().toISOString().split("T")[0],
+    semanaFim: new Date().toISOString().split("T")[0],
+    responsavel: "",
+    cargo: "",
+    acolhidosAtivos: 0,
+    entradasSemana: 0,
+    saidasSemana: 0,
+    evasoes: 0,
+    recaidas: 0,
+    resumoExecutivo: "",
+    participacaoAtividades: "",
+    reunioesRealizadas: 0,
+    ciclo: "",
+    observacaoAdesao: "",
+    riscoBaixo: 0,
+    riscoMedio: 0,
+    riscoAlto: 0,
+    sinaisObservados: [] as string[],
+    conversasIndividuais: 0,
+    intervencoesPreventivas: 0,
+    intervencoesImediatas: 0,
+    sinteseAcoes: "",
+    resultadosSemana: [] as string[],
+    exemploPratico: "",
+    nivelGeral: "",
+    pontosAtencao: "",
+    focoTerapeutico: "",
+    ajustesOperacionais: "",
+    apoioDiretoria: "",
+    consideracoesFinais: "",
+  });
+
+  const handleCheckbox = (field: "sinaisObservados" | "resultadosSemana", value: string) => {
+    setForm((prev) => {
+      const arr = prev[field];
+      return { ...prev, [field]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value] };
+    });
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/avaliacoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pacienteId: "00000000-0000-0000-0000-000000000000", tipo: "SEMANAL", semanaInicio: form.semanaInicio, semanaFim: form.semanaFim, dados: form }),
+      });
+      const data = await res.json();
+      if (data.success) { setDone(true); show("Relatório semanal registrado!", "success"); }
+      else show(data.error || "Erro", "error");
+    } catch { show("Erro de conexão", "error"); }
+    finally { setSubmitting(false); }
+  };
+
+  if (done) return (
+    <Card className="border-blue-200 bg-blue-50">
+      <CardContent className="p-6 text-center">
+        <CheckCircle2 className="h-10 w-10 mx-auto text-blue-600 mb-3" />
+        <p className="font-semibold text-blue-800">Relatório Semanal registrado com sucesso!</p>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">1️⃣ Identificação</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-2 gap-3">
+          <div className="space-y-1"><label className="text-xs font-medium">Semana início</label><input type="date" value={form.semanaInicio} onChange={(e) => setForm(p => ({...p, semanaInicio: e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+          <div className="space-y-1"><label className="text-xs font-medium">Semana fim</label><input type="date" value={form.semanaFim} onChange={(e) => setForm(p => ({...p, semanaFim: e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+          <div className="space-y-1"><label className="text-xs font-medium">Responsável</label><input value={form.responsavel} onChange={(e) => setForm(p => ({...p, responsavel: e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+          <div className="space-y-1"><label className="text-xs font-medium">Cargo</label><input value={form.cargo} onChange={(e) => setForm(p => ({...p, cargo: e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">2️⃣ Panorama Geral</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-5 gap-2">
+          {[["Ativos", "acolhidosAtivos"], ["Entradas", "entradasSemana"], ["Saídas", "saidasSemana"], ["Evasões", "evasoes"], ["Recaídas", "recaidas"]].map(([label, field]) => (
+            <div key={field} className="space-y-1"><label className="text-[10px] font-medium">{label}</label><input type="number" value={(form as any)[field]} onChange={(e) => setForm(p => ({...p, [field]: +e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm text-center" /></div>
+          ))}
+          <div className="col-span-5 space-y-1"><label className="text-xs font-medium">Resumo executivo</label><textarea value={form.resumoExecutivo} onChange={(e) => setForm(p => ({...p, resumoExecutivo: e.target.value}))} rows={2} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" /></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">3️⃣ Adesão ao Programa</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">{["BAIXA","MEDIA","ALTA"].map(v => (<label key={v} className={`px-3 py-1.5 rounded-lg border text-xs cursor-pointer ${form.participacaoAtividades===v?"bg-teal-50 border-teal-300 text-teal-700":"hover:bg-muted"}`}><input type="radio" className="sr-only" checked={form.participacaoAtividades===v} onChange={() => setForm(p=>({...p,participacaoAtividades:v}))} />{v==="BAIXA"?"Baixa":v==="MEDIA"?"Média":"Alta"}</label>))}</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1"><label className="text-xs font-medium">Reuniões realizadas</label><input type="number" value={form.reunioesRealizadas} onChange={(e) => setForm(p=>({...p, reunioesRealizadas: +e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+            <div className="space-y-1"><label className="text-xs font-medium">Ciclo</label><select value={form.ciclo} onChange={(e) => setForm(p=>({...p,ciclo:e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"><option value="">Selecione</option><option value="SEMANAL">Semanal</option><option value="MENSAL_CONTINUO">Mensal contínuo</option></select></div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">4️⃣ Mapa de Risco</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1 text-center"><label className="text-xs font-medium text-emerald-600">Risco Baixo</label><input type="number" value={form.riscoBaixo} onChange={(e) => setForm(p=>({...p, riscoBaixo: +e.target.value}))} className="flex h-9 w-full rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm text-center" /></div>
+            <div className="space-y-1 text-center"><label className="text-xs font-medium text-amber-600">Risco Médio</label><input type="number" value={form.riscoMedio} onChange={(e) => setForm(p=>({...p, riscoMedio: +e.target.value}))} className="flex h-9 w-full rounded-md border border-amber-200 bg-amber-50 px-3 py-1 text-sm text-center" /></div>
+            <div className="space-y-1 text-center"><label className="text-xs font-medium text-red-600">Risco Alto</label><input type="number" value={form.riscoAlto} onChange={(e) => setForm(p=>({...p, riscoAlto: +e.target.value}))} className="flex h-9 w-full rounded-md border border-red-200 bg-red-50 px-3 py-1 text-sm text-center" /></div>
+          </div>
+          <div className="flex flex-wrap gap-2">{["Isolamento","Desmotivação","Conflitos","Falas de desistência","Apatia"].map(s=>(<label key={s} className={`px-3 py-1.5 rounded-lg border text-xs cursor-pointer ${form.sinaisObservados.includes(s)?"bg-red-50 border-red-200 text-red-700":"hover:bg-muted"}`}><input type="checkbox" className="sr-only" checked={form.sinaisObservados.includes(s)} onChange={()=>handleCheckbox("sinaisObservados",s)} />{s}</label>))}</div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">5️⃣ Intervenções da Semana</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-3 gap-3">
+          <div className="space-y-1"><label className="text-[10px] font-medium">Conversas individuais</label><input type="number" value={form.conversasIndividuais} onChange={(e)=>setForm(p=>({...p,conversasIndividuais:+e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-center" /></div>
+          <div className="space-y-1"><label className="text-[10px] font-medium">Preventivas (médio)</label><input type="number" value={form.intervencoesPreventivas} onChange={(e)=>setForm(p=>({...p,intervencoesPreventivas:+e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-center" /></div>
+          <div className="space-y-1"><label className="text-[10px] font-medium">Imediatas (alto)</label><input type="number" value={form.intervencoesImediatas} onChange={(e)=>setForm(p=>({...p,intervencoesImediatas:+e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-center" /></div>
+          <div className="col-span-3 space-y-1"><label className="text-xs font-medium">Síntese das ações</label><textarea value={form.sinteseAcoes} onChange={(e)=>setForm(p=>({...p,sinteseAcoes:e.target.value}))} rows={2} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" /></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">6️⃣ Resultados da Semana</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-2">{["Redução de conflitos","Maior permanência","Melhor participação","Melhora no autocontrole","Fortalecimento do vínculo"].map(s=>(<label key={s} className={`px-3 py-1.5 rounded-lg border text-xs cursor-pointer ${form.resultadosSemana.includes(s)?"bg-emerald-50 border-emerald-200 text-emerald-700":"hover:bg-muted"}`}><input type="checkbox" className="sr-only" checked={form.resultadosSemana.includes(s)} onChange={()=>handleCheckbox("resultadosSemana",s)} />{s}</label>))}</div>
+          <textarea placeholder="Exemplo prático (opcional)" value={form.exemploPratico} onChange={(e)=>setForm(p=>({...p,exemploPratico:e.target.value}))} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" rows={2} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">7️⃣ Pontos de Atenção</CardTitle></CardHeader>
+        <CardContent><textarea placeholder="Situações que exigem acompanhamento da diretoria..." value={form.pontosAtencao} onChange={(e)=>setForm(p=>({...p,pontosAtencao:e.target.value}))} rows={3} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" /></CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">8️⃣ Plano de Ação — Próxima Semana</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1"><label className="text-xs font-medium">Foco terapêutico principal</label><textarea value={form.focoTerapeutico} onChange={(e)=>setForm(p=>({...p,focoTerapeutico:e.target.value}))} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" rows={2} /></div>
+          <div className="space-y-1"><label className="text-xs font-medium">Ajustes operacionais</label><input value={form.ajustesOperacionais} onChange={(e)=>setForm(p=>({...p,ajustesOperacionais:e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+          <div className="space-y-1"><label className="text-xs font-medium">Apoio necessário da diretoria</label><input value={form.apoioDiretoria} onChange={(e)=>setForm(p=>({...p,apoioDiretoria:e.target.value}))} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" /></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">9️⃣ Considerações Finais</CardTitle></CardHeader>
+        <CardContent><textarea value={form.consideracoesFinais} onChange={(e)=>setForm(p=>({...p,consideracoesFinais:e.target.value}))} rows={3} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y" /></CardContent>
+      </Card>
+      <div className="flex justify-end gap-3 pt-4 pb-8">
+        <Button variant="outline" asChild><Link href="/prontuario">Cancelar</Link></Button>
+        <Button onClick={handleSubmit} disabled={submitting} size="lg">
+          {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+          Registrar Relatório Semanal
+        </Button>
+      </div>
+    </>
   );
 }
