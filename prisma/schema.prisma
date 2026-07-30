@@ -95,6 +95,7 @@ enum StatusPaciente {
   EVADIDO       // Abandonou tratamento
   TRANSFERIDO   // Transferido para outra unidade
   OBITO         // Falecimento
+  DESISTENCIA   // Desistência voluntária
 }
 
 enum EstadoCivil {

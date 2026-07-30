@@ -5,7 +5,7 @@ import { getSessionFromRequest } from "@/lib/auth";
 import { logAudit } from "@/lib/services/audit";
 
 const altaSchema = z.object({
-  motivo: z.enum(["ALTA", "EVADIDO", "TRANSFERIDO", "OBITO"]),
+  motivo: z.enum(["ALTA", "EVADIDO", "TRANSFERIDO", "OBITO", "DESISTENCIA"]),
   observacoes: z.string().min(1, "Motivo/observação é obrigatório"),
 });
 

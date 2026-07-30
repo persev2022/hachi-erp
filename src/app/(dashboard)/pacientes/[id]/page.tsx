@@ -544,6 +544,7 @@ export default function PacienteDetailPage() {
                   <option value="">Selecione...</option>
                   <option value="ALTA">Alta médica</option>
                   <option value="EVADIDO">Evasão</option>
+                  <option value="DESISTENCIA">Desistência</option>
                   <option value="TRANSFERIDO">Transferência</option>
                   <option value="OBITO">Óbito</option>
                 </select>
