@@ -16,65 +16,97 @@ function HoloCube() {
 
   useFrame(({ clock }) => {
     if (cubeRef.current) {
-      cubeRef.current.rotation.y = clock.getElapsedTime() * 0.12;
-      cubeRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.08) * 0.15;
+      cubeRef.current.rotation.y = clock.getElapsedTime() * 0.1;
+      cubeRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.06) * 0.12;
     }
   });
 
   return (
-    <Float speed={1} rotationIntensity={0.05} floatIntensity={0.3}>
+    <Float speed={0.8} rotationIntensity={0.03} floatIntensity={0.2}>
       <group ref={cubeRef}>
-        {/* Main glass cube */}
+        {/* Outer cube - glass with thick glowing edges */}
         <mesh castShadow receiveShadow>
-          <boxGeometry args={[2, 2, 2]} />
-          <meshPhysicalMaterial
-            color="#0d9488"
-            roughness={0.05}
-            metalness={0.1}
-            transparent
-            opacity={0.08}
-            side={THREE.DoubleSide}
-          />
-          <Edges linewidth={1.5} threshold={15} color="#14b8a6" />
+          <boxGeometry args={[2.2, 2.2, 2.2]} />
+          <meshPhysicalMaterial color="#0d9488" roughness={0.05} metalness={0.1} transparent opacity={0.05} side={THREE.DoubleSide} />
+          <Edges linewidth={2} color="#14b8a6" />
         </mesh>
 
-        {/* Inner wireframe cube (smaller) */}
-        <mesh scale={0.7}>
-          <boxGeometry args={[2, 2, 2]} />
-          <meshPhysicalMaterial color="#22d3ee" transparent opacity={0.04} side={THREE.DoubleSide} />
+        {/* Second cube - rotated 45deg for complexity */}
+        <mesh rotation={[0, Math.PI / 4, 0]} scale={0.85}>
+          <boxGeometry args={[2.2, 2.2, 2.2]} />
+          <meshPhysicalMaterial color="#22d3ee" transparent opacity={0.03} side={THREE.DoubleSide} />
           <Edges linewidth={1} color="#22d3ee" />
         </mesh>
 
-        {/* Inner core cube (smallest, brighter) */}
-        <mesh scale={0.35}>
-          <boxGeometry args={[2, 2, 2]} />
-          <meshPhysicalMaterial
-            color="#0d9488"
-            emissive="#14b8a6"
-            emissiveIntensity={0.5}
-            roughness={0.2}
-            metalness={0.8}
-            transparent
-            opacity={0.3}
-          />
+        {/* Third cube - smaller, tilted */}
+        <mesh rotation={[Math.PI / 6, 0, Math.PI / 6]} scale={0.6}>
+          <boxGeometry args={[2.2, 2.2, 2.2]} />
+          <meshPhysicalMaterial color="#5eead4" transparent opacity={0.04} side={THREE.DoubleSide} />
           <Edges linewidth={1} color="#5eead4" />
         </mesh>
 
-        {/* Face panels with dashboard grids */}
-        <FacePanel position={[0, 0, 1.01]} rotation={[0, 0, 0]} label="Financeiro" />
-        <FacePanel position={[0, 0, -1.01]} rotation={[0, Math.PI, 0]} label="Analytics" />
-        <FacePanel position={[1.01, 0, 0]} rotation={[0, Math.PI / 2, 0]} label="CRM" />
-        <FacePanel position={[-1.01, 0, 0]} rotation={[0, -Math.PI / 2, 0]} label="Estoque" />
-        <FacePanel position={[0, 1.01, 0]} rotation={[-Math.PI / 2, 0, 0]} label="IA" />
-        <FacePanel position={[0, -1.01, 0]} rotation={[Math.PI / 2, 0, 0]} label="Automação" />
+        {/* Inner core - solid glowing icosahedron */}
+        <mesh scale={0.25}>
+          <icosahedronGeometry args={[1, 1]} />
+          <meshPhysicalMaterial color="#0d9488" emissive="#14b8a6" emissiveIntensity={2} roughness={0.1} metalness={0.9} clearcoat={1} />
+          <Edges linewidth={0.5} color="#99f6e4" />
+        </mesh>
+
+        {/* Scanning plane (horizontal sweep) */}
+        <ScanPlane />
+
+        {/* Dense face panels */}
+        <FacePanel position={[0, 0, 1.11]} rotation={[0, 0, 0]} label="Financeiro" />
+        <FacePanel position={[0, 0, -1.11]} rotation={[0, Math.PI, 0]} label="Analytics" />
+        <FacePanel position={[1.11, 0, 0]} rotation={[0, Math.PI / 2, 0]} label="CRM" />
+        <FacePanel position={[-1.11, 0, 0]} rotation={[0, -Math.PI / 2, 0]} label="Estoque" />
+        <FacePanel position={[0, 1.11, 0]} rotation={[-Math.PI / 2, 0, 0]} label="IA" />
+        <FacePanel position={[0, -1.11, 0]} rotation={[Math.PI / 2, 0, 0]} label="Automação" />
 
         {/* Corner glow spheres */}
         <CornerSpheres />
 
-        {/* Edge particles */}
+        {/* Edge particles - more dense */}
         <EdgeParticles />
+
+        {/* Orbiting rings */}
+        <OrbitRing radius={1.6} speed={0.2} color="#14b8a6" />
+        <OrbitRing radius={1.8} speed={-0.15} color="#22d3ee" />
       </group>
     </Float>
+  );
+}
+
+// Horizontal scanning plane that sweeps up and down
+function ScanPlane() {
+  const ref = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      ref.current.position.y = Math.sin(clock.getElapsedTime() * 0.5) * 1.0;
+    }
+  });
+  return (
+    <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[2.2, 2.2]} />
+      <meshBasicMaterial color="#5eead4" transparent opacity={0.06} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+// Orbiting thin ring
+function OrbitRing({ radius, speed, color }: { radius: number; speed: number; color: string }) {
+  const ref = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      ref.current.rotation.x = clock.getElapsedTime() * speed;
+      ref.current.rotation.z = clock.getElapsedTime() * speed * 0.7;
+    }
+  });
+  return (
+    <mesh ref={ref}>
+      <torusGeometry args={[radius, 0.008, 8, 80]} />
+      <meshPhysicalMaterial color={color} emissive={color} emissiveIntensity={1.5} roughness={0.1} metalness={0.9} />
+    </mesh>
   );
 }
 
@@ -82,40 +114,50 @@ function HoloCube() {
 function FacePanel({ position, rotation, label }: { position: [number, number, number]; rotation: [number, number, number]; label: string }) {
   return (
     <group position={position} rotation={rotation}>
-      {/* Grid lines (horizontal) */}
-      {Array.from({ length: 5 }).map((_, i) => {
-        const y = (i - 2) * 0.35;
+      {/* Dense grid (8x8) */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const y = (i - 3.5) * 0.22;
         return (
           <mesh key={`h${i}`} position={[0, y, 0]}>
-            <planeGeometry args={[1.6, 0.005]} />
-            <meshBasicMaterial color="#5eead4" transparent opacity={0.3} side={THREE.DoubleSide} />
+            <planeGeometry args={[1.8, 0.003]} />
+            <meshBasicMaterial color="#5eead4" transparent opacity={0.25} side={THREE.DoubleSide} />
           </mesh>
         );
       })}
-      {/* Grid lines (vertical) */}
-      {Array.from({ length: 5 }).map((_, i) => {
-        const x = (i - 2) * 0.35;
+      {Array.from({ length: 8 }).map((_, i) => {
+        const x = (i - 3.5) * 0.22;
         return (
           <mesh key={`v${i}`} position={[x, 0, 0]}>
-            <planeGeometry args={[0.005, 1.6]} />
-            <meshBasicMaterial color="#5eead4" transparent opacity={0.2} side={THREE.DoubleSide} />
+            <planeGeometry args={[0.003, 1.8]} />
+            <meshBasicMaterial color="#5eead4" transparent opacity={0.15} side={THREE.DoubleSide} />
           </mesh>
         );
       })}
-      {/* Data bars (simulating a chart) */}
-      {Array.from({ length: 4 }).map((_, i) => {
-        const x = (i - 1.5) * 0.3;
-        const h = 0.2 + Math.random() * 0.5;
+      {/* Multiple data bars */}
+      {Array.from({ length: 6 }).map((_, i) => {
+        const x = (i - 2.5) * 0.22;
+        const h = 0.15 + Math.random() * 0.6;
         return (
-          <mesh key={`bar${i}`} position={[x, -0.5 + h / 2, 0.01]}>
-            <planeGeometry args={[0.15, h]} />
-            <meshBasicMaterial color="#0d9488" transparent opacity={0.5} side={THREE.DoubleSide} />
+          <mesh key={`bar${i}`} position={[x, -0.55 + h / 2, 0.005]}>
+            <planeGeometry args={[0.12, h]} />
+            <meshBasicMaterial color="#0d9488" transparent opacity={0.4 + Math.random() * 0.2} side={THREE.DoubleSide} />
+          </mesh>
+        );
+      })}
+      {/* Simulated line chart */}
+      {Array.from({ length: 5 }).map((_, i) => {
+        const x = (i - 2) * 0.3;
+        const y = 0.3 + Math.sin(i * 1.2) * 0.2;
+        return (
+          <mesh key={`dot${i}`} position={[x, y, 0.005]}>
+            <circleGeometry args={[0.025, 12]} />
+            <meshBasicMaterial color="#22d3ee" transparent opacity={0.7} side={THREE.DoubleSide} />
           </mesh>
         );
       })}
       {/* Module label */}
-      <Html center position={[0, 0.65, 0.01]} distanceFactor={4} style={{ pointerEvents: "none" }}>
-        <span style={{ fontSize: "9px", fontWeight: 700, color: "#0d9488", whiteSpace: "nowrap", textShadow: "0 0 10px rgba(13,148,136,0.5)" }}>
+      <Html center position={[0, 0.75, 0.01]} distanceFactor={4} style={{ pointerEvents: "none" }}>
+        <span style={{ fontSize: "8px", fontWeight: 700, color: "#0d9488", whiteSpace: "nowrap", textShadow: "0 0 8px rgba(13,148,136,0.4)" }}>
           {label}
         </span>
       </Html>
@@ -154,7 +196,7 @@ function CornerSpheres() {
 
 // Particles flowing along edges
 function EdgeParticles() {
-  const count = 120;
+  const count = 200;
   const ref = useRef<THREE.Points>(null);
 
   const positions = useMemo(() => {
