@@ -56,8 +56,8 @@ export default function LandingLayout({
             operatingSystem: "Web",
             offers: {
               "@type": "AggregateOffer",
-              lowPrice: "299",
-              highPrice: "1499",
+              lowPrice: "297",
+              highPrice: "1597",
               priceCurrency: "BRL",
               offerCount: "3",
             },
