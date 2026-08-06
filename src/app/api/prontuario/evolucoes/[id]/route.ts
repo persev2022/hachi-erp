@@ -65,10 +65,10 @@ export async function PUT(
       return NextResponse.json({ success: false, error: "Evolução não encontrada" }, { status: 404 });
     }
 
-    // Only the author can sign
-    if (evolucao.profissionalId !== session.userId) {
+    // Only the author or ADMIN/COORDENADOR can sign
+    if (evolucao.profissionalId !== session.userId && !["ADMIN", "COORDENADOR"].includes(session.role)) {
       return NextResponse.json(
-        { success: false, error: "Apenas o autor pode assinar a evolução" },
+        { success: false, error: "Apenas o autor, admin ou coordenador pode assinar" },
         { status: 403 }
       );
     }

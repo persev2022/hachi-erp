@@ -1228,9 +1228,40 @@ function EvolucaoTab({ pacienteId, pacienteNome, evolucoes, loadingTab }: { paci
                         {ev.conteudo}
                       </p>
                       {isExpanded && (
-                        <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
-                          <span>Profissional: {ev.profissional?.name} ({ev.profissional?.role})</span>
-                          {ev.assinado && ev.assinadoEm && <span className="ml-3">Assinado em: {formatDate(ev.assinadoEm)}</span>}
+                        <div className="mt-2 pt-2 border-t flex items-center justify-between">
+                          <div className="text-xs text-muted-foreground">
+                            <span>Profissional: {ev.profissional?.name} ({ev.profissional?.role})</span>
+                            {ev.assinado && ev.assinadoEm && <span className="ml-3">Assinado em: {formatDate(ev.assinadoEm)}</span>}
+                          </div>
+                          {!ev.assinado && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const res = await fetch(`/api/prontuario/evolucoes/${ev.id}`, {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ action: "assinar" }),
+                                  });
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    // Update locally
+                                    ev.assinado = true;
+                                    ev.assinadoEm = new Date().toISOString();
+                                    setExpandedId(null);
+                                    setTimeout(() => setExpandedId(ev.id), 10);
+                                  } else {
+                                    alert(data.error || "Erro ao assinar");
+                                  }
+                                } catch { alert("Erro de conexão"); }
+                              }}
+                            >
+                              <CheckCircle2 className="h-3 w-3 mr-1" /> Assinar
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>
