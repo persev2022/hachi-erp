@@ -105,7 +105,13 @@ export default function QuartosPage() {
           <h1 className="text-xl md:text-2xl font-bold">{`${terms.quartos} & Leitos`}</h1>
           <p className="text-sm text-muted-foreground mt-1">{`Mapa de ocupação e gestão de leitos`}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.open("/api/quartos/exportar", "_blank")}>
+            Exportar Mapa
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.open("/api/quartos/exportar?tipo=chamada", "_blank")}>
+            Lista de Chamada
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowTransfer(true)}>
             <ArrowRightLeft className="h-4 w-4 mr-1" /> Transferir
           </Button>
