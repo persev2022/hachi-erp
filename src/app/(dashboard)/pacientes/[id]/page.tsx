@@ -103,6 +103,12 @@ export default function PacienteDetailPage() {
   const [altaLoading, setAltaLoading] = React.useState(false);
   const [altaErro, setAltaErro] = React.useState("");
 
+  // Reactivation state
+  const [showReativar, setShowReativar] = React.useState(false);
+  const [reativarDias, setReativarDias] = React.useState("90");
+  const [reativarLoading, setReativarLoading] = React.useState(false);
+  const [reativarErro, setReativarErro] = React.useState("");
+
   // Extra data for tabs
   const [evolucoes, setEvolucoes] = React.useState<any[]>([]);
   const [prescricoes, setPrescricoes] = React.useState<any[]>([]);
@@ -211,6 +217,11 @@ export default function PacienteDetailPage() {
           {paciente.status === "ATIVO" && (
             <Button variant="destructive" size="sm" onClick={() => setShowAlta(true)}>
               <UserMinus className="h-4 w-4 mr-1" /> Dar Baixa
+            </Button>
+          )}
+          {paciente.status !== "ATIVO" && (
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setShowReativar(true)}>
+              <RefreshCw className="h-4 w-4 mr-1" /> Reativar
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={async () => {
@@ -553,6 +564,43 @@ export default function PacienteDetailPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reativar */}
+      {showReativar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowReativar(false)}>
+          <div className="bg-background border rounded-xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Reativar — {paciente.nome}</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowReativar(false)}>✕</Button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="bg-emerald-50 text-emerald-800 text-sm p-3 rounded-lg">
+                ✅ Novo tratamento começando hoje. Contagem de dias reiniciada. Internações prévias +1.
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Dias do novo tratamento *</label>
+                <input type="number" value={reativarDias} onChange={(e) => setReativarDias(e.target.value)} min={1} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+              </div>
+              {reativarErro && <p className="text-sm text-destructive">{reativarErro}</p>}
+              <div className="flex gap-2 justify-end pt-2">
+                <Button variant="outline" onClick={() => setShowReativar(false)}>Cancelar</Button>
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={reativarLoading} onClick={async () => {
+                  setReativarLoading(true); setReativarErro("");
+                  try {
+                    const res = await fetch(`/api/pacientes/${id}/reativar`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ diasTratamento: parseInt(reativarDias) || 90 }) });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) { setReativarErro(data.error || "Erro"); return; }
+                    setShowReativar(false); window.location.reload();
+                  } catch { setReativarErro("Erro de conexão"); } finally { setReativarLoading(false); }
+                }}>
+                  {reativarLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+                  Reativar Tratamento
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
