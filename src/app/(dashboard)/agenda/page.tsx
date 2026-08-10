@@ -66,11 +66,23 @@ export default function AgendaPage() {
   const [submitting, setSubmitting] = React.useState(false);
   const [pacientes, setPacientes] = React.useState<{ id: string; nome: string }[]>([]);
   const [profissionais, setProfissionais] = React.useState<{ id: string; name: string; role: string }[]>([]);
+  const [minhaAgenda, setMinhaAgenda] = React.useState(false);
+  const [userId, setUserId] = React.useState<string>("");
+  const [userRole, setUserRole] = React.useState<string>("");
+
+  // Get current user info
+  React.useEffect(() => {
+    fetch("/api/auth/me").then(r => r.json()).then(d => {
+      if (d.success && d.user) { setUserId(d.user.id); setUserRole(d.user.role); }
+    }).catch(() => {});
+  }, []);
 
   const fetchAgendamentos = React.useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/agenda?data=${data}`);
+      const params = new URLSearchParams({ data });
+      if (minhaAgenda && userId) params.set("profissionalId", userId);
+      const res = await fetch(`/api/agenda?${params.toString()}`);
       const result = await res.json();
       if (result.success) {
         setAgendamentos(result.data);
@@ -80,7 +92,7 @@ export default function AgendaPage() {
     } finally {
       setLoading(false);
     }
-  }, [data, show]);
+  }, [data, show, minhaAgenda, userId]);
 
   React.useEffect(() => {
     fetchAgendamentos();
@@ -204,6 +216,9 @@ export default function AgendaPage() {
             onChange={(e) => setData(e.target.value)}
             className="w-auto"
           />
+          <Button variant={minhaAgenda ? "default" : "outline"} size="sm" onClick={() => setMinhaAgenda(!minhaAgenda)}>
+            {minhaAgenda ? "📋 Minha Agenda" : "📋 Todas"}
+          </Button>
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">{terms.novoAgendamento}</span>
@@ -266,6 +281,14 @@ export default function AgendaPage() {
                   <option value="Avaliação Enfermagem">Avaliação Enfermagem</option>
                   <option value="Revisão de Medicação">Revisão de Medicação</option>
                   <option value="Atendimento Social">Atendimento Social</option>
+                  <option value="Perícia INSS">Perícia INSS</option>
+                  <option value="Exame Laboratorial">Exame Laboratorial</option>
+                  <option value="Consulta Odontológica">Consulta Odontológica</option>
+                  <option value="Segunda Via RG">Tirar Segunda Via RG</option>
+                  <option value="Receber Benefício">Receber Benefício</option>
+                  <option value="Visita Externa">Visita Externa (almoço)</option>
+                  <option value="Ressocialização">Ressocialização</option>
+                  <option value="Alta Paciente">Alta Paciente</option>
                   <option value="Outro">Outro</option>
                 </select>
               </div>
