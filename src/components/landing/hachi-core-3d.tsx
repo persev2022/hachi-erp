@@ -146,7 +146,7 @@ function HelixParticles() {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial color="#5eead4" size={0.02} transparent opacity={0.5} sizeAttenuation />
     </points>
