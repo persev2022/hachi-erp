@@ -2,7 +2,7 @@
 
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, Line, Html } from "@react-three/drei";
+import { Float, Html } from "@react-three/drei";
 import * as THREE from "three";
 
 // ═══════════════════════════════════════════════════════════
@@ -36,8 +36,6 @@ function generateHelix(turns: number, pointsPerTurn: number, radius: number, hei
 
 // DNA Backbone strand (one helix)
 function HelixStrand({ points, color }: { points: THREE.Vector3[]; color: string }) {
-  const tubeRef = useRef<THREE.Mesh>(null);
-
   const geometry = useMemo(() => {
     const curve = new THREE.CatmullRomCurve3(points);
     return new THREE.TubeGeometry(curve, points.length * 2, 0.055, 16, false);

@@ -166,6 +166,65 @@ export async function GET(req: NextRequest) {
     const mediaReceitaDia = diasComDados > 0 ? totalReceita / diasComDados : 0;
     const mediaDespesaDia = diasComDados > 0 ? totalDespesa / diasComDados : 0;
 
+    // ═══ 8. DRE (Demonstrativo de Resultado) ═══
+    const receitaBruta = totalReceita;
+    const deducoesReceita = movs.filter(m => m.tipo === "RECEITA" && m.descricao.toUpperCase().includes("DEVOLUC")).reduce((s, m) => s + m.valor, 0);
+    const receitaLiquida = receitaBruta - deducoesReceita;
+    const custosDiretos = movs.filter(m => m.tipo === "DESPESA" && (m.categoria === "ALIMENTACAO" || m.categoria === "MEDICAMENTO" || m.categoria === "LAVANDERIA")).reduce((s, m) => s + m.valor, 0);
+    const lucroBruto = receitaLiquida - custosDiretos;
+    const despesasOperacionais = totalDespesa - custosDiretos;
+    const lucroOperacional = lucroBruto - despesasOperacionais;
+    const despesasFinanceiras = movs.filter(m => m.descricao.toUpperCase().match(/JUROS|IOF|TARIFA|CUSTAS|CESTA/)).reduce((s, m) => s + m.valor, 0);
+    const lucroLiquido = lucroOperacional - despesasFinanceiras;
+
+    // ═══ 9. BURN RATE & RUNWAY ═══
+    const mesesAnalisados = diasComDados > 0 ? diasComDados / 30 : 1;
+    const burnRateMensal = totalDespesa / mesesAnalisados;
+    const receitaMensal = totalReceita / mesesAnalisados;
+    const burnLiquido = burnRateMensal - receitaMensal;
+    // Runway = quanto tempo a empresa sobrevive com saldo negativo (se burn > receita)
+    const saldoAtual = totalReceita - totalDespesa;
+    const runway = burnLiquido > 0 ? Math.max(0, Math.round((saldoAtual / burnLiquido) * 30)) : 999; // days
+
+    // ═══ 10. PONTO DE EQUILÍBRIO ═══
+    const custoFixoMensal = movs.filter(m => m.tipo === "DESPESA" && m.descricao.toUpperCase().match(/VIVO|NETFLIX|SEGURADORA|CONSORCIO|SEM PARAR|PARCELA|LIQUIDACAO/)).reduce((s, m) => s + m.valor, 0) / mesesAnalisados;
+    const custoVariavelPorPaciente = custosDiretos / (topPagadores.length || 1) / mesesAnalisados;
+    const ticketMedio = topPagadores.length > 0 ? totalReceita / topPagadores.length / mesesAnalisados : 0;
+    const pontoEquilibrio = ticketMedio > custoVariavelPorPaciente ? Math.ceil(custoFixoMensal / (ticketMedio - custoVariavelPorPaciente)) : 0;
+
+    // ═══ 11. COMPARATIVO MÊS A MÊS ═══
+    const porMes: Record<string, { receitas: number; despesas: number }> = {};
+    for (const m of movs) {
+      const mes = m.dataVencimento.toISOString().slice(0, 7);
+      if (!porMes[mes]) porMes[mes] = { receitas: 0, despesas: 0 };
+      if (m.tipo === "RECEITA") porMes[mes].receitas += m.valor;
+      else porMes[mes].despesas += m.valor;
+    }
+    const comparativoMensal = Object.entries(porMes)
+      .map(([mes, d]) => ({ mes, ...d, resultado: d.receitas - d.despesas, margem: d.receitas > 0 ? Math.round(((d.receitas - d.despesas) / d.receitas) * 100) : 0 }))
+      .sort((a, b) => a.mes.localeCompare(b.mes));
+
+    // ═══ 12. ANOMALIAS ═══
+    const anomalias: { data: string; descricao: string; valor: number; motivo: string }[] = [];
+    const mediaTransacao = totalDespesa / movs.filter(m => m.tipo === "DESPESA").length || 500;
+    for (const m of movs.filter(m => m.tipo === "DESPESA")) {
+      if (m.valor > mediaTransacao * 3) {
+        anomalias.push({ data: m.dataVencimento.toISOString().split("T")[0], descricao: m.descricao.slice(0, 50), valor: m.valor, motivo: `${(m.valor / mediaTransacao).toFixed(1)}x acima da média` });
+      }
+    }
+
+    // ═══ 13. TRANSAÇÕES RECORRENTES ═══
+    const descFrequency: Record<string, number> = {};
+    for (const m of movs) {
+      const key = m.descricao.slice(0, 30).toUpperCase();
+      descFrequency[key] = (descFrequency[key] || 0) + 1;
+    }
+    const recorrentes = Object.entries(descFrequency)
+      .filter(([_, count]) => count >= 3)
+      .map(([desc, count]) => ({ descricao: desc, frequencia: count }))
+      .sort((a, b) => b.frequencia - a.frequencia)
+      .slice(0, 10);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -181,6 +240,31 @@ export async function GET(req: NextRequest) {
           healthScore,
           concentracaoRisco,
         },
+        dre: {
+          receitaBruta, deducoesReceita, receitaLiquida,
+          custosDiretos, lucroBruto,
+          despesasOperacionais, lucroOperacional,
+          despesasFinanceiras, lucroLiquido,
+          margemBruta: receitaLiquida > 0 ? Math.round((lucroBruto / receitaLiquida) * 100) : 0,
+          margemOperacional: receitaLiquida > 0 ? Math.round((lucroOperacional / receitaLiquida) * 100) : 0,
+          margemLiquida: receitaLiquida > 0 ? Math.round((lucroLiquido / receitaLiquida) * 100) : 0,
+        },
+        burnRate: {
+          mensal: Math.round(burnRateMensal),
+          receitaMensal: Math.round(receitaMensal),
+          burnLiquido: Math.round(burnLiquido),
+          runwayDias: runway,
+          runwayMeses: Math.round(runway / 30),
+        },
+        pontoEquilibrio: {
+          pacientesNecessarios: pontoEquilibrio,
+          custoFixoMensal: Math.round(custoFixoMensal),
+          custoVariavelPorPaciente: Math.round(custoVariavelPorPaciente),
+          ticketMedio: Math.round(ticketMedio),
+        },
+        comparativoMensal,
+        anomalias: anomalias.slice(0, 10),
+        recorrentes,
         topPagadores,
         topCredores,
         centrosCusto: Object.entries(centrosCusto)
