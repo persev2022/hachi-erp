@@ -24,6 +24,7 @@ import {
   Download,
   Plus,
   UserMinus,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1106,6 +1107,28 @@ function FinanceiroTab({ pacienteId, mensalidade, vencimento }: { pacienteId: st
           <p className="text-lg font-bold text-amber-600">R$ {totalPendente.toFixed(2)}</p>
         </div>
       </div>
+
+      {/* Register Payment Button */}
+      <div className="flex justify-end">
+        <Button size="sm" onClick={async () => {
+          const valor = prompt(`Valor do pagamento (R$):`, String(mensalidade || 0));
+          if (!valor) return;
+          const forma = prompt("Forma de pagamento:", "Pix");
+          try {
+            const res = await fetch(`/api/pacientes/${pacienteId}/pagamento`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ valor: parseFloat(valor), formaPagamento: forma || "Pix" }),
+            });
+            const data = await res.json();
+            if (data.success) { alert(data.message); window.location.reload(); }
+            else alert(data.error || "Erro");
+          } catch { alert("Erro de conexão"); }
+        }}>
+          <DollarSign className="h-3.5 w-3.5 mr-1" /> Registrar Pagamento
+        </Button>
+      </div>
+
       {movs.length === 0 ? (
         <p className="text-center text-muted-foreground py-4">Nenhuma movimentação financeira.</p>
       ) : (

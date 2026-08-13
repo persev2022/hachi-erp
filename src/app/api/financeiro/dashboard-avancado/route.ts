@@ -39,14 +39,14 @@ export async function GET(req: NextRequest) {
       const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
 
       // Previsto: sum of mensalidadeValor for patients who were active during this month
-      // A patient is "active in month" if: dataAdmissao <= end of month AND (dataAlta is null OR dataAlta >= start of month)
+      // A patient is "active in month" if: dataAdmissao <= end of month AND (status=ATIVO OR dataAlta >= start of month)
       const pacientesNoMes = await prisma.paciente.findMany({
         where: {
           ...tf,
           deletedAt: null,
           dataAdmissao: { lte: end },
           OR: [
-            { dataAlta: null },
+            { status: "ATIVO", dataAlta: null },
             { dataAlta: { gte: start } },
           ],
         },
