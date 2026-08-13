@@ -176,6 +176,9 @@ export default function DashboardFinanceiroPage() {
           <Button variant="outline" size="sm" asChild>
             <Link href="/financeiro">Ver Movimentações</Link>
           </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/financeiro/analise">Análise Profunda</Link>
+          </Button>
         </div>
       </div>
 
