@@ -59,7 +59,12 @@ const tipoEvolucaoIcon: Record<string, React.ElementType> = {
 function formatDate(d: string | null | undefined) {
   if (!d) return "—";
   try {
-    return new Date(d).toLocaleDateString("pt-BR");
+    const date = new Date(d);
+    // Use UTC to avoid timezone shift (dates stored as noon UTC)
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
   } catch {
     return "—";
   }

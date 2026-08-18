@@ -49,7 +49,13 @@ export default function CRMPage() {
 
   function formatDate(d?: string | null) {
     if (!d) return null;
-    try { return new Date(d).toLocaleDateString("pt-BR"); } catch { return null; }
+    try {
+      const date = new Date(d);
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const year = date.getUTCFullYear();
+      return `${day}/${month}/${year}`;
+    } catch { return null; }
   }
 
   if (loading) {

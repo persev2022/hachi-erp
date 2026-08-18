@@ -67,7 +67,13 @@ const tipoIcons: Record<string, React.ElementType> = {
 };
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("pt-BR");
+  try {
+    const date = new Date(d);
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  } catch { return ""; }
 }
 function formatDateTime(d: string) {
   return new Date(d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });

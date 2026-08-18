@@ -60,7 +60,11 @@ const statusColor: Record<StatusPaciente, string> = {
 function formatDate(dateStr: string) {
   try {
     const d = new Date(dateStr);
-    return d.toLocaleDateString("pt-BR");
+    // Use UTC to avoid timezone shift (dates stored as noon UTC)
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const year = d.getUTCFullYear();
+    return `${day}/${month}/${year}`;
   } catch {
     return "—";
   }

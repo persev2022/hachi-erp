@@ -143,7 +143,12 @@ export default function EditarPacientePage() {
   const formatDateInput = (d: string | null | undefined) => {
     if (!d) return "";
     try {
-      return new Date(d).toISOString().split("T")[0];
+      // Use UTC to avoid timezone shift
+      const date = new Date(d);
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     } catch {
       return "";
     }

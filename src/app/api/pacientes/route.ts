@@ -5,12 +5,23 @@ import { getSessionFromRequest } from "@/lib/auth";
 import { logAudit } from "@/lib/services/audit";
 import { sanitizeObject } from "@/lib/security/sanitize";
 
+/**
+ * Parse a date string safely, avoiding timezone shift.
+ * "2026-08-18" → 2026-08-18T12:00:00.000Z (noon UTC, stays same day in any timezone)
+ */
+function parseDateSafe(s: string): Date {
+  // If already has time component, use as-is
+  if (s.includes("T")) return new Date(s);
+  // Date-only: append noon UTC to avoid day shift
+  return new Date(`${s}T12:00:00.000Z`);
+}
+
 // Zod schema for creating a patient
 const createPacienteSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   cpf: z.string().min(11, "CPF inválido"),
   rg: z.string().optional(),
-  dataNascimento: z.string().transform((s) => new Date(s)),
+  dataNascimento: z.string().transform((s) => parseDateSafe(s)),
   sexo: z.string().min(1, "Sexo é obrigatório"),
   estadoCivil: z.enum(["SOLTEIRO", "CASADO", "DIVORCIADO", "VIUVO", "UNIAO_ESTAVEL"]),
   profissao: z.string().optional(),
@@ -32,8 +43,8 @@ const createPacienteSchema = z.object({
   alergias: z.string().optional(),
 
   // Tratamento
-  dataAdmissao: z.string().transform((s) => new Date(s)),
-  dataAltaPrevista: z.string().optional().transform((s) => (s ? new Date(s) : undefined)),
+  dataAdmissao: z.string().transform((s) => parseDateSafe(s)),
+  dataAltaPrevista: z.string().optional().transform((s) => (s ? parseDateSafe(s) : undefined)),
   diasTratamento: z.number().int().min(1, "Dias de tratamento deve ser pelo menos 1"),
   quartoId: z.string().uuid().optional(),
 
@@ -47,7 +58,7 @@ const createPacienteSchema = z.object({
     .object({
       nome: z.string().min(2),
       cpf: z.string().min(11),
-      dataNascimento: z.string().optional().transform((s) => (s ? new Date(s) : undefined)),
+      dataNascimento: z.string().optional().transform((s) => (s ? parseDateSafe(s) : undefined)),
       profissao: z.string().optional(),
       estadoCivil: z.enum(["SOLTEIRO", "CASADO", "DIVORCIADO", "VIUVO", "UNIAO_ESTAVEL"]).optional(),
       parentesco: z.string().min(1),
