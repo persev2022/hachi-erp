@@ -345,18 +345,38 @@ export default function PacienteDetailPage() {
           {paciente.responsaveis?.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <User className="h-4 w-4" /> Responsável
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <User className="h-4 w-4" /> Responsável
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" className="text-xs" asChild>
+                    <Link href={`/pacientes/${paciente.id}/editar`}>Editar</Link>
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+              <CardContent className="space-y-3 text-sm">
                 {paciente.responsaveis.map((r: any) => (
-                  <div key={r.id} className="space-y-1">
-                    <div className="font-medium">{r.nome} ({r.parentesco})</div>
+                  <div key={r.id} className="space-y-1 p-2 rounded-lg bg-muted/30">
+                    <div className="font-medium">{r.nome} <span className="text-muted-foreground font-normal">({r.parentesco})</span></div>
                     <div className="text-muted-foreground">{r.telefone}</div>
                     {r.email && <div className="text-muted-foreground">{r.email}</div>}
+                    {r.cpf && <div className="text-muted-foreground text-xs">CPF: {r.cpf}</div>}
+                    {r.endereco && <div className="text-muted-foreground text-xs">{r.endereco}</div>}
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Show add button if no responsavel */}
+          {(!paciente.responsaveis || paciente.responsaveis.length === 0) && (
+            <Card className="border-dashed">
+              <CardContent className="p-4 text-center">
+                <User className="h-6 w-6 mx-auto text-muted-foreground/50 mb-2" />
+                <p className="text-xs text-muted-foreground mb-2">Nenhum responsável cadastrado</p>
+                <Button variant="outline" size="sm" className="text-xs" asChild>
+                  <Link href={`/pacientes/${paciente.id}/editar`}>+ Adicionar Responsável</Link>
+                </Button>
               </CardContent>
             </Card>
           )}

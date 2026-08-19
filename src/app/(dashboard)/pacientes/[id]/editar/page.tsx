@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,6 +40,7 @@ export default function EditarPacientePage() {
   const [saving, setSaving] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string[]>>({});
   const [paciente, setPaciente] = React.useState<any>(null);
+  const [responsaveis, setResponsaveis] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     async function fetchPaciente() {
@@ -48,6 +49,7 @@ export default function EditarPacientePage() {
         const data = await res.json();
         if (data.success) {
           setPaciente(data.data);
+          setResponsaveis(data.data.responsaveis || []);
         } else {
           show(data.error || "Paciente não encontrado", "error");
         }
@@ -91,6 +93,18 @@ export default function EditarPacientePage() {
       diasTratamento: parseInt(form.get("diasTratamento") as string) || 90,
       mensalidadeValor: parseCurrencyValue(form.get("mensalidadeValor") as string),
       diaVencimento: parseInt(form.get("diaVencimento") as string) || undefined,
+      responsaveis: responsaveis.map(r => ({
+        id: r.id || undefined,
+        nome: r.nome,
+        cpf: (r.cpf || "").replace(/\D/g, ""),
+        parentesco: r.parentesco,
+        telefone: r.telefone,
+        email: r.email || "",
+        endereco: r.endereco || "",
+        profissao: r.profissao || "",
+        estadoCivil: r.estadoCivil || null,
+        isFinanceiro: r.isFinanceiro !== false,
+      })),
     };
 
     try {
@@ -158,6 +172,10 @@ export default function EditarPacientePage() {
     errors[field] ? (
       <p className="text-xs text-destructive mt-1">{errors[field][0]}</p>
     ) : null;
+
+  const updateResp = (idx: number, field: string, value: any) => {
+    setResponsaveis(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+  };
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-4xl">
@@ -372,6 +390,130 @@ export default function EditarPacientePage() {
                 <option value="20">Dia 20</option>
               </select>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Responsável(eis) */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Responsável Financeiro</CardTitle>
+                <CardDescription>Dados do responsável pelo paciente</CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setResponsaveis([...responsaveis, {
+                  nome: "", cpf: "", parentesco: "", telefone: "", email: "", endereco: "", isFinanceiro: true
+                }])}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {responsaveis.length === 0 && (
+              <div className="text-center py-6 text-muted-foreground text-sm">
+                <UserPlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                Nenhum responsável cadastrado
+              </div>
+            )}
+            {responsaveis.map((resp, idx) => (
+              <div key={resp.id || `new-${idx}`} className="p-4 border rounded-lg space-y-4 relative">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Responsável {idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:text-destructive"
+                    onClick={() => setResponsaveis(responsaveis.filter((_, i) => i !== idx))}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Nome *</label>
+                    <Input
+                      value={resp.nome}
+                      onChange={e => updateResp(idx, "nome", e.target.value)}
+                      placeholder="Nome completo"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">CPF *</label>
+                    <Input
+                      value={resp.cpf}
+                      onChange={e => updateResp(idx, "cpf", e.target.value)}
+                      placeholder="000.000.000-00"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Parentesco *</label>
+                    <select
+                      value={resp.parentesco}
+                      onChange={e => updateResp(idx, "parentesco", e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                      required
+                    >
+                      <option value="">Selecione</option>
+                      <option value="mãe">Mãe</option>
+                      <option value="pai">Pai</option>
+                      <option value="cônjuge">Cônjuge</option>
+                      <option value="irmão(ã)">Irmão(ã)</option>
+                      <option value="filho(a)">Filho(a)</option>
+                      <option value="tio(a)">Tio(a)</option>
+                      <option value="avô(ó)">Avô(ó)</option>
+                      <option value="amigo(a)">Amigo(a)</option>
+                      <option value="outro">Outro</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Telefone *</label>
+                    <Input
+                      value={resp.telefone}
+                      onChange={e => updateResp(idx, "telefone", e.target.value)}
+                      placeholder="(00) 00000-0000"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Email</label>
+                    <Input
+                      value={resp.email || ""}
+                      onChange={e => updateResp(idx, "email", e.target.value)}
+                      type="email"
+                      placeholder="email@exemplo.com"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Endereço</label>
+                    <Input
+                      value={resp.endereco || ""}
+                      onChange={e => updateResp(idx, "endereco", e.target.value)}
+                      placeholder="Rua, número, bairro"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={resp.isFinanceiro !== false}
+                    onChange={e => updateResp(idx, "isFinanceiro", e.target.checked)}
+                    className="h-4 w-4 rounded border-input"
+                    id={`isFinanceiro-${idx}`}
+                  />
+                  <label htmlFor={`isFinanceiro-${idx}`} className="text-xs text-muted-foreground">
+                    É o responsável financeiro
+                  </label>
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
 
