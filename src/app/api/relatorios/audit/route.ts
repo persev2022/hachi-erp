@@ -28,8 +28,14 @@ export async function GET(req: NextRequest) {
     const dateTo = searchParams.get("dateTo");
     const includeStats = searchParams.get("stats") === "true";
 
-    // Build where clause
+    // Build where clause — SCOPED TO TENANT
     const where: any = {};
+
+    // CRITICAL: Only show logs from users belonging to this tenant
+    if (session.tenantId) {
+      where.user = { tenantId: session.tenantId };
+    }
+
     if (userId) where.userId = userId;
     if (entity) where.entity = entity;
     if (action) where.action = action;
@@ -37,7 +43,7 @@ export async function GET(req: NextRequest) {
       where.OR = [
         { entity: { contains: search, mode: "insensitive" } },
         { entityId: { contains: search } },
-        { user: { name: { contains: search, mode: "insensitive" } } },
+        { user: { name: { contains: search, mode: "insensitive" }, ...(session.tenantId ? { tenantId: session.tenantId } : {}) } },
       ];
     }
     if (dateFrom || dateTo) {
@@ -65,28 +71,29 @@ export async function GET(req: NextRequest) {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      const [totalAll, todayCount, weekCount, byAction, byEntity, byUser, recentActivity] = await Promise.all([
-        prisma.auditLog.count(),
-        prisma.auditLog.count({ where: { createdAt: { gte: today } } }),
-        prisma.auditLog.count({ where: { createdAt: { gte: weekAgo } } }),
-        prisma.auditLog.groupBy({ by: ["action"], _count: true, orderBy: { _count: { action: "desc" } } }),
-        prisma.auditLog.groupBy({ by: ["entity"], _count: true, orderBy: { _count: { entity: "desc" } }, take: 10 }),
-        prisma.$queryRaw`
-          SELECT u.name, u.role, COUNT(a.id)::int as count
-          FROM audit_logs a JOIN users u ON a."userId" = u.id
-          GROUP BY u.name, u.role
-          ORDER BY count DESC
-          LIMIT 10
-        ` as Promise<any[]>,
-        // Activity by hour (last 24h)
-        prisma.$queryRaw`
-          SELECT date_trunc('hour', "createdAt") as hour, COUNT(*)::int as count
-          FROM audit_logs
-          WHERE "createdAt" >= NOW() - INTERVAL '24 hours'
-          GROUP BY hour
-          ORDER BY hour
-        ` as Promise<any[]>,
+      // Tenant-scoped stats filter
+      const tenantFilter: any = session.tenantId ? { user: { tenantId: session.tenantId } } : {};
+
+      const [totalAll, todayCount, weekCount, byAction, byEntity, byUser] = await Promise.all([
+        prisma.auditLog.count({ where: tenantFilter }),
+        prisma.auditLog.count({ where: { ...tenantFilter, createdAt: { gte: today } } }),
+        prisma.auditLog.count({ where: { ...tenantFilter, createdAt: { gte: weekAgo } } }),
+        prisma.auditLog.groupBy({ by: ["action"], where: tenantFilter, _count: true, orderBy: { _count: { action: "desc" } } }),
+        prisma.auditLog.groupBy({ by: ["entity"], where: tenantFilter, _count: true, orderBy: { _count: { entity: "desc" } }, take: 10 }),
+        prisma.auditLog.findMany({
+          where: tenantFilter,
+          select: { user: { select: { name: true, role: true } } },
+        }),
       ]);
+
+      // Aggregate byUser manually (groupBy doesn't support relations)
+      const userCounts: Record<string, { name: string; role: string; count: number }> = {};
+      for (const log of byUser) {
+        const key = log.user.name;
+        if (!userCounts[key]) userCounts[key] = { name: log.user.name, role: log.user.role, count: 0 };
+        userCounts[key].count++;
+      }
+      const topUsers = Object.values(userCounts).sort((a, b) => b.count - a.count).slice(0, 10);
 
       stats = {
         totalAll,
@@ -95,17 +102,14 @@ export async function GET(req: NextRequest) {
         avgPerDay: weekCount > 0 ? Math.round(weekCount / 7) : 0,
         byAction: byAction.map(a => ({ action: a.action, count: a._count })),
         byEntity: byEntity.map(e => ({ entity: e.entity, count: e._count })),
-        byUser: byUser.map((u: any) => ({ name: u.name, role: u.role, count: u.count })),
-        recentActivity: recentActivity.map((r: any) => ({
-          hour: r.hour,
-          count: r.count,
-        })),
+        byUser: topUsers,
       };
     }
 
-    // Get unique entities and users for filters
+    // Get unique entities and users for filters (tenant-scoped)
+    const tenantUserFilter: any = session.tenantId ? { user: { tenantId: session.tenantId } } : {};
     const [entities, users] = await Promise.all([
-      prisma.auditLog.groupBy({ by: ["entity"], _count: true, orderBy: { _count: { entity: "desc" } } }),
+      prisma.auditLog.groupBy({ by: ["entity"], where: tenantUserFilter, _count: true, orderBy: { _count: { entity: "desc" } } }),
       prisma.user.findMany({
         where: session.tenantId ? { tenantId: session.tenantId } : {},
         select: { id: true, name: true, role: true },
