@@ -80,49 +80,36 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const [brandColor, setBrandColor] = React.useState<string | null>(null);
   const [brandLogo, setBrandLogo] = React.useState<string | null>(null);
 
-  // Fetch user role, platform features, and terminology once
+  // Fetch all session data in one consolidated call
   React.useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => { if (d.success && d.user?.role) setUserRole(d.user.role); })
-      .catch(() => {});
-
-    fetch("/api/platform")
+    fetch("/api/session")
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) {
-          setFeatures(d.platform.features);
-          if (d.platform.tenant?.name && d.platform.tenant.name !== "Hachi") {
-            setTenantName(d.platform.tenant.name);
+        if (d.success && d.data) {
+          setUserRole(d.data.user.role);
+          setFeatures(d.data.features);
+          setTerminology(d.data.terminology);
+          setUnreadCount(d.data.unreadCount || 0);
+          if (d.data.tenant?.name && d.data.tenant.name !== "Hachi") {
+            setTenantName(d.data.tenant.name);
           }
+          if (d.data.branding?.primaryColor) setBrandColor(d.data.branding.primaryColor);
+          if (d.data.branding?.logo) setBrandLogo(d.data.branding.logo);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback: try individual endpoints if consolidated fails
+        fetch("/api/auth/me").then(r => r.json()).then(d => { if (d.success && d.user?.role) setUserRole(d.user.role); }).catch(() => {});
+        fetch("/api/platform").then(r => r.json()).then(d => { if (d.success) { setFeatures(d.platform.features); if (d.platform.tenant?.name) setTenantName(d.platform.tenant.name); } }).catch(() => {});
+      });
 
-    fetch("/api/platform/terminology")
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setTerminology(d.terminology); })
-      .catch(() => {});
-
-    fetch("/api/platform/branding")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) {
-          if (d.primaryColor) setBrandColor(d.primaryColor);
-          if (d.logo) setBrandLogo(d.logo);
-        }
-      })
-      .catch(() => {});
-
-    // Fetch unread notifications count
-    const fetchUnread = () => {
+    // Poll unread notifications
+    const interval = setInterval(() => {
       fetch("/api/notifications/count")
         .then((r) => r.json())
         .then((d) => { if (d.success) setUnreadCount(d.unread); })
         .catch(() => {});
-    };
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 30000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 

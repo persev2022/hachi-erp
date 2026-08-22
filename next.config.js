@@ -11,7 +11,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Type checking done via tsc --noEmit separately
+    // Type checking is skipped during build for speed (validated in CI)
     ignoreBuildErrors: true,
   },
   // Security headers
@@ -30,11 +30,11 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://images.unsplash.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://backend.botconversa.com.br",
+              "connect-src 'self' https://backend.botconversa.com.br https://integrate.api.nvidia.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

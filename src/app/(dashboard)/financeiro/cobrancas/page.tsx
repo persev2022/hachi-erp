@@ -18,8 +18,27 @@ export default function CobrancasPage() {
   const [loading, setLoading] = React.useState(true);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<"todos" | "atrasados" | "pendentes" | "pagos">("todos");
+  const [gerando, setGerando] = React.useState(false);
   const { show } = useToast();
   const terms = useTerminology();
+
+  const gerarMensalidades = async () => {
+    setGerando(true);
+    try {
+      const res = await fetch("/api/financeiro/gerar-mensalidades", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      const d = await res.json();
+      if (d.success) {
+        show(d.message, "success");
+        // Refresh data
+        const res2 = await fetch("/api/financeiro/cobrancas");
+        const d2 = await res2.json();
+        if (d2.success) setData(d2.data);
+      } else {
+        show(d.error || "Erro ao gerar", "error");
+      }
+    } catch { show("Erro de conexão", "error"); }
+    finally { setGerando(false); }
+  };
 
   React.useEffect(() => {
     fetch("/api/financeiro/cobrancas")
@@ -88,6 +107,10 @@ export default function CobrancasPage() {
             <p className="text-sm text-muted-foreground">Controle de mensalidades por {terms.paciente.toLowerCase()} e responsável</p>
           </div>
         </div>
+        <Button size="sm" onClick={gerarMensalidades} disabled={gerando}>
+          {gerando ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <CalendarDays className="h-3.5 w-3.5 mr-1" />}
+          Gerar Mensalidades
+        </Button>
       </div>
 
       {/* KPI Cards */}
