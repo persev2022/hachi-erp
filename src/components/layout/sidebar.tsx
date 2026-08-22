@@ -47,6 +47,7 @@ const navigation: NavItem[] = [
   { name: "Agenda", href: "/agenda", icon: Calendar, feature: "agenda" },
   { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
   { name: "Dashboard Fin.", href: "/financeiro/dashboard", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR"], feature: "financeiro" },
+  { name: "Cobranças", href: "/financeiro/cobrancas", icon: CalendarCheck, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR", "SECRETARIA"], feature: "financeiro" },
   { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"], feature: "estoque" },
   { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
   { name: "Documentos", href: "/documentos", icon: FileText, roles: ["ADMIN", "COORDENADOR", "MEDICO", "SECRETARIA", "FINANCEIRO"], feature: "documentos" },
