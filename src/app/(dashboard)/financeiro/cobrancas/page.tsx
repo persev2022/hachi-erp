@@ -41,11 +41,16 @@ export default function CobrancasPage() {
   };
 
   React.useEffect(() => {
-    fetch("/api/financeiro/cobrancas")
-      .then(r => r.json())
-      .then(d => { if (d.success) setData(d.data); })
+    // Auto-update overdue statuses, then fetch cobranças
+    fetch("/api/financeiro/atualizar-status", { method: "POST" })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        fetch("/api/financeiro/cobrancas")
+          .then(r => r.json())
+          .then(d => { if (d.success) setData(d.data); })
+          .catch(() => {})
+          .finally(() => setLoading(false));
+      });
   }, []);
 
   const handlePagar = async (movId: string) => {
