@@ -66,6 +66,9 @@ const updatePacienteSchema = z.object({
   mensalidadeValor: z.number().optional(),
   diaVencimento: z.number().int().optional(),
 
+  // Foto
+  foto: z.string().optional().nullable(),
+
   // Responsáveis (array — full replacement/upsert)
   responsaveis: z.array(responsavelSchema).optional(),
 });

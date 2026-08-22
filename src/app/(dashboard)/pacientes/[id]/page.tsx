@@ -207,6 +207,28 @@ export default function PacienteDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
+        {/* Patient Photo / Avatar */}
+        <div className="shrink-0">
+          {paciente.foto ? (
+            <img
+              src={paciente.foto}
+              alt={`Foto de ${paciente.nome}`}
+              className="h-14 w-14 rounded-full object-cover border-2 border-muted"
+            />
+          ) : (
+            <div className="h-14 w-14 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+              <span className="text-lg font-bold text-primary">
+                {paciente.nome
+                  .split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl md:text-2xl font-bold truncate">{paciente.nome}</h1>

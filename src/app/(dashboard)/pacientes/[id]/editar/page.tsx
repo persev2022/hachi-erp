@@ -41,6 +41,8 @@ export default function EditarPacientePage() {
   const [errors, setErrors] = React.useState<Record<string, string[]>>({});
   const [paciente, setPaciente] = React.useState<any>(null);
   const [responsaveis, setResponsaveis] = React.useState<any[]>([]);
+  const [foto, setFoto] = React.useState<string | null>(null);
+  const [uploadingFoto, setUploadingFoto] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchPaciente() {
@@ -50,6 +52,7 @@ export default function EditarPacientePage() {
         if (data.success) {
           setPaciente(data.data);
           setResponsaveis(data.data.responsaveis || []);
+          setFoto(data.data.foto || null);
         } else {
           show(data.error || "Paciente não encontrado", "error");
         }
@@ -93,6 +96,7 @@ export default function EditarPacientePage() {
       diasTratamento: parseInt(form.get("diasTratamento") as string) || 90,
       mensalidadeValor: parseCurrencyValue(form.get("mensalidadeValor") as string),
       diaVencimento: parseInt(form.get("diaVencimento") as string) || undefined,
+      foto: foto || null,
       responsaveis: responsaveis.map(r => ({
         id: r.id || undefined,
         nome: r.nome,
@@ -195,6 +199,78 @@ export default function EditarPacientePage() {
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
+        {/* Foto do Paciente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Foto</CardTitle>
+            <CardDescription>Foto de identificação do paciente</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              {foto ? (
+                <img
+                  src={foto}
+                  alt="Foto do paciente"
+                  className="h-20 w-20 rounded-full object-cover border-2 border-muted"
+                />
+              ) : (
+                <div className="h-20 w-20 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                  <span className="text-xl font-bold text-primary">
+                    {paciente.nome
+                      .split(" ")
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((n: string) => n[0])
+                      .join("")
+                      .toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1 space-y-2">
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingFoto}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingFoto(true);
+                    try {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      formData.append("context", "patient");
+                      const res = await fetch("/api/upload", { method: "POST", body: formData });
+                      const data = await res.json();
+                      if (data.success) {
+                        setFoto(data.data.url);
+                        show("Foto carregada!", "success");
+                      } else {
+                        show(data.error || "Erro ao enviar foto", "error");
+                      }
+                    } catch {
+                      show("Erro ao enviar foto", "error");
+                    } finally {
+                      setUploadingFoto(false);
+                    }
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">JPEG, PNG ou WebP. Máximo 2MB.</p>
+                {foto && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-destructive hover:text-destructive"
+                    onClick={() => setFoto(null)}
+                  >
+                    Remover foto
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Dados Pessoais */}
         <Card>
           <CardHeader>

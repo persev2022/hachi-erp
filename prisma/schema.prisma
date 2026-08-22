@@ -117,6 +117,7 @@ model Paciente {
   profissao       String?
   telefone        String?
   email           String?
+  foto            String?
   status          StatusPaciente @default(ATIVO)
 
   // Endereço
@@ -162,6 +163,7 @@ model Paciente {
   quarto          Quarto?        @relation(fields: [quartoId], references: [id])
   comunicacoes    Comunicacao[]
   familyTokens   FamilyToken[]
+  visitas         Visita[]
 
   @@index([nome])
   @@index([cpf])
@@ -541,4 +543,27 @@ model Notification {
   @@index([userId, read])
   @@index([tenantId])
   @@map("notifications")
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTROLE DE VISITAS
+// ═══════════════════════════════════════════════════════════
+
+model Visita {
+  id          String   @id @default(uuid())
+  pacienteId  String
+  visitante   String
+  parentesco  String
+  telefone    String?
+  observacoes String?
+  entrada     DateTime @default(now())
+  saida       DateTime?
+  tenantId    String?
+  createdAt   DateTime @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@index([pacienteId, entrada])
+  @@index([tenantId])
+  @@map("visitas")
 }
