@@ -2,221 +2,187 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth";
-import { logAudit } from "@/lib/services/audit";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 
-const ESCALAS_DIR = join(process.cwd(), "data");
-const ESCALAS_FILE = join(ESCALAS_DIR, "escalas.json");
+/**
+ * GET /api/escalas
+ * Returns shift schedules for the current week/month.
+ * Stores in SystemConfig as JSON (no new model needed).
+ * 
+ * POST /api/escalas
+ * Creates/updates a shift entry.
+ */
 
-interface Escala {
+interface EscalaEntry {
   id: string;
-  userId: string;
-  data: string; // YYYY-MM-DD
-  turno: "MANHA" | "TARDE" | "NOITE";
+  profissionalId: string;
+  profissionalNome: string;
+  profissionalRole: string;
+  data: string; // ISO date
+  turno: "MANHA" | "TARDE" | "NOITE" | "INTEGRAL";
   observacoes?: string;
-  createdAt: string;
-  createdBy: string;
-}
-
-async function readEscalas(): Promise<Escala[]> {
-  try {
-    const content = await readFile(ESCALAS_FILE, "utf-8");
-    return JSON.parse(content);
-  } catch {
-    return [];
-  }
-}
-
-async function writeEscalas(escalas: Escala[]): Promise<void> {
-  await mkdir(ESCALAS_DIR, { recursive: true });
-  await writeFile(ESCALAS_FILE, JSON.stringify(escalas, null, 2), "utf-8");
-}
-
-function generateId(): string {
-  return crypto.randomUUID();
-}
-
-function getWeekDates(weekStr: string): { start: string; end: string } | null {
-  // Format: YYYY-Wxx
-  const match = weekStr.match(/^(\d{4})-W(\d{2})$/);
-  if (!match) return null;
-  const year = parseInt(match[1]);
-  const week = parseInt(match[2]);
-
-  // ISO week date calculation
-  const jan4 = new Date(year, 0, 4);
-  const dayOfWeek = jan4.getDay() || 7;
-  const startOfWeek1 = new Date(jan4);
-  startOfWeek1.setDate(jan4.getDate() - dayOfWeek + 1);
-
-  const startDate = new Date(startOfWeek1);
-  startDate.setDate(startOfWeek1.getDate() + (week - 1) * 7);
-  const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + 6);
-
-  const formatDate = (d: Date) => d.toISOString().split("T")[0];
-  return { start: formatDate(startDate), end: formatDate(endDate) };
 }
 
 const createEscalaSchema = z.object({
-  userId: z.string().uuid("ID do usuário inválido"),
-  data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD"),
-  turno: z.enum(["MANHA", "TARDE", "NOITE"], {
-    errorMap: () => ({ message: "Turno deve ser MANHA, TARDE ou NOITE" }),
-  }),
+  profissionalId: z.string().uuid(),
+  data: z.string(), // yyyy-mm-dd
+  turno: z.enum(["MANHA", "TARDE", "NOITE", "INTEGRAL"]),
   observacoes: z.string().optional(),
 });
 
-// GET: List schedules
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session) {
-      return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+
+    const tenantId = session.tenantId;
+    if (!tenantId) return NextResponse.json({ success: true, data: [] });
 
     const { searchParams } = new URL(req.url);
-    const data = searchParams.get("data"); // YYYY-MM-DD
-    const semana = searchParams.get("semana"); // YYYY-Wxx
-    const userId = searchParams.get("userId");
+    const semana = searchParams.get("semana"); // yyyy-mm-dd (monday of the week)
 
-    let escalas = await readEscalas();
+    // Get from SystemConfig
+    const key = `escalas:${tenantId}`;
+    const config = await prisma.systemConfig.findUnique({ where: { key } });
+    const allEscalas: EscalaEntry[] = config ? JSON.parse(config.value) : [];
 
-    // Filter by specific date
-    if (data) {
-      escalas = escalas.filter((e) => e.data === data);
-    }
-
-    // Filter by week
+    // Filter by week if specified
+    let filtered = allEscalas;
     if (semana) {
-      const weekRange = getWeekDates(semana);
-      if (weekRange) {
-        escalas = escalas.filter((e) => e.data >= weekRange.start && e.data <= weekRange.end);
-      }
+      const start = new Date(semana);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7);
+      filtered = allEscalas.filter(e => {
+        const d = new Date(e.data);
+        return d >= start && d < end;
+      });
+    } else {
+      // Default: current week
+      const now = new Date();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - now.getDay() + 1);
+      monday.setHours(0, 0, 0, 0);
+      const sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() + 7);
+      filtered = allEscalas.filter(e => {
+        const d = new Date(e.data);
+        return d >= monday && d < sunday;
+      });
     }
 
-    // Filter by user
-    if (userId) {
-      escalas = escalas.filter((e) => e.userId === userId);
-    }
-
-    // Enrich with user names (filtered by tenant)
-    const userIds = [...new Set(escalas.map((e) => e.userId))];
-    const userWhere: any = { id: { in: userIds } };
-    if (session.tenantId) {
-      userWhere.tenantId = session.tenantId;
-    }
-    const users = await prisma.user.findMany({
-      where: userWhere,
+    // Get professionals for the tenant
+    const profissionais = await prisma.user.findMany({
+      where: { tenantId, active: true },
       select: { id: true, name: true, role: true },
+      orderBy: { name: "asc" },
     });
-    const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
 
-    const data_enriched = escalas.map((escala) => ({
-      ...escala,
-      usuario: userMap[escala.userId] || null,
-    }));
-
-    return NextResponse.json({ success: true, data: data_enriched });
+    return NextResponse.json({
+      success: true,
+      data: filtered.sort((a, b) => a.data.localeCompare(b.data)),
+      profissionais,
+    });
   } catch (error) {
     console.error("GET /api/escalas error:", error);
-    return NextResponse.json(
-      { success: false, error: "Erro ao buscar escalas" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Erro" }, { status: 500 });
   }
 }
 
-// POST: Create schedule entry
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session) {
-      return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+    if (!session) return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+    if (!["ADMIN", "COORDENADOR"].includes(session.role)) {
+      return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
     }
 
-    // Only ADMIN can manage schedules
-    if (session.role !== "ADMIN") {
-      return NextResponse.json(
-        { success: false, error: "Apenas administradores podem gerenciar escalas" },
-        { status: 403 }
-      );
-    }
+    const tenantId = session.tenantId;
+    if (!tenantId) return NextResponse.json({ success: false, error: "Tenant não identificado" }, { status: 400 });
 
     const body = await req.json();
     const parsed = createEscalaSchema.safeParse(body);
-
     if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Dados inválidos", details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: parsed.data.userId },
-      select: { id: true, name: true, role: true, active: true },
+    // Verify professional belongs to tenant
+    const prof = await prisma.user.findFirst({
+      where: { id: parsed.data.profissionalId, tenantId },
+      select: { id: true, name: true, role: true },
     });
+    if (!prof) return NextResponse.json({ success: false, error: "Profissional não encontrado" }, { status: 404 });
 
-    if (!user || !user.active) {
-      return NextResponse.json(
-        { success: false, error: "Usuário não encontrado ou inativo" },
-        { status: 404 }
-      );
-    }
+    // Load existing escalas
+    const key = `escalas:${tenantId}`;
+    const config = await prisma.systemConfig.findUnique({ where: { key } });
+    const allEscalas: EscalaEntry[] = config ? JSON.parse(config.value) : [];
 
-    // Check for duplicate (same user, same date, same shift)
-    const escalas = await readEscalas();
-    const duplicate = escalas.find(
-      (e) =>
-        e.userId === parsed.data.userId &&
-        e.data === parsed.data.data &&
-        e.turno === parsed.data.turno
+    // Check if entry already exists for same prof + date + turno
+    const existing = allEscalas.findIndex(e =>
+      e.profissionalId === parsed.data.profissionalId &&
+      e.data === parsed.data.data &&
+      e.turno === parsed.data.turno
     );
 
-    if (duplicate) {
-      return NextResponse.json(
-        { success: false, error: "Já existe uma escala para este usuário neste turno e data" },
-        { status: 409 }
-      );
-    }
-
-    const newEscala: Escala = {
-      id: generateId(),
-      userId: parsed.data.userId,
+    const entry: EscalaEntry = {
+      id: existing >= 0 ? allEscalas[existing].id : crypto.randomUUID(),
+      profissionalId: parsed.data.profissionalId,
+      profissionalNome: prof.name,
+      profissionalRole: prof.role,
       data: parsed.data.data,
       turno: parsed.data.turno,
       observacoes: parsed.data.observacoes,
-      createdAt: new Date().toISOString(),
-      createdBy: session.userId,
     };
 
-    escalas.push(newEscala);
-    await writeEscalas(escalas);
+    if (existing >= 0) {
+      allEscalas[existing] = entry;
+    } else {
+      allEscalas.push(entry);
+    }
 
-    await logAudit(session.userId, "CREATE", "Escala", newEscala.id, {
-      userId: parsed.data.userId,
-      data: parsed.data.data,
-      turno: parsed.data.turno,
+    // Save
+    await prisma.systemConfig.upsert({
+      where: { key },
+      update: { value: JSON.stringify(allEscalas) },
+      create: { key, value: JSON.stringify(allEscalas) },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          ...newEscala,
-          usuario: user,
-        },
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data: entry }, { status: 201 });
   } catch (error) {
     console.error("POST /api/escalas error:", error);
-    return NextResponse.json(
-      { success: false, error: "Erro ao criar escala" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Erro" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getSessionFromRequest(req);
+    if (!session) return NextResponse.json({ success: false, error: "Não autenticado" }, { status: 401 });
+    if (!["ADMIN", "COORDENADOR"].includes(session.role)) {
+      return NextResponse.json({ success: false, error: "Acesso negado" }, { status: 403 });
+    }
+
+    const tenantId = session.tenantId;
+    if (!tenantId) return NextResponse.json({ success: false, error: "Tenant não identificado" }, { status: 400 });
+
+    const { searchParams } = new URL(req.url);
+    const escalaId = searchParams.get("id");
+    if (!escalaId) return NextResponse.json({ success: false, error: "ID obrigatório" }, { status: 400 });
+
+    const key = `escalas:${tenantId}`;
+    const config = await prisma.systemConfig.findUnique({ where: { key } });
+    if (!config) return NextResponse.json({ success: false, error: "Não encontrado" }, { status: 404 });
+
+    const allEscalas: EscalaEntry[] = JSON.parse(config.value);
+    const filtered = allEscalas.filter(e => e.id !== escalaId);
+
+    await prisma.systemConfig.update({
+      where: { key },
+      data: { value: JSON.stringify(filtered) },
+    });
+
+    return NextResponse.json({ success: true, message: "Escala removida" });
+  } catch (error) {
+    console.error("DELETE /api/escalas error:", error);
+    return NextResponse.json({ success: false, error: "Erro" }, { status: 500 });
   }
 }
