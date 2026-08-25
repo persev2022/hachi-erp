@@ -79,6 +79,7 @@ export default function NovoPacientePage() {
       diasTratamento: parseInt(form.get("diasTratamento") as string) || 90,
       quartoId: form.get("quartoId") || undefined,
       mensalidadeValor: parseCurrencyValue(form.get("mensalidadeValor") as string),
+      matriculaValor: parseCurrencyValue(form.get("matriculaValor") as string),
       diaVencimento: parseInt(form.get("diaVencimento") as string) || undefined,
     };
 
@@ -413,6 +414,12 @@ export default function NovoPacientePage() {
             <CardDescription>Dados de cobrança e pagamento</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Matrícula/Entrada (R$)
+              </label>
+              <Input name="matriculaValor" type="text" inputMode="decimal" placeholder="Ex: 3500" />
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Mensalidade (R$)
