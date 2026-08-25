@@ -151,8 +151,8 @@ export default function QuartosPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">{terms.quartos} & Leitos</h1>
-          <p className="text-sm text-muted-foreground">Gestão dinâmica de leitos e ocupação</p>
+          <h1 className="text-xl md:text-2xl font-bold">{terms.quartos}</h1>
+          <p className="text-sm text-muted-foreground">Gestão dinâmica de ocupação</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => window.open("/api/quartos/exportar", "_blank")}>Exportar</Button>
