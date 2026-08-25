@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, Eye, Pencil, Loader2 } from "lucide-react";
+import { Search, Plus, Eye, Pencil, Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -150,12 +150,17 @@ export default function PacientesPage() {
             )}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/pacientes/novo">
-            <Plus className="h-4 w-4 mr-2" />
-            {terms.novoPaciente}
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.open("/api/quartos/exportar?tipo=chamada", "_blank")}>
+            <Download className="h-4 w-4 mr-1" /> Lista de Chamada
+          </Button>
+          <Button asChild>
+            <Link href="/pacientes/novo">
+              <Plus className="h-4 w-4 mr-2" />
+              {terms.novoPaciente}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Barra de busca */}
