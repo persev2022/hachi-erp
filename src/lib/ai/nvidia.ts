@@ -14,10 +14,12 @@
 const BASE_URL = "https://integrate.api.nvidia.com/v1";
 
 export const NVIDIA_MODELS = {
-  // Best quality for complex analysis
-  chat: "nvidia/llama-3.3-nemotron-super-49b-v1",
-  // Fast and cheap for simple questions
-  fast: "nvidia/llama-3.1-nemotron-nano-8b-v1",
+  // Best quality for complex analysis (Nemotron 3, replaces deprecated llama-3.3-nemotron-super-49b)
+  chat: "nvidia/nemotron-3-super-120b-a12b",
+  // Deep reasoning for financial analysis (Nemotron 3 with reasoning traces)
+  reasoning: "nvidia/nemotron-3-super-120b-a12b",
+  // Fast fallback (uses the same reliable Nemotron 3 model)
+  fast: "nvidia/nemotron-3-super-120b-a12b",
   // Text summarization and reports
   summarize: "mistralai/mistral-nemotron",
   // Embeddings for semantic search
@@ -30,6 +32,53 @@ export const NVIDIA_MODELS = {
 
 function getApiKey(): string {
   return process.env.NVIDIA_API_KEY || "";
+}
+
+/**
+ * Deep financial reasoning — uses the reasoning model with a fallback chain.
+ * Tries the reasoning model first, falls back to the standard chat model if unavailable.
+ */
+export async function financialReasoning(params: {
+  systemPrompt: string;
+  userPrompt: string;
+  maxTokens?: number;
+}): Promise<string> {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("NVIDIA_API_KEY not configured");
+
+  const models = [NVIDIA_MODELS.reasoning, NVIDIA_MODELS.fast];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      // Reasoning models need extra tokens for the reasoning trace + final answer
+      const isReasoning = model === NVIDIA_MODELS.reasoning;
+      const response = await fetch(`${BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: params.systemPrompt },
+            { role: "user", content: params.userPrompt },
+          ],
+          max_tokens: (params.maxTokens || 2048) + (isReasoning ? 2048 : 0),
+          temperature: 0.3,
+          top_p: 0.95,
+          stream: false,
+        }),
+      });
+      if (!response.ok) { lastError = await response.text(); continue; }
+      const data = await response.json();
+      const msg = data.choices?.[0]?.message;
+      // Prefer final content; if empty (all budget went to reasoning), use reasoning
+      const content = msg?.content?.trim() || msg?.reasoning_content?.trim();
+      if (content) return content;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw new Error(`Todos os modelos falharam: ${String(lastError).slice(0, 200)}`);
 }
 
 /**

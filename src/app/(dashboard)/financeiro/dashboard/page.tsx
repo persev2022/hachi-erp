@@ -7,7 +7,7 @@ import {
   Activity, Shield, AlertTriangle, BarChart3, Target, Clock,
   Flame, Repeat, ArrowUpRight, ArrowDownRight, Zap, Scissors,
   Brain, LineChart as LineIcon, PieChart as PieIcon, Wallet, DollarSign,
-  Calendar, ListChecks
+  Calendar, ListChecks, Sparkles, Send
 } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -23,7 +23,32 @@ export default function FinanceiroUnificadoPage() {
   const [dash, setDash] = React.useState<any>(null);
   const [prof, setProf] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
-  const [tab, setTab] = React.useState<"visao" | "dre" | "projecoes" | "custos" | "inadimplencia" | "transacoes">("visao");
+  const [tab, setTab] = React.useState<"visao" | "ia" | "dre" | "projecoes" | "custos" | "inadimplencia" | "transacoes">("visao");
+
+  // IA state
+  const [iaLoading, setIaLoading] = React.useState(false);
+  const [iaAnalise, setIaAnalise] = React.useState<string | null>(null);
+  const [iaInsights, setIaInsights] = React.useState<any[]>([]);
+  const [iaAvailable, setIaAvailable] = React.useState<boolean | null>(null);
+  const [pergunta, setPergunta] = React.useState("");
+
+  const runIA = React.useCallback(async (q?: string) => {
+    setIaLoading(true);
+    try {
+      const res = await fetch("/api/financeiro/ia-analise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(q ? { pergunta: q } : {}),
+      });
+      const d = await res.json();
+      if (d.success) {
+        setIaAvailable(d.data.available);
+        setIaAnalise(d.data.analise || null);
+        setIaInsights(d.data.insights || []);
+      }
+    } catch {}
+    finally { setIaLoading(false); }
+  }, []);
 
   React.useEffect(() => {
     Promise.all([
@@ -77,8 +102,9 @@ export default function FinanceiroUnificadoPage() {
 
   const tabs = [
     { id: "visao", label: "Visão Geral", icon: PieIcon },
+    { id: "ia", label: "IA Financeira", icon: Sparkles },
     { id: "dre", label: "DRE & Índices", icon: BarChart3 },
-    { id: "projecoes", label: "Projeções & IA", icon: LineIcon },
+    { id: "projecoes", label: "Projeções", icon: LineIcon },
     { id: "custos", label: "Custos & Cortes", icon: Scissors },
     { id: "inadimplencia", label: "Inadimplência", icon: AlertTriangle },
     { id: "transacoes", label: "Pagadores/Credores", icon: ListChecks },
@@ -314,6 +340,130 @@ export default function FinanceiroUnificadoPage() {
               </Card>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ═══════════ IA FINANCEIRA ═══════════ */}
+      {tab === "ia" && (
+        <div className="space-y-6">
+          {/* Hero */}
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold">CFO Virtual — Análise com IA</h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Inteligência NVIDIA cruza todos os dados financeiros e operacionais em tempo real para revelar o que passa despercebido.
+                  </p>
+                  {!iaAnalise && iaInsights.length === 0 && (
+                    <Button onClick={() => runIA()} disabled={iaLoading}>
+                      {iaLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Brain className="h-4 w-4 mr-2" />}
+                      Analisar Saúde Financeira
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Natural language question */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex gap-2">
+                <input
+                  value={pergunta}
+                  onChange={e => setPergunta(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && pergunta.trim()) runIA(pergunta); }}
+                  placeholder="Pergunte em linguagem natural: 'Por que caiu a receita em maio?' ou 'Onde posso economizar?'"
+                  className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm"
+                />
+                <Button onClick={() => pergunta.trim() && runIA(pergunta)} disabled={iaLoading || !pergunta.trim()}>
+                  {iaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {iaLoading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">A IA está analisando profundamente os dados...</p>
+            </div>
+          )}
+
+          {/* AI response */}
+          {iaAnalise && !iaLoading && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-primary" /> Análise da IA
+                  <Badge variant="outline" className="text-[9px] ml-auto">NVIDIA Nemotron</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed">
+                  {iaAnalise}
+                </div>
+                <div className="mt-4 pt-3 border-t flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => runIA()} disabled={iaLoading}>
+                    <Repeat className="h-3 w-3 mr-1" /> Nova Análise
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Rule-based insights fallback */}
+          {iaInsights.length > 0 && !iaLoading && (
+            <div className="space-y-3">
+              {iaAvailable === false && (
+                <p className="text-xs text-muted-foreground">💡 Análise baseada em regras (configure NVIDIA_API_KEY para análise por IA generativa).</p>
+              )}
+              {iaInsights.map((ins: any, i: number) => (
+                <Card key={i} className={
+                  ins.tipo === "risco" ? "border-red-200 bg-red-50/30 dark:bg-red-950/10" :
+                  ins.tipo === "oportunidade" ? "border-emerald-200 bg-emerald-50/30 dark:bg-emerald-950/10" :
+                  "border-blue-200 bg-blue-50/30 dark:bg-blue-950/10"
+                }>
+                  <CardContent className="p-4 flex items-start gap-3">
+                    {ins.tipo === "risco" ? <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" /> :
+                     ins.tipo === "oportunidade" ? <TrendingUp className="h-4 w-4 text-emerald-600 mt-0.5" /> :
+                     <Shield className="h-4 w-4 text-blue-600 mt-0.5" />}
+                    <div>
+                      <p className="text-sm font-semibold">{ins.titulo}</p>
+                      <p className="text-xs text-muted-foreground">{ins.texto}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Waterfall chart — resultado build-up */}
+          {periodos.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Cascata de Resultado (Waterfall)</CardTitle>
+                <CardDescription>Como cada mês contribui para o resultado acumulado</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart data={buildWaterfall(periodos)}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="periodo" fontSize={10} />
+                    <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v: any) => fmt(v)} />
+                    <Bar dataKey="base" stackId="a" fill="transparent" />
+                    <Bar dataKey="ganho" stackId="a" fill="#0d9488" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="perda" stackId="a" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
@@ -602,4 +752,22 @@ function AgingBar({ label, value, count, total, color }: any) {
 }
 function IndexCard({ label, value, good }: { label: string; value: string; good: boolean }) {
   return <div className={`p-3 rounded-lg border ${good ? "border-emerald-200/50 bg-emerald-50/30" : "border-red-200/50 bg-red-50/30"}`}><p className="text-[10px] text-muted-foreground">{label}</p><p className={`text-lg font-bold ${good ? "text-emerald-600" : "text-red-600"}`}>{value}</p></div>;
+}
+
+// Build waterfall chart data: cumulative running balance with monthly gains/losses
+function buildWaterfall(periodos: any[]): any[] {
+  let acumulado = 0;
+  return periodos.map((p) => {
+    const resultado = p.resultado || 0;
+    const base = resultado >= 0 ? acumulado : acumulado + resultado;
+    const item = {
+      periodo: p.periodo,
+      base: Math.max(0, base),
+      ganho: resultado >= 0 ? resultado : 0,
+      perda: resultado < 0 ? Math.abs(resultado) : 0,
+      acumulado: acumulado + resultado,
+    };
+    acumulado += resultado;
+    return item;
+  });
 }
