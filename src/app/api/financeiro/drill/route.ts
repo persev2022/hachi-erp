@@ -119,6 +119,27 @@ export async function GET(req: NextRequest) {
       case "metodoPagamento":
         filtered = movs.filter(m => (m.formaPagamento || "Não identificado") === valor);
         break;
+      case "aging": {
+        // valor = "corrente" | "30" | "60" | "90" | "90plus"
+        const nowD = new Date();
+        filtered = movs.filter(m => {
+          if (m.tipo !== "RECEITA") return false;
+          const isPend = m.status === "PENDENTE" || m.status === "ATRASADO";
+          if (!isPend) return false;
+          const venc = new Date(m.dataVencimento);
+          const dias = Math.floor((nowD.getTime() - venc.getTime()) / (1000 * 60 * 60 * 24));
+          if (valor === "corrente") return venc >= nowD;
+          if (valor === "30") return dias > 0 && dias <= 30;
+          if (valor === "60") return dias > 30 && dias <= 60;
+          if (valor === "90") return dias > 60 && dias <= 90;
+          if (valor === "90plus") return dias > 90;
+          return false;
+        });
+        break;
+      }
+      case "recorrente":
+        filtered = movs.filter(m => m.descricao.slice(0, 30).toUpperCase() === valor.toUpperCase());
+        break;
       default:
         filtered = movs;
     }

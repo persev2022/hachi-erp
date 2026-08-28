@@ -396,11 +396,11 @@ export default function FinanceiroUnificadoPage() {
               <Card>
                 <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Clock className="h-4 w-4 text-amber-500" /> Aging de Recebíveis</CardTitle></CardHeader>
                 <CardContent className="space-y-2">
-                  <AgingBar label="A vencer" value={aging.corrente.valor} count={aging.corrente.count} total={aging.corrente.valor + aging.totalVencido} color="emerald" />
-                  <AgingBar label="1-30 dias" value={aging.vencido30.valor} count={aging.vencido30.count} total={aging.corrente.valor + aging.totalVencido} color="amber" />
-                  <AgingBar label="31-60 dias" value={aging.vencido60.valor} count={aging.vencido60.count} total={aging.corrente.valor + aging.totalVencido} color="orange" />
-                  <AgingBar label="61-90 dias" value={aging.vencido90.valor} count={aging.vencido90.count} total={aging.corrente.valor + aging.totalVencido} color="red" />
-                  <AgingBar label="90+ dias" value={aging.vencido90plus.valor} count={aging.vencido90plus.count} total={aging.corrente.valor + aging.totalVencido} color="red" />
+                  <AgingBar label="A vencer" value={aging.corrente.valor} count={aging.corrente.count} total={aging.corrente.valor + aging.totalVencido} color="emerald" onClick={() => openDrill("aging", "corrente", "Recebíveis a vencer")} />
+                  <AgingBar label="1-30 dias" value={aging.vencido30.valor} count={aging.vencido30.count} total={aging.corrente.valor + aging.totalVencido} color="amber" onClick={() => openDrill("aging", "30", "Vencido 1-30 dias")} />
+                  <AgingBar label="31-60 dias" value={aging.vencido60.valor} count={aging.vencido60.count} total={aging.corrente.valor + aging.totalVencido} color="orange" onClick={() => openDrill("aging", "60", "Vencido 31-60 dias")} />
+                  <AgingBar label="61-90 dias" value={aging.vencido90.valor} count={aging.vencido90.count} total={aging.corrente.valor + aging.totalVencido} color="red" onClick={() => openDrill("aging", "90", "Vencido 61-90 dias")} />
+                  <AgingBar label="90+ dias" value={aging.vencido90plus.valor} count={aging.vencido90plus.count} total={aging.corrente.valor + aging.totalVencido} color="red" onClick={() => openDrill("aging", "90plus", "Vencido 90+ dias")} />
                 </CardContent>
               </Card>
             )}
@@ -1167,10 +1167,10 @@ export default function FinanceiroUnificadoPage() {
               <CardContent>
                 <div className="space-y-2">
                   {recorrentes.filter((r: any) => r.tipo === "DESPESA").map((r: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div><p className="text-xs font-medium">{r.descricao}</p><p className="text-[10px] text-muted-foreground">{r.frequencia}x · média {fmtK(r.mediaPorOcorrencia)}/vez</p></div>
+                    <button key={i} className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/40 text-left" onClick={() => openDrill("recorrente", r.descricao, r.descricao)}>
+                      <div><p className="text-xs font-medium">{r.descricao} <span className="text-[9px] text-muted-foreground">🔍</span></p><p className="text-[10px] text-muted-foreground">{r.frequencia}x · média {fmtK(r.mediaPorOcorrencia)}/vez</p></div>
                       <p className="text-sm font-bold text-red-600">{fmtK(r.total)}</p>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </CardContent>
@@ -1269,7 +1269,14 @@ export default function FinanceiroUnificadoPage() {
                 <h2 className="text-base font-semibold flex items-center gap-2"><ListChecks className="h-4 w-4 text-primary" /> {drill.label}</h2>
                 <p className="text-xs text-muted-foreground">Detalhamento de transações · drill-down</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setDrill(null)}>✕</Button>
+              <div className="flex items-center gap-2">
+                {drillData?.transacoes?.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => exportDrillCSV(drillData, drill.label)}>
+                    <DownloadIcon /> CSV
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={() => setDrill(null)}>✕</Button>
+              </div>
             </div>
 
             <div className="overflow-y-auto flex-1">
@@ -1346,11 +1353,20 @@ function DRELine({ label, value, bold, indent, positive, negative, highlight }: 
 function DREBadge({ label, value, good }: { label: string; value: string; good: boolean }) {
   return <div className="flex items-center justify-between text-xs px-6 py-0.5"><span className="text-muted-foreground">{label}</span><Badge variant={good ? "default" : "destructive"} className="text-[9px]">{value}</Badge></div>;
 }
-function AgingBar({ label, value, count, total, color }: any) {
+function AgingBar({ label, value, count, total, color, onClick }: any) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   const f = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
   const bg: Record<string, string> = { emerald: "bg-emerald-500", amber: "bg-amber-500", orange: "bg-orange-500", red: "bg-red-500" };
-  return <div><div className="flex items-center justify-between mb-1"><span className="text-xs font-medium">{label} <span className="text-muted-foreground">({count})</span></span><span className="text-xs font-medium">{f(value)}</span></div><div className="h-2 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${bg[color]}`} style={{ width: `${pct}%` }} /></div></div>;
+  const Wrapper: any = onClick ? "button" : "div";
+  return (
+    <Wrapper className={`w-full text-left ${onClick && count > 0 ? "cursor-pointer group" : ""}`} onClick={onClick && count > 0 ? onClick : undefined}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-medium group-hover:text-primary">{label} <span className="text-muted-foreground">({count})</span>{onClick && count > 0 && <span className="opacity-0 group-hover:opacity-100 text-[9px] ml-1">🔍</span>}</span>
+        <span className="text-xs font-medium">{f(value)}</span>
+      </div>
+      <div className="h-2 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${bg[color]}`} style={{ width: `${pct}%` }} /></div>
+    </Wrapper>
+  );
 }
 function IndexCard({ label, value, good }: { label: string; value: string; good: boolean }) {
   return <div className={`p-3 rounded-lg border ${good ? "border-emerald-200/50 bg-emerald-50/30" : "border-red-200/50 bg-red-50/30"}`}><p className="text-[10px] text-muted-foreground">{label}</p><p className={`text-lg font-bold ${good ? "text-emerald-600" : "text-red-600"}`}>{value}</p></div>;
@@ -1384,6 +1400,34 @@ function Heatmap({ periodos, fmt, onClick }: { periodos: any[]; fmt: (v: number)
       })}
     </div>
   );
+}
+
+function DownloadIcon() {
+  return <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
+}
+
+// Export drill-down transactions to CSV
+function exportDrillCSV(drillData: any, label: string) {
+  const rows = [["Data", "Descrição", "Business Partner", "Tipo", "Categoria", "Status", "Valor"]];
+  for (const t of drillData.transacoes) {
+    rows.push([
+      t.data,
+      `"${(t.descricao || "").replace(/"/g, "'")}"`,
+      `"${t.paciente || ""}"`,
+      t.tipo,
+      t.categoria,
+      t.status,
+      String(t.valor).replace(".", ","),
+    ]);
+  }
+  const csv = "\uFEFF" + rows.map(r => r.join(";")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `drill-${label.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // Build waterfall chart data: cumulative running balance with monthly gains/losses
