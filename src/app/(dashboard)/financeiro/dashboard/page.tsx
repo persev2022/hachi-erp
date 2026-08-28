@@ -218,8 +218,8 @@ export default function FinanceiroUnificadoPage() {
                 </CardContent>
               </Card>
             )}
-            <Metric icon={ArrowUpRight} label="Receitas (total)" value={fmtK(resumo.totalReceitas || 0)} color="emerald" />
-            <Metric icon={ArrowDownRight} label="Despesas (total)" value={fmtK(resumo.totalDespesas || 0)} color="red" />
+            <Metric icon={ArrowUpRight} label="Receitas (total)" value={fmtK(resumo.totalReceitas || 0)} color="emerald" onClick={() => openDrill("tipo", "RECEITA", "Todas as Receitas")} />
+            <Metric icon={ArrowDownRight} label="Despesas (total)" value={fmtK(resumo.totalDespesas || 0)} color="red" onClick={() => openDrill("tipo", "DESPESA", "Todas as Despesas")} />
             <Metric icon={TrendingUp} label="Margem" value={`${resumo.margem || 0}%`} color={(resumo.margem || 0) >= 0 ? "emerald" : "red"} />
             <Metric icon={Users} label="Ativos" value={`${resumo.pacientesAtivos || kpis.pacientesAtivos || 0}`} color="blue" />
             <Metric icon={DollarSign} label="Ticket Médio" value={fmtK(kpis.ticketMedio || 0)} color="primary" />
@@ -301,7 +301,7 @@ export default function FinanceiroUnificadoPage() {
                   <CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Heatmap Mensal</CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center min-h-[220px]">
-                  <Heatmap periodos={periodos} fmt={fmt} />
+                  <Heatmap periodos={periodos} fmt={fmt} onClick={(mesKey, label) => openDrill("mes", mesKey, label)} />
                 </CardContent>
               </Card>
             </div>
@@ -357,11 +357,12 @@ export default function FinanceiroUnificadoPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {categorias.receitas.length > 0 && (
               <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm">Receitas por Categoria (ano)</CardTitle></CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Receitas por Categoria (ano) <span className="text-[9px] text-muted-foreground font-normal">🔍 clique nas fatias</span></CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
-                      <Pie data={categorias.receitas} dataKey="total" nameKey="categoria" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.categoria}>
+                      <Pie data={categorias.receitas} dataKey="total" nameKey="categoria" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.categoria}
+                        onClick={(e: any) => e?.categoria && openDrill("categoria", e.categoria, `Categoria: ${e.categoria}`, "RECEITA")} style={{ cursor: "pointer" }}>
                         {categorias.receitas.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                       </Pie>
                       <Tooltip formatter={(v: any) => fmt(v)} />
@@ -372,11 +373,12 @@ export default function FinanceiroUnificadoPage() {
             )}
             {centrosCusto.length > 0 && (
               <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm">Despesas por Centro de Custo</CardTitle></CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Despesas por Centro de Custo <span className="text-[9px] text-muted-foreground font-normal">🔍 clique nas fatias</span></CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
-                      <Pie data={centrosCusto} dataKey="total" nameKey="nome" cx="50%" cy="50%" outerRadius={80}>
+                      <Pie data={centrosCusto} dataKey="total" nameKey="nome" cx="50%" cy="50%" outerRadius={80}
+                        onClick={(e: any) => e?.nome && openDrill("centroCusto", e.nome, e.nome, "DESPESA")} style={{ cursor: "pointer" }}>
                         {centrosCusto.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                       </Pie>
                       <Tooltip formatter={(v: any) => fmt(v)} />
@@ -692,7 +694,7 @@ export default function FinanceiroUnificadoPage() {
                 <CardDescription>Verde = superávit · Vermelho = déficit · Intensidade = magnitude</CardDescription>
               </CardHeader>
               <CardContent>
-                <Heatmap periodos={periodos} fmt={fmt} />
+                <Heatmap periodos={periodos} fmt={fmt} onClick={(mesKey, label) => openDrill("mes", mesKey, label)} />
               </CardContent>
             </Card>
           )}
@@ -735,7 +737,7 @@ export default function FinanceiroUnificadoPage() {
                       <tbody>
                         {razao.balancete.map((b: any) => (
                           <tr key={b.conta} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"
-                            onClick={() => openDrill("categoria", "", `${b.conta} — ${b.nome}`)}>
+                            onClick={() => openDrill("conta", b.conta, `${b.conta} — ${b.nome}`)}>
                             <td className="p-2 font-mono">{b.conta}</td>
                             <td className="p-2 font-medium">{b.nome}</td>
                             <td className="p-2"><Badge variant="outline" className={`text-[8px] ${b.grupo === "RECEITA" ? "text-emerald-600 border-emerald-300" : b.grupo === "DESPESA" ? "text-red-600 border-red-300" : "text-blue-600 border-blue-300"}`}>{b.grupo}</Badge></td>
@@ -1024,14 +1026,15 @@ export default function FinanceiroUnificadoPage() {
 
           {metodosPagamento.length > 0 && (
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" /> Métodos de Pagamento</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" /> Métodos de Pagamento <span className="text-[9px] text-muted-foreground font-normal ml-auto">🔍 clique nas barras</span></CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={metodosPagamento} layout="vertical">
                     <XAxis type="number" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} fontSize={10} />
                     <YAxis type="category" dataKey="nome" fontSize={10} width={90} />
                     <Tooltip formatter={(v: any) => fmt(v)} />
-                    <Bar dataKey="total" fill="#0d9488" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="total" fill="#0d9488" radius={[0, 4, 4, 0]} cursor="pointer"
+                      onClick={(e: any) => e?.nome && openDrill("metodo", e.nome, `Método: ${e.nome}`)} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -1324,9 +1327,17 @@ export default function FinanceiroUnificadoPage() {
 }
 
 // ═══ COMPONENTS ═══
-function Metric({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) {
+function Metric({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: string; color: string; onClick?: () => void }) {
   const colors: Record<string, string> = { emerald: "text-emerald-600", red: "text-red-600", amber: "text-amber-600", blue: "text-blue-600", primary: "text-primary" };
-  return <Card><CardContent className="p-3 text-center"><Icon className={`h-4 w-4 mx-auto mb-1 ${colors[color]}`} /><p className={`text-lg font-bold ${colors[color]}`}>{value}</p><p className="text-[9px] text-muted-foreground">{label}</p></CardContent></Card>;
+  return (
+    <Card className={onClick ? "cursor-pointer hover:shadow-md hover:border-primary/40 transition-all" : ""} onClick={onClick}>
+      <CardContent className="p-3 text-center">
+        <Icon className={`h-4 w-4 mx-auto mb-1 ${colors[color]}`} />
+        <p className={`text-lg font-bold ${colors[color]}`}>{value}</p>
+        <p className="text-[9px] text-muted-foreground">{label}{onClick && " 🔍"}</p>
+      </CardContent>
+    </Card>
+  );
 }
 function DRELine({ label, value, bold, indent, positive, negative, highlight }: any) {
   const f = (v: number) => `R$ ${Math.abs(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -1346,7 +1357,7 @@ function IndexCard({ label, value, good }: { label: string; value: string; good:
 }
 
 // Monthly performance heatmap
-function Heatmap({ periodos, fmt }: { periodos: any[]; fmt: (v: number) => string }) {
+function Heatmap({ periodos, fmt, onClick }: { periodos: any[]; fmt: (v: number) => string; onClick?: (mesKey: string, label: string) => void }) {
   const maxAbs = Math.max(...periodos.map((p: any) => Math.abs(p.resultado || 0)), 1);
   return (
     <div className="flex flex-wrap gap-2">
@@ -1356,12 +1367,14 @@ function Heatmap({ periodos, fmt }: { periodos: any[]; fmt: (v: number) => strin
         const bg = r >= 0
           ? `rgba(13, 148, 136, ${0.15 + intensity * 0.75})`
           : `rgba(239, 68, 68, ${0.15 + intensity * 0.75})`;
+        const mesKey = p.ano && p.mes ? `${p.ano}-${String(p.mes).padStart(2, "0")}` : null;
         return (
           <div key={i} className="flex flex-col items-center gap-1">
             <div
-              className="w-16 h-16 rounded-lg flex items-center justify-center text-[10px] font-bold text-white transition-transform hover:scale-105 cursor-default"
+              className={`w-16 h-16 rounded-lg flex items-center justify-center text-[10px] font-bold text-white transition-transform hover:scale-110 ${mesKey && onClick ? "cursor-pointer" : "cursor-default"}`}
               style={{ background: bg }}
-              title={`${p.periodo}: ${fmt(r)}`}
+              title={`${p.periodo}: ${fmt(r)}${mesKey ? " · clique para detalhes" : ""}`}
+              onClick={() => mesKey && onClick && onClick(mesKey, `Mês: ${p.periodo}`)}
             >
               {r >= 0 ? "+" : "-"}{Math.abs(Math.round(r / 1000))}k
             </div>

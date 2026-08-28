@@ -37,6 +37,30 @@ function extractName(desc: string): string {
   return desc.slice(0, 30);
 }
 
+// Maps a movement to an accounting account (same logic as /razao)
+function mapearConta(tipo: string, categoria: string, descricao: string): string {
+  const d = descricao.toUpperCase();
+  if (tipo === "RECEITA") {
+    if (categoria === "MATRICULA") return "3.1.2";
+    if (categoria === "MENSALIDADE") return "3.1.1";
+    if (d.match(/FMS|SUS|FUNDO MUNICIPAL|PREFEITURA|CUSTEIO/)) return "3.1.9";
+    if (d.match(/RESG.APLIC|RENDIMENTO|APLIC.FIN/)) return "3.2.1";
+    return "3.9.9";
+  }
+  if (categoria === "ALIMENTACAO" || d.match(/KOMPRAO|SUPERMERCADO|MANENTTI|AGROROSA|MERCADO/)) return "4.1.1";
+  if (categoria === "MEDICAMENTO" || d.match(/FARMACIA|DROGARIA|MEDICAMENTO|SAUDE MANTAL|SAUDE MENTAL/)) return "4.1.2";
+  if (categoria === "LAVANDERIA") return "4.1.3";
+  if (d.match(/POSTO|AUTOPISTA|SEM PARAR|VIA FACIL|COMBUSTIVEL/) || categoria === "TRANSPORTE") return "4.2.2";
+  if (d.match(/VIVO|NETFLIX|JOBWAY|TELEFON|INTERNET/)) return "4.2.3";
+  if (d.match(/MAPFRE|SEGURADORA|CONSORCIO/)) return "4.2.5";
+  if (d.match(/TARIFA|CUSTAS|CESTA|PROTESTO|IOF|JUROS/)) return "4.3.1";
+  if (d.match(/DARF|DAS |ARRECADACAO|IMPOSTO|TRIBUTO|INSS|FGTS/)) return "4.3.2";
+  if (d.match(/ELETRO|MABEL|MULTI|MANUTENCAO|CONSTRUCAO|TINTAS|FIGUEIREDO/)) return "4.2.4";
+  if (d.includes("PAGAMENTO PIX")) return "4.2.1";
+  if (d.match(/LIQUIDACAO|PARCELA|FINANCIAMENTO/)) return "4.3.1";
+  return "4.9.9";
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req);
@@ -88,6 +112,12 @@ export async function GET(req: NextRequest) {
         break;
       case "tipo":
         filtered = movs.filter(m => m.tipo === valor);
+        break;
+      case "conta":
+        filtered = movs.filter(m => mapearConta(m.tipo, m.categoria, m.descricao) === valor);
+        break;
+      case "metodoPagamento":
+        filtered = movs.filter(m => (m.formaPagamento || "Não identificado") === valor);
         break;
       default:
         filtered = movs;
