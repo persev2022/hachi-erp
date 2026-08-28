@@ -27,6 +27,7 @@ import {
   Wrench,
   FileSignature,
   UserPlus,
+  CreditCard,
 } from "lucide-react";
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -45,8 +46,8 @@ const navigation: NavItem[] = [
   { name: "Pacientes", href: "/pacientes", icon: Users, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA", "SECRETARIA"] },
   { name: "Prontuário", href: "/prontuario", icon: FileHeart, roles: ["ADMIN", "COORDENADOR", "MEDICO", "PSICOLOGO", "ENFERMEIRO", "TERAPEUTA"], feature: "prontuario" },
   { name: "Agenda", href: "/agenda", icon: Calendar, feature: "agenda" },
-  { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
-  { name: "Dashboard Fin.", href: "/financeiro/dashboard", icon: BarChart3, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR"], feature: "financeiro" },
+  { name: "Central Financeira", href: "/financeiro/dashboard", icon: Wallet, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR"], feature: "financeiro" },
+  { name: "Lançamentos", href: "/financeiro", icon: CreditCard, roles: ["ADMIN", "FINANCEIRO"], feature: "financeiro" },
   { name: "Cobranças", href: "/financeiro/cobrancas", icon: CalendarCheck, roles: ["ADMIN", "FINANCEIRO", "COORDENADOR", "SECRETARIA"], feature: "financeiro" },
   { name: "Estoque", href: "/estoque", icon: Package, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "APOIO"], feature: "estoque" },
   { name: "Quartos", href: "/quartos", icon: BedDouble, roles: ["ADMIN", "COORDENADOR", "ENFERMEIRO", "MONITOR", "SECRETARIA"], feature: "quartos" },
