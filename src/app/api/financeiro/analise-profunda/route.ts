@@ -168,12 +168,14 @@ export async function GET(req: NextRequest) {
     const receitaLiquida = receitaBruta - deducoesReceita;
     const custosDiretos = movs.filter(m => m.tipo === "DESPESA" && (m.categoria === "ALIMENTACAO" || m.categoria === "MEDICAMENTO" || m.categoria === "LAVANDERIA")).reduce((s, m) => s + m.valor, 0);
     const lucroBruto = receitaLiquida - custosDiretos;
-    const despesasOperacionais = totalDespesa - custosDiretos;
+    // Despesas financeiras (juros, IOF, tarifas) — segregadas para não haver dupla contagem
+    const despesasFinanceiras = movs.filter(m => m.tipo === "DESPESA" && m.descricao.toUpperCase().match(/JUROS|IOF|TARIFA|CUSTAS|CESTA|PROTESTO/)).reduce((s, m) => s + m.valor, 0);
+    // Despesas operacionais = todas as despesas EXCETO custos diretos E despesas financeiras
+    const despesasOperacionais = totalDespesa - custosDiretos - despesasFinanceiras;
     const lucroOperacional = lucroBruto - despesasOperacionais;
-    const despesasFinanceiras = movs.filter(m => m.descricao.toUpperCase().match(/JUROS|IOF|TARIFA|CUSTAS|CESTA/)).reduce((s, m) => s + m.valor, 0);
     const lucroLiquido = lucroOperacional - despesasFinanceiras;
-    // EBITDA approximation (no depreciation/amortization tracked)
-    const ebitda = lucroOperacional + despesasFinanceiras;
+    // EBITDA = lucro operacional + depreciação/amortização (não rastreadas, então = lucro operacional)
+    const ebitda = lucroOperacional;
 
     // ═══════════════════════════════════════════════════════════
     // 7. BURN RATE & RUNWAY
