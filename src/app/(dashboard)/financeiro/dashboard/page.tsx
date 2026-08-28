@@ -908,22 +908,23 @@ export default function FinanceiroUnificadoPage() {
           {varianciaReceita && (
             <Card className="border-primary/20">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Variância Orçamentária (Previsto × Realizado)</CardTitle>
-                <CardDescription>Receita esperada das mensalidades vs receita real média/mês</CardDescription>
+                <CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Variância Orçamentária (Mensalidades)</CardTitle>
+                <CardDescription>Previsto (mensalidades cadastradas) × realizado (mensalidades recebidas) — mesma base, comparação justa</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="text-center p-3 rounded-lg bg-violet-50 dark:bg-violet-950/20"><p className="text-lg font-bold text-violet-600">{fmt(varianciaReceita.previsto)}</p><p className="text-[10px] text-muted-foreground">Previsto/mês</p></div>
-                  <div className="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-lg font-bold text-emerald-600">{fmt(varianciaReceita.realizado)}</p><p className="text-[10px] text-muted-foreground">Realizado/mês</p></div>
+                  <div className="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-lg font-bold text-emerald-600">{fmt(varianciaReceita.realizado)}</p><p className="text-[10px] text-muted-foreground">Mensalidades/mês</p></div>
                   <div className={`text-center p-3 rounded-lg ${varianciaReceita.variancia >= 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-red-50 dark:bg-red-950/20"}`}>
                     <p className={`text-lg font-bold ${varianciaReceita.variancia >= 0 ? "text-emerald-600" : "text-red-600"}`}>{varianciaReceita.variancia >= 0 ? "+" : ""}{fmt(varianciaReceita.variancia)}</p>
-                    <p className="text-[10px] text-muted-foreground">Variância</p>
+                    <p className="text-[10px] text-muted-foreground">Variância ({varianciaReceita.varianciaPct >= 0 ? "+" : ""}{varianciaReceita.varianciaPct}%)</p>
                   </div>
-                  <div className={`text-center p-3 rounded-lg ${varianciaReceita.varianciaPct >= 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-red-50 dark:bg-red-950/20"}`}>
-                    <p className={`text-lg font-bold ${varianciaReceita.varianciaPct >= 0 ? "text-emerald-600" : "text-red-600"}`}>{varianciaReceita.varianciaPct >= 0 ? "+" : ""}{varianciaReceita.varianciaPct}%</p>
-                    <p className="text-[10px] text-muted-foreground">Variância %</p>
+                  <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                    <p className="text-lg font-bold text-blue-600">{fmt(varianciaReceita.outrasReceitas || 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">Outras receitas/mês</p>
                   </div>
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-2">💡 "Outras receitas" = repasses SUS/FMS, empresas parceiras, depósitos — fora do orçamento de mensalidades.</p>
               </CardContent>
             </Card>
           )}

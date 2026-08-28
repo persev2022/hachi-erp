@@ -160,11 +160,15 @@ export async function GET(req: NextRequest) {
     // Contagem de acolhidos ativos (usado como denominador correto para ticket/custo por paciente)
     const pacientesAtivosCount = pacientes.filter(p => p.status === "ATIVO").length || 1;
 
-    // Health Score
+    // Health Score — usa base de acolhidos ativos + diversificação real de pagadores
+    const totalPagadoresUnicos = Object.keys(pagadores).length;
     let healthScore = 50;
-    if (margem > 0.3) healthScore += 20; else if (margem > 0.1) healthScore += 10; else if (margem < 0) healthScore -= 20;
-    if (concentracaoRisco < 30) healthScore += 15; else if (concentracaoRisco > 60) healthScore -= 10;
-    if (topPagadores.length > 10) healthScore += 15; else if (topPagadores.length > 5) healthScore += 5;
+    // Margem operacional (peso maior — é o que mais importa)
+    if (margem > 0.15) healthScore += 25; else if (margem > 0.05) healthScore += 10; else if (margem >= 0) healthScore += 0; else if (margem < -0.05) healthScore -= 25; else healthScore -= 15;
+    // Concentração de risco
+    if (concentracaoRisco < 30) healthScore += 15; else if (concentracaoRisco < 50) healthScore += 5; else if (concentracaoRisco > 60) healthScore -= 10;
+    // Diversificação de pagadores (base real, não capada)
+    if (totalPagadoresUnicos > 50) healthScore += 15; else if (totalPagadoresUnicos > 20) healthScore += 8; else if (totalPagadoresUnicos < 5) healthScore -= 10;
     healthScore = Math.max(0, Math.min(100, healthScore));
 
     // ═══════════════════════════════════════════════════════════
@@ -360,14 +364,15 @@ export async function GET(req: NextRequest) {
     // ═══════════════════════════════════════════════════════════
     // Group payers by their first payment month
     const cohorts: Record<string, { total: number; retained: number; churn: number }> = {};
-    const lastMonthStr = comparativoMensal.length > 0 ? comparativoMensal[comparativoMensal.length - 1].mes : "";
+    // "Retido" = pagou nos últimos 2 meses do período analisado (regra mais rigorosa)
+    const doisMesesAtras = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().slice(0, 7);
 
     for (const [_, d] of Object.entries(pagadores)) {
       const firstMonth = d.firstDate.slice(0, 7);
       if (!cohorts[firstMonth]) cohorts[firstMonth] = { total: 0, retained: 0, churn: 0 };
       cohorts[firstMonth].total++;
-      // If their last payment is in the last month analyzed, they're retained
-      if (d.lastDate.slice(0, 7) >= lastMonthStr || d.count > 1) {
+      // Retido se o último pagamento foi nos últimos 2 meses
+      if (d.lastDate.slice(0, 7) >= doisMesesAtras) {
         cohorts[firstMonth].retained++;
       } else {
         cohorts[firstMonth].churn++;
@@ -588,10 +593,15 @@ export async function GET(req: NextRequest) {
     // 22. VARIAÇÃO ORÇAMENTÁRIA (Budget Variance): previsto vs realizado por categoria
     // ═══════════════════════════════════════════════════════════
     const receitaPrevistaMensal = pacientes.filter(p => p.status === "ATIVO").reduce((s, p) => s + (p.mensalidadeValor || 0), 0);
-    const receitaRealizadaMensal = receitaMensal;
+    // Realizado deve considerar APENAS mensalidades (mesma base do previsto), não toda a receita
+    const receitaMensalidadesTotal = movs.filter(m => m.tipo === "RECEITA" && m.categoria === "MENSALIDADE").reduce((s, m) => s + m.valor, 0);
+    const receitaRealizadaMensal = receitaMensalidadesTotal / mesesAnalisados;
+    // Receita total mensal (todas as fontes) para contexto
+    const outrasReceitasMensal = (totalReceita - receitaMensalidadesTotal) / mesesAnalisados;
     const varianciaReceita = {
       previsto: Math.round(receitaPrevistaMensal),
       realizado: Math.round(receitaRealizadaMensal),
+      outrasReceitas: Math.round(outrasReceitasMensal),
       variancia: Math.round(receitaRealizadaMensal - receitaPrevistaMensal),
       varianciaPct: receitaPrevistaMensal > 0 ? Math.round(((receitaRealizadaMensal - receitaPrevistaMensal) / receitaPrevistaMensal) * 100) : 0,
     };
@@ -599,7 +609,10 @@ export async function GET(req: NextRequest) {
     // ═══════════════════════════════════════════════════════════
     // 23. ANÁLISE DE PARETO (regra 80/20 nas despesas)
     // ═══════════════════════════════════════════════════════════
-    const despesasOrdenadas = [...topCredores].sort((a, b) => b.total - a.total);
+    // Usa TODOS os credores (não o top-20) para o Pareto ser correto
+    const despesasOrdenadas = Object.entries(credores)
+      .map(([nome, d]) => ({ nome, ...d }))
+      .sort((a, b) => b.total - a.total);
     let acumuladoPareto = 0;
     let indice80 = 0;
     for (let i = 0; i < despesasOrdenadas.length; i++) {
