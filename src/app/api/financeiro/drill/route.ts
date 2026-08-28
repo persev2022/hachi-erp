@@ -27,14 +27,23 @@ function classifyCostCenter(descricao: string, categoria: string): string {
 }
 
 function extractName(desc: string): string {
+  // IMPORTANTE: lógica IDÊNTICA à do analise-profunda (+ slice 40 como o caller de lá faz),
+  // senão o drill não reconcilia com os agregados (pagador/credor).
+  let nome: string;
   if (desc.includes("PIX")) {
     const parts = desc.replace(/RECEBIMENTO PIX|PAGAMENTO PIX/gi, "").trim();
-    const nome = parts.replace(/^\d{11,14}\s*/, "").replace(/^PIX_\w+\s*/, "").trim();
-    return (nome.length < 3 ? parts.trim() : nome).slice(0, 40);
+    const n = parts.replace(/^\d{11,14}\s*/, "").replace(/^PIX_\w+\s*/, "").trim();
+    nome = n.length < 3 ? parts.trim() : n;
+  } else if (desc.includes("COMPRAS NACIONAIS")) {
+    nome = desc.replace("COMPRAS NACIONAIS", "").trim().split(" ").slice(0, 2).join(" ");
+  } else if (desc.includes("DEBITO CONVENIOS")) {
+    nome = desc.replace(/DEBITO CONVENIOS \d+/, "").trim().split(" ").slice(0, 3).join(" ");
+  } else if (desc.includes("LIQUIDACAO")) {
+    nome = "Parcela/Financiamento";
+  } else {
+    nome = desc.slice(0, 30);
   }
-  if (desc.includes("COMPRAS NACIONAIS")) return desc.replace("COMPRAS NACIONAIS", "").trim().split(" ").slice(0, 2).join(" ");
-  if (desc.includes("LIQUIDACAO")) return "Parcela/Financiamento";
-  return desc.slice(0, 30);
+  return nome.slice(0, 40);
 }
 
 // Maps a movement to an accounting account (same logic as /razao)
@@ -128,8 +137,9 @@ export async function GET(req: NextRequest) {
           if (!isPend) return false;
           const venc = new Date(m.dataVencimento);
           const dias = Math.floor((nowD.getTime() - venc.getTime()) / (1000 * 60 * 60 * 24));
+          // Buckets alinhados com analise-profunda (vencido30 = dias <= 30, inclusive)
           if (valor === "corrente") return venc >= nowD;
-          if (valor === "30") return dias > 0 && dias <= 30;
+          if (valor === "30") return venc < nowD && dias <= 30;
           if (valor === "60") return dias > 30 && dias <= 60;
           if (valor === "90") return dias > 60 && dias <= 90;
           if (valor === "90plus") return dias > 90;
@@ -166,7 +176,8 @@ export async function GET(req: NextRequest) {
           totalDespesas: totalDesp,
           resultado: totalRec - totalDesp,
           ticketMedio: filtered.length > 0 ? (totalRec + totalDesp) / filtered.length : 0,
-          maiorTransacao: filtered.length > 0 ? Math.max(...filtered.map(m => m.valor)) : 0,
+          // reduce em vez de Math.max(...spread) para não estourar o stack em drills grandes
+          maiorTransacao: filtered.reduce((max, m) => m.valor > max ? m.valor : max, 0),
         },
         tendencia,
         transacoes: filtered.slice(0, 200).map(m => ({

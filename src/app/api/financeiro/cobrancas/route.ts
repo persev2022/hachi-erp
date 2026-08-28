@@ -42,8 +42,8 @@ export async function GET(req: NextRequest) {
     });
 
     // Get all mensalidade movimentações for this tenant (last 6 months + future)
-    const sixMonthsAgo = new Date(now);
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    // Usa dia 1 para evitar overflow de mês (ex: 31/ago - 6 meses)
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
 
     const mensalidades = await prisma.movimentacaoFinanceira.findMany({
       where: {
@@ -82,11 +82,17 @@ export async function GET(req: NextRequest) {
         (m.status === "PENDENTE" || m.status === "ATRASADO") && new Date(m.dataVencimento) < hoje
       );
 
-      // Próximo vencimento
+      // Próximo vencimento — protege contra overflow de mês (ex: dia 31 em fevereiro)
       const diaVenc = pac.diaVencimento || 5;
-      let proximoVencimento = new Date(now.getFullYear(), now.getMonth(), diaVenc, 12, 0, 0);
+      const diaSeguroNoMes = (ano: number, mes: number) => {
+        const ultimoDia = new Date(ano, mes + 1, 0).getDate(); // último dia do mês
+        return Math.min(diaVenc, ultimoDia);
+      };
+      const anoMesAtual = { ano: now.getFullYear(), mes: now.getMonth() };
+      let proximoVencimento = new Date(anoMesAtual.ano, anoMesAtual.mes, diaSeguroNoMes(anoMesAtual.ano, anoMesAtual.mes), 12, 0, 0);
       if (proximoVencimento < hoje) {
-        proximoVencimento = new Date(now.getFullYear(), now.getMonth() + 1, diaVenc, 12, 0, 0);
+        const prox = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        proximoVencimento = new Date(prox.getFullYear(), prox.getMonth(), diaSeguroNoMes(prox.getFullYear(), prox.getMonth()), 12, 0, 0);
       }
 
       // Days until next due

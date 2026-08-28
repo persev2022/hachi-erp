@@ -24,7 +24,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const meses = Math.min(12, Math.max(1, parseInt(searchParams.get("meses") || "12")));
+    const mesesParam = parseInt(searchParams.get("meses") || "12");
+    const meses = Number.isFinite(mesesParam) ? Math.min(12, Math.max(1, mesesParam)) : 12;
 
     const now = new Date();
     const tf = { tenantId };
@@ -120,6 +121,10 @@ export async function GET(req: NextRequest) {
     // ═══════════════════════════════════════════════════════════
     // 2. RESUMO GERAL (mês atual)
     // ═══════════════════════════════════════════════════════════
+    // Guard: se por algum motivo não houver períodos, retorna dados vazios em vez de crashar
+    if (periodos.length === 0) {
+      return NextResponse.json({ success: true, data: getEmptyData() });
+    }
     const mesAtual = periodos[periodos.length - 1];
     const mesAnterior = periodos.length >= 2 ? periodos[periodos.length - 2] : null;
 

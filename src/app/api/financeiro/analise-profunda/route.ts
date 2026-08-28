@@ -324,8 +324,10 @@ export async function GET(req: NextRequest) {
     const margemEbitda = receitaLiquida > 0 ? (ebitda / receitaLiquida) * 100 : 0;
     // Margem Líquida (não ROA — não temos base de ativos)
     const margemLiquida = totalReceita > 0 ? (lucroLiquido / totalReceita) * 100 : 0;
-    // DSO só faz sentido se houver recebíveis em aberto
-    const cicloFinanceiro = (recebiveisTotal > 0 && spanDias > 0) ? Math.round((recebiveisTotal / (totalReceita / spanDias))) : 0;
+    // DSO só faz sentido se houver recebíveis em aberto E receita > 0 (evita divisão por zero → Infinity)
+    const cicloFinanceiro = (recebiveisTotal > 0 && spanDias > 0 && totalReceita > 0)
+      ? Math.round(recebiveisTotal / (totalReceita / spanDias))
+      : 0;
 
     const indices = {
       // Liquidez só é significativa se houver contas em aberto; senão marca como N/A (-1)
