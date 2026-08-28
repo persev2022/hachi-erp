@@ -150,8 +150,15 @@ export async function GET(req: NextRequest) {
     const concentracaoRisco = totalReceita > 0 ? Math.round((top3Receita / totalReceita) * 100) : 0;
     const margem = totalReceita > 0 ? (totalReceita - totalDespesa) / totalReceita : 0;
     const diasComDados = new Set(movs.map((m) => m.dataVencimento.toISOString().split("T")[0])).size;
-    const mediaReceitaDia = diasComDados > 0 ? totalReceita / diasComDados : 0;
-    const mediaDespesaDia = diasComDados > 0 ? totalDespesa / diasComDados : 0;
+    // Número REAL de meses distintos com movimentação (não dias/30, que subestima)
+    const mesesDistintos = new Set(movs.map((m) => m.dataVencimento.toISOString().slice(0, 7))).size;
+    // Média diária baseada no span real de dias corridos (não só dias com transação)
+    const datasOrdenadas = movs.map(m => m.dataVencimento.getTime()).sort((a, b) => a - b);
+    const spanDias = datasOrdenadas.length > 1 ? Math.max(1, Math.round((datasOrdenadas[datasOrdenadas.length - 1] - datasOrdenadas[0]) / (1000 * 60 * 60 * 24))) : 1;
+    const mediaReceitaDia = spanDias > 0 ? totalReceita / spanDias : 0;
+    const mediaDespesaDia = spanDias > 0 ? totalDespesa / spanDias : 0;
+    // Contagem de acolhidos ativos (usado como denominador correto para ticket/custo por paciente)
+    const pacientesAtivosCount = pacientes.filter(p => p.status === "ATIVO").length || 1;
 
     // Health Score
     let healthScore = 50;
@@ -180,7 +187,7 @@ export async function GET(req: NextRequest) {
     // ═══════════════════════════════════════════════════════════
     // 7. BURN RATE & RUNWAY
     // ═══════════════════════════════════════════════════════════
-    const mesesAnalisados = diasComDados > 0 ? diasComDados / 30 : 1;
+    const mesesAnalisados = mesesDistintos > 0 ? mesesDistintos : 1;
     const burnRateMensal = totalDespesa / mesesAnalisados;
     const receitaMensal = totalReceita / mesesAnalisados;
     const burnLiquido = burnRateMensal - receitaMensal;
@@ -191,8 +198,9 @@ export async function GET(req: NextRequest) {
     // 8. PONTO DE EQUILÍBRIO (Break-even)
     // ═══════════════════════════════════════════════════════════
     const custoFixoMensal = movs.filter(m => m.tipo === "DESPESA" && m.descricao.toUpperCase().match(/VIVO|NETFLIX|SEGURADORA|CONSORCIO|SEM PARAR|PARCELA|LIQUIDACAO/)).reduce((s, m) => s + m.valor, 0) / mesesAnalisados;
-    const custoVariavelPorPaciente = custosDiretos / (topPagadores.length || 1) / mesesAnalisados;
-    const ticketMedio = topPagadores.length > 0 ? totalReceita / topPagadores.length / mesesAnalisados : 0;
+    // Custo variável e ticket por PACIENTE ATIVO (denominador correto), não pelo array top-20
+    const custoVariavelPorPaciente = custosDiretos / pacientesAtivosCount / mesesAnalisados;
+    const ticketMedio = pacientesAtivosCount > 0 ? totalReceita / pacientesAtivosCount / mesesAnalisados : 0;
     const pontoEquilibrio = ticketMedio > custoVariavelPorPaciente ? Math.ceil(custoFixoMensal / (ticketMedio - custoVariavelPorPaciente)) : 0;
 
     // ═══════════════════════════════════════════════════════════
@@ -287,14 +295,17 @@ export async function GET(req: NextRequest) {
     const pagaveisTotal = movs.filter(m => m.tipo === "DESPESA" && m.status === "PENDENTE").reduce((s, m) => s + m.valor, 0);
     const liquidezCorrente = pagaveisTotal > 0 ? recebiveisTotal / pagaveisTotal : 99;
     const margemEbitda = receitaLiquida > 0 ? (ebitda / receitaLiquida) * 100 : 0;
-    const roa = totalReceita > 0 ? (lucroLiquido / totalReceita) * 100 : 0; // Return on Assets (approximation)
-    const cicloFinanceiro = diasComDados > 0 ? Math.round((recebiveisTotal / (totalReceita / diasComDados))) : 0; // Days Sales Outstanding
+    // Margem Líquida (não ROA — não temos base de ativos)
+    const margemLiquida = totalReceita > 0 ? (lucroLiquido / totalReceita) * 100 : 0;
+    // DSO só faz sentido se houver recebíveis em aberto
+    const cicloFinanceiro = (recebiveisTotal > 0 && spanDias > 0) ? Math.round((recebiveisTotal / (totalReceita / spanDias))) : 0;
 
     const indices = {
-      liquidezCorrente: Math.round(liquidezCorrente * 100) / 100,
+      // Liquidez só é significativa se houver contas em aberto; senão marca como N/A (-1)
+      liquidezCorrente: pagaveisTotal > 0 ? Math.round(liquidezCorrente * 100) / 100 : -1,
       margemEbitda: Math.round(margemEbitda),
       ebitda: Math.round(ebitda),
-      roa: Math.round(roa),
+      margemLiquida: Math.round(margemLiquida),
       cicloFinanceiro, // DSO in days
       recebiveisTotal: Math.round(recebiveisTotal),
       pagaveisTotal: Math.round(pagaveisTotal),

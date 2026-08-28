@@ -409,12 +409,12 @@ export default function FinanceiroUnificadoPage() {
                 <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Brain className="h-4 w-4 text-primary" /> Índices Financeiros</CardTitle></CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-3">
-                    <IndexCard label="Liquidez Corrente" value={`${indices.liquidezCorrente}x`} good={indices.liquidezCorrente >= 1} />
+                    <IndexCard label="Liquidez Corrente" value={indices.liquidezCorrente === -1 ? "N/A" : `${indices.liquidezCorrente}x`} good={indices.liquidezCorrente === -1 || indices.liquidezCorrente >= 1} />
                     <IndexCard label="EBITDA" value={fmtK(indices.ebitda)} good={indices.ebitda > 0} />
                     <IndexCard label="Margem EBITDA" value={`${indices.margemEbitda}%`} good={indices.margemEbitda > 15} />
-                    <IndexCard label="ROA" value={`${indices.roa}%`} good={indices.roa > 5} />
-                    <IndexCard label="DSO" value={`${indices.cicloFinanceiro}d`} good={indices.cicloFinanceiro < 30} />
-                    <IndexCard label="A Receber" value={fmtK(indices.recebiveisTotal)} good={true} />
+                    <IndexCard label="Margem Líquida" value={`${indices.margemLiquida}%`} good={indices.margemLiquida > 5} />
+                    <IndexCard label="Margem Bruta" value={dre ? `${dre.margemBruta}%` : "—"} good={dre ? dre.margemBruta > 30 : false} />
+                    <IndexCard label="A Receber" value={indices.recebiveisTotal > 0 ? fmtK(indices.recebiveisTotal) : "Tudo pago"} good={true} />
                   </div>
                 </CardContent>
               </Card>
