@@ -23,7 +23,26 @@ export default function FinanceiroUnificadoPage() {
   const [dash, setDash] = React.useState<any>(null);
   const [prof, setProf] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
-  const [tab, setTab] = React.useState<"visao" | "ia" | "dre" | "projecoes" | "custos" | "inadimplencia" | "transacoes">("visao");
+  const [tab, setTab] = React.useState<"visao" | "ia" | "dre" | "fluxo" | "avancado" | "projecoes" | "custos" | "inadimplencia" | "transacoes">("visao");
+
+  // Drill-down state
+  const [drill, setDrill] = React.useState<{ dimensao: string; valor: string; label: string } | null>(null);
+  const [drillData, setDrillData] = React.useState<any>(null);
+  const [drillLoading, setDrillLoading] = React.useState(false);
+
+  const openDrill = React.useCallback(async (dimensao: string, valor: string, label: string, tipo?: string) => {
+    setDrill({ dimensao, valor, label });
+    setDrillLoading(true);
+    setDrillData(null);
+    try {
+      const params = new URLSearchParams({ dimensao, valor });
+      if (tipo) params.set("tipo", tipo);
+      const res = await fetch(`/api/financeiro/drill?${params.toString()}`);
+      const d = await res.json();
+      if (d.success) setDrillData(d.data);
+    } catch {}
+    finally { setDrillLoading(false); }
+  }, []);
 
   // IA state
   const [iaLoading, setIaLoading] = React.useState(false);
@@ -103,6 +122,11 @@ export default function FinanceiroUnificadoPage() {
   const topCredores = prof?.topCredores || [];
   const centrosCusto = prof?.centrosCusto || [];
   const metodosPagamento = prof?.metodosPagamento || [];
+  const curvaCaixa = prof?.curvaCaixa || [];
+  const sazonalidade = prof?.sazonalidade || [];
+  const varianciaReceita = prof?.varianciaReceita;
+  const pareto = prof?.pareto;
+  const capitalDeGiro = prof?.capitalDeGiro;
 
   const periodos = dash?.periodos || [];
   const projecaoDash = dash?.projecao || [];
@@ -113,6 +137,8 @@ export default function FinanceiroUnificadoPage() {
     { id: "visao", label: "Visão Geral", icon: PieIcon },
     { id: "ia", label: "IA Financeira", icon: Sparkles },
     { id: "dre", label: "DRE & Índices", icon: BarChart3 },
+    { id: "fluxo", label: "Fluxo de Caixa", icon: Activity },
+    { id: "avancado", label: "Análises Avançadas", icon: Brain },
     { id: "projecoes", label: "Projeções", icon: LineIcon },
     { id: "custos", label: "Custos & Cortes", icon: Scissors },
     { id: "inadimplencia", label: "Inadimplência", icon: AlertTriangle },
@@ -662,6 +688,178 @@ export default function FinanceiroUnificadoPage() {
         </div>
       )}
 
+      {/* ═══════════ FLUXO DE CAIXA ═══════════ */}
+      {tab === "fluxo" && (
+        <div className="space-y-6">
+          {/* Curva de caixa acumulada */}
+          {curvaCaixa.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> Curva de Saldo Acumulado</CardTitle>
+                <CardDescription>Evolução diária do caixa ao longo do período</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={curvaCaixa}>
+                    <defs>
+                      <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0d9488" stopOpacity={0.5} />
+                        <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="dia" fontSize={9} tickFormatter={(d) => d.slice(5)} minTickGap={30} />
+                    <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v: any) => fmt(v)} />
+                    <Area dataKey="saldoAcumulado" name="Saldo Acumulado" stroke="#0d9488" strokeWidth={2} fill="url(#colorSaldo)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Entradas vs Saídas diárias */}
+          {curvaCaixa.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Entradas × Saídas Diárias</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={curvaCaixa}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="dia" fontSize={9} tickFormatter={(d) => d.slice(5)} minTickGap={30} />
+                    <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v: any) => fmt(v)} />
+                    <Legend fontSize={10} />
+                    <Bar dataKey="entradas" name="Entradas" fill="#0d9488" />
+                    <Bar dataKey="saidas" name="Saídas" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sazonalidade por dia da semana */}
+          {sazonalidade.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Sazonalidade por Dia da Semana</CardTitle>
+                <CardDescription>Em quais dias entra e sai mais dinheiro</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={sazonalidade}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="dia" fontSize={11} />
+                    <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v: any) => fmt(v)} />
+                    <Legend fontSize={10} />
+                    <Bar dataKey="receitas" name="Receitas" fill="#0d9488" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="despesas" name="Despesas" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* ═══════════ ANÁLISES AVANÇADAS ═══════════ */}
+      {tab === "avancado" && (
+        <div className="space-y-6">
+          {/* Variância Orçamentária */}
+          {varianciaReceita && (
+            <Card className="border-primary/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Variância Orçamentária (Previsto × Realizado)</CardTitle>
+                <CardDescription>Receita esperada das mensalidades vs receita real média/mês</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="text-center p-3 rounded-lg bg-violet-50 dark:bg-violet-950/20"><p className="text-lg font-bold text-violet-600">{fmt(varianciaReceita.previsto)}</p><p className="text-[10px] text-muted-foreground">Previsto/mês</p></div>
+                  <div className="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-lg font-bold text-emerald-600">{fmt(varianciaReceita.realizado)}</p><p className="text-[10px] text-muted-foreground">Realizado/mês</p></div>
+                  <div className={`text-center p-3 rounded-lg ${varianciaReceita.variancia >= 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-red-50 dark:bg-red-950/20"}`}>
+                    <p className={`text-lg font-bold ${varianciaReceita.variancia >= 0 ? "text-emerald-600" : "text-red-600"}`}>{varianciaReceita.variancia >= 0 ? "+" : ""}{fmt(varianciaReceita.variancia)}</p>
+                    <p className="text-[10px] text-muted-foreground">Variância</p>
+                  </div>
+                  <div className={`text-center p-3 rounded-lg ${varianciaReceita.varianciaPct >= 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-red-50 dark:bg-red-950/20"}`}>
+                    <p className={`text-lg font-bold ${varianciaReceita.varianciaPct >= 0 ? "text-emerald-600" : "text-red-600"}`}>{varianciaReceita.varianciaPct >= 0 ? "+" : ""}{varianciaReceita.varianciaPct}%</p>
+                    <p className="text-[10px] text-muted-foreground">Variância %</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Análise de Pareto 80/20 */}
+          {pareto && pareto.dados.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Análise de Pareto (80/20)</CardTitle>
+                <CardDescription>{pareto.credoresPara80pct} de {pareto.totalCredores} credores ({pareto.concentracao}%) concentram 80% das despesas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={pareto.dados}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="nome" fontSize={8} angle={-30} textAnchor="end" height={70} interval={0} />
+                    <YAxis yAxisId="left" fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                    <YAxis yAxisId="right" orientation="right" fontSize={10} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
+                    <Tooltip formatter={(v: any, n: any) => n === "acumuladoPct" ? `${v}%` : fmt(v)} />
+                    <Bar yAxisId="left" dataKey="valor" name="Valor" fill="#8b5cf6" radius={[3, 3, 0, 0]} />
+                    <Line yAxisId="right" dataKey="acumuladoPct" name="Acumulado %" stroke="#f59e0b" strokeWidth={2} dot={{ r: 2 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Capital de Giro */}
+          {capitalDeGiro && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Wallet className="h-4 w-4 text-primary" /> Capital de Giro & Ciclo de Caixa</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-base font-bold text-emerald-600">{fmtK(capitalDeGiro.recebiveis)}</p><p className="text-[9px] text-muted-foreground">A Receber</p></div>
+                  <div className="text-center p-3 rounded-lg bg-red-50 dark:bg-red-950/20"><p className="text-base font-bold text-red-600">{fmtK(capitalDeGiro.pagaveis)}</p><p className="text-[9px] text-muted-foreground">A Pagar</p></div>
+                  <div className={`text-center p-3 rounded-lg ${capitalDeGiro.capitalGiroLiquido >= 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-red-50 dark:bg-red-950/20"}`}><p className={`text-base font-bold ${capitalDeGiro.capitalGiroLiquido >= 0 ? "text-emerald-600" : "text-red-600"}`}>{fmtK(capitalDeGiro.capitalGiroLiquido)}</p><p className="text-[9px] text-muted-foreground">Capital Giro Líq.</p></div>
+                  <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-base font-bold text-blue-600">{capitalDeGiro.dso}d</p><p className="text-[9px] text-muted-foreground">DSO</p></div>
+                  <div className="text-center p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20"><p className="text-base font-bold text-amber-600">{fmtK(capitalDeGiro.necessidadeCapitalGiro)}</p><p className="text-[9px] text-muted-foreground">NCG</p></div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Cohort */}
+          {cohortAnalysis.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4" /> Cohort — Retenção de Pagadores</CardTitle></CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead><tr className="border-b"><th className="p-2 text-left">Cohort</th><th className="p-2 text-center">Total</th><th className="p-2 text-center">Retidos</th><th className="p-2 text-center">Churn</th><th className="p-2 text-center">Retenção</th></tr></thead>
+                    <tbody>
+                      {cohortAnalysis.map((c: any) => (
+                        <tr key={c.mes} className="border-b last:border-0 hover:bg-muted/30">
+                          <td className="p-2 font-medium">{c.mes}</td>
+                          <td className="p-2 text-center">{c.totalPagadores}</td>
+                          <td className="p-2 text-center text-emerald-600">{c.retidos}</td>
+                          <td className="p-2 text-center text-red-600">{c.churned}</td>
+                          <td className="p-2 text-center"><Badge variant={c.taxaRetencao >= 70 ? "default" : "destructive"} className="text-[9px]">{c.taxaRetencao}%</Badge></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
       {/* ═══════════ DRE & ÍNDICES ═══════════ */}
       {tab === "dre" && dre && (
         <div className="space-y-6">
@@ -815,12 +1013,13 @@ export default function FinanceiroUnificadoPage() {
                 {centrosCusto.map((cc: any, i: number) => {
                   const pct = resumo.totalDespesas > 0 ? Math.round((cc.total / resumo.totalDespesas) * 100) : 0;
                   return (
-                    <div key={i}>
-                      <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium">{cc.nome}</span><span className="text-xs text-muted-foreground">{fmt(cc.total)} · {pct}% · {cc.count}x</span></div>
+                    <button key={i} className="w-full text-left group" onClick={() => openDrill("centroCusto", cc.nome, cc.nome, "DESPESA")}>
+                      <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium group-hover:text-primary flex items-center gap-1">{cc.nome} <span className="opacity-0 group-hover:opacity-100 text-[9px]">🔍</span></span><span className="text-xs text-muted-foreground">{fmt(cc.total)} · {pct}% · {cc.count}x</span></div>
                       <div className="h-2.5 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${pct > 25 ? "bg-red-500" : pct > 15 ? "bg-amber-500" : "bg-primary"}`} style={{ width: `${pct}%` }} /></div>
-                    </div>
+                    </button>
                   );
                 })}
+                <p className="text-[10px] text-muted-foreground text-center pt-2">💡 Clique num centro de custo para ver as transações</p>
               </CardContent>
             </Card>
           )}
@@ -898,11 +1097,11 @@ export default function FinanceiroUnificadoPage() {
             <CardContent>
               <div className="space-y-1.5 max-h-[500px] overflow-y-auto">
                 {topPagadores.map((p: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                  <button key={i} className="w-full flex items-center justify-between p-2 rounded hover:bg-muted/50 text-left" onClick={() => openDrill("pagador", p.nome, p.nome, "RECEITA")}>
                     <div className="flex items-center gap-2"><span className="text-[10px] font-bold text-muted-foreground w-4">{i + 1}</span>
                       <div><p className="text-xs font-medium truncate max-w-[180px]">{p.nome}</p><p className="text-[9px] text-muted-foreground">{p.count}x · TM: {fmtK(p.ticketMedio || p.total / p.count)}</p></div></div>
                     <p className="text-xs font-bold text-emerald-600">{fmtK(p.total)}</p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </CardContent>
@@ -912,15 +1111,78 @@ export default function FinanceiroUnificadoPage() {
             <CardContent>
               <div className="space-y-1.5 max-h-[500px] overflow-y-auto">
                 {topCredores.map((c: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                  <button key={i} className="w-full flex items-center justify-between p-2 rounded hover:bg-muted/50 text-left" onClick={() => openDrill("credor", c.nome, c.nome, "DESPESA")}>
                     <div className="flex items-center gap-2"><span className="text-[10px] font-bold text-muted-foreground w-4">{i + 1}</span>
                       <div><p className="text-xs font-medium truncate max-w-[180px]">{c.nome}</p><p className="text-[9px] text-muted-foreground">{c.count}x · {c.categoria}</p></div></div>
                     <p className="text-xs font-bold text-red-600">{fmtK(c.total)}</p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* ═══════════ DRILL-DOWN MODAL ═══════════ */}
+      {drill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDrill(null)}>
+          <div className="bg-card border rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h2 className="text-base font-semibold flex items-center gap-2"><ListChecks className="h-4 w-4 text-primary" /> {drill.label}</h2>
+                <p className="text-xs text-muted-foreground">Detalhamento de transações · drill-down</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDrill(null)}>✕</Button>
+            </div>
+
+            <div className="overflow-y-auto flex-1">
+              {drillLoading ? (
+                <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+              ) : drillData ? (
+                <div className="p-4 space-y-4">
+                  {/* Resumo */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="text-center p-2 rounded-lg bg-muted/40"><p className="text-sm font-bold">{drillData.resumo.count}</p><p className="text-[9px] text-muted-foreground">Transações</p></div>
+                    {drillData.resumo.totalReceitas > 0 && <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-sm font-bold text-emerald-600">{fmtK(drillData.resumo.totalReceitas)}</p><p className="text-[9px] text-muted-foreground">Receitas</p></div>}
+                    {drillData.resumo.totalDespesas > 0 && <div className="text-center p-2 rounded-lg bg-red-50 dark:bg-red-950/20"><p className="text-sm font-bold text-red-600">{fmtK(drillData.resumo.totalDespesas)}</p><p className="text-[9px] text-muted-foreground">Despesas</p></div>}
+                    <div className="text-center p-2 rounded-lg bg-muted/40"><p className="text-sm font-bold">{fmtK(drillData.resumo.maiorTransacao)}</p><p className="text-[9px] text-muted-foreground">Maior transação</p></div>
+                  </div>
+
+                  {/* Mini-tendência */}
+                  {drillData.tendencia?.length > 1 && (
+                    <ResponsiveContainer width="100%" height={120}>
+                      <AreaChart data={drillData.tendencia}>
+                        <XAxis dataKey="mes" fontSize={9} tickFormatter={(m) => m.slice(5)} />
+                        <YAxis fontSize={9} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                        <Tooltip formatter={(v: any) => fmt(v)} />
+                        <Area dataKey="valor" stroke="#0d9488" fill="#0d948833" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+
+                  {/* Transações */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="sticky top-0 bg-card"><tr className="border-b"><th className="p-2 text-left">Data</th><th className="p-2 text-left">Descrição</th><th className="p-2 text-right">Valor</th><th className="p-2 text-center">Status</th></tr></thead>
+                      <tbody>
+                        {drillData.transacoes.map((t: any) => (
+                          <tr key={t.id} className="border-b last:border-0 hover:bg-muted/30">
+                            <td className="p-2 whitespace-nowrap">{new Date(t.data).toLocaleDateString("pt-BR")}</td>
+                            <td className="p-2 max-w-[280px] truncate">{t.descricao}{t.paciente && <span className="text-primary"> · {t.paciente}</span>}</td>
+                            <td className={`p-2 text-right font-medium ${t.tipo === "RECEITA" ? "text-emerald-600" : "text-red-600"}`}>{t.tipo === "RECEITA" ? "+" : "-"}{fmt(t.valor)}</td>
+                            <td className="p-2 text-center"><Badge variant="outline" className="text-[8px]">{t.status}</Badge></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {drillData.transacoes.length >= 200 && <p className="text-[10px] text-muted-foreground text-center py-2">Mostrando primeiras 200 transações</p>}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground text-sm">Sem dados.</div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

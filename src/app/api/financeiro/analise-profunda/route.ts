@@ -535,6 +535,86 @@ export async function GET(req: NextRequest) {
     });
 
     // ═══════════════════════════════════════════════════════════
+    // 20. FLUXO DE CAIXA DIÁRIO + SALDO ACUMULADO (curva de caixa)
+    // ═══════════════════════════════════════════════════════════
+    const porDia: Record<string, { rec: number; desp: number }> = {};
+    for (const m of movs) {
+      const key = m.dataVencimento.toISOString().split("T")[0];
+      if (!porDia[key]) porDia[key] = { rec: 0, desp: 0 };
+      if (m.tipo === "RECEITA") porDia[key].rec += m.valor;
+      else porDia[key].desp += m.valor;
+    }
+    let saldoAcum = 0;
+    const curvaCaixa = Object.entries(porDia)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([dia, d]) => {
+        saldoAcum += d.rec - d.desp;
+        return { dia, entradas: Math.round(d.rec), saidas: Math.round(d.desp), saldoAcumulado: Math.round(saldoAcum) };
+      });
+
+    // ═══════════════════════════════════════════════════════════
+    // 21. SAZONALIDADE (média por dia da semana + heatmap)
+    // ═══════════════════════════════════════════════════════════
+    const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const porDiaSemana: Record<number, { rec: number; desp: number; count: number }> = {};
+    for (const m of movs) {
+      const dow = new Date(m.dataVencimento).getUTCDay();
+      if (!porDiaSemana[dow]) porDiaSemana[dow] = { rec: 0, desp: 0, count: 0 };
+      porDiaSemana[dow].count++;
+      if (m.tipo === "RECEITA") porDiaSemana[dow].rec += m.valor;
+      else porDiaSemana[dow].desp += m.valor;
+    }
+    const sazonalidade = diasSemana.map((nome, i) => ({
+      dia: nome,
+      receitas: Math.round(porDiaSemana[i]?.rec || 0),
+      despesas: Math.round(porDiaSemana[i]?.desp || 0),
+      transacoes: porDiaSemana[i]?.count || 0,
+    }));
+
+    // ═══════════════════════════════════════════════════════════
+    // 22. VARIAÇÃO ORÇAMENTÁRIA (Budget Variance): previsto vs realizado por categoria
+    // ═══════════════════════════════════════════════════════════
+    const receitaPrevistaMensal = pacientes.filter(p => p.status === "ATIVO").reduce((s, p) => s + (p.mensalidadeValor || 0), 0);
+    const receitaRealizadaMensal = receitaMensal;
+    const varianciaReceita = {
+      previsto: Math.round(receitaPrevistaMensal),
+      realizado: Math.round(receitaRealizadaMensal),
+      variancia: Math.round(receitaRealizadaMensal - receitaPrevistaMensal),
+      varianciaPct: receitaPrevistaMensal > 0 ? Math.round(((receitaRealizadaMensal - receitaPrevistaMensal) / receitaPrevistaMensal) * 100) : 0,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 23. ANÁLISE DE PARETO (regra 80/20 nas despesas)
+    // ═══════════════════════════════════════════════════════════
+    const despesasOrdenadas = [...topCredores].sort((a, b) => b.total - a.total);
+    let acumuladoPareto = 0;
+    let indice80 = 0;
+    for (let i = 0; i < despesasOrdenadas.length; i++) {
+      acumuladoPareto += despesasOrdenadas[i].total;
+      if (acumuladoPareto >= totalDespesa * 0.8) { indice80 = i + 1; break; }
+    }
+    const pareto = {
+      credoresPara80pct: indice80,
+      totalCredores: despesasOrdenadas.length,
+      concentracao: despesasOrdenadas.length > 0 ? Math.round((indice80 / despesasOrdenadas.length) * 100) : 0,
+      dados: despesasOrdenadas.slice(0, 15).map((c, i) => {
+        const acum = despesasOrdenadas.slice(0, i + 1).reduce((s, x) => s + x.total, 0);
+        return { nome: c.nome, valor: Math.round(c.total), acumuladoPct: totalDespesa > 0 ? Math.round((acum / totalDespesa) * 100) : 0 };
+      }),
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 24. WORKING CAPITAL & CICLO DE CAIXA
+    // ═══════════════════════════════════════════════════════════
+    const capitalDeGiro = {
+      recebiveis: Math.round(recebiveisTotal),
+      pagaveis: Math.round(pagaveisTotal),
+      capitalGiroLiquido: Math.round(recebiveisTotal - pagaveisTotal),
+      dso: cicloFinanceiro,
+      necessidadeCapitalGiro: Math.round(burnRateMensal * (cicloFinanceiro / 30)),
+    };
+
+    // ═══════════════════════════════════════════════════════════
     // RESPONSE
     // ═══════════════════════════════════════════════════════════
     return NextResponse.json({
@@ -600,6 +680,12 @@ export async function GET(req: NextRequest) {
         metodosPagamento: Object.entries(metodos)
           .map(([nome, d]) => ({ nome, ...d }))
           .sort((a, b) => b.total - a.total),
+        // ═══ SAP-level advanced modules ═══
+        curvaCaixa,
+        sazonalidade,
+        varianciaReceita,
+        pareto,
+        capitalDeGiro,
       },
     });
   } catch (error) {
