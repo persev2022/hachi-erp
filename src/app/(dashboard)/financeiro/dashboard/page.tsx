@@ -7,7 +7,7 @@ import {
   Activity, Shield, AlertTriangle, BarChart3, Target, Clock,
   Flame, Repeat, ArrowUpRight, ArrowDownRight, Zap, Scissors,
   Brain, LineChart as LineIcon, PieChart as PieIcon, Wallet, DollarSign,
-  Calendar, ListChecks, Sparkles, Send
+  Calendar, ListChecks, Sparkles, Send, FileText
 } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -23,7 +23,17 @@ export default function FinanceiroUnificadoPage() {
   const [dash, setDash] = React.useState<any>(null);
   const [prof, setProf] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
-  const [tab, setTab] = React.useState<"visao" | "ia" | "dre" | "fluxo" | "avancado" | "projecoes" | "custos" | "inadimplencia" | "transacoes">("visao");
+  const [tab, setTab] = React.useState<"visao" | "ia" | "razao" | "dre" | "fluxo" | "avancado" | "projecoes" | "custos" | "inadimplencia" | "transacoes">("visao");
+
+  // Razão contábil (Universal Journal) state
+  const [razao, setRazao] = React.useState<any>(null);
+  const [razaoLoading, setRazaoLoading] = React.useState(false);
+  React.useEffect(() => {
+    if (tab === "razao" && !razao) {
+      setRazaoLoading(true);
+      fetch("/api/financeiro/razao").then(r => r.json()).then(d => { if (d.success) setRazao(d.data); }).catch(() => {}).finally(() => setRazaoLoading(false));
+    }
+  }, [tab, razao]);
 
   // Drill-down state
   const [drill, setDrill] = React.useState<{ dimensao: string; valor: string; label: string } | null>(null);
@@ -136,6 +146,7 @@ export default function FinanceiroUnificadoPage() {
   const tabs = [
     { id: "visao", label: "Visão Geral", icon: PieIcon },
     { id: "ia", label: "IA Financeira", icon: Sparkles },
+    { id: "razao", label: "Razão Contábil", icon: Building },
     { id: "dre", label: "DRE & Índices", icon: BarChart3 },
     { id: "fluxo", label: "Fluxo de Caixa", icon: Activity },
     { id: "avancado", label: "Análises Avançadas", icon: Brain },
@@ -684,6 +695,129 @@ export default function FinanceiroUnificadoPage() {
                 <Heatmap periodos={periodos} fmt={fmt} />
               </CardContent>
             </Card>
+          )}
+        </div>
+      )}
+
+      {/* ═══════════ RAZÃO CONTÁBIL (Universal Journal) ═══════════ */}
+      {tab === "razao" && (
+        <div className="space-y-6">
+          {razaoLoading && (
+            <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+          )}
+          {razao && !razaoLoading && (
+            <>
+              <Card className="border-primary/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2"><Building className="h-4 w-4 text-primary" /> Razão Contábil Universal</CardTitle>
+                  <CardDescription>Cada movimentação classificada em plano de contas · {razao.totalLancamentos} lançamentos · partida dobrada</CardDescription>
+                </CardHeader>
+              </Card>
+
+              {/* Balancete (Trial Balance) */}
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ListChecks className="h-4 w-4 text-primary" /> Balancete de Verificação</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b bg-muted/30">
+                          <th className="p-2 text-left">Conta</th>
+                          <th className="p-2 text-left">Descrição</th>
+                          <th className="p-2 text-left">Grupo</th>
+                          <th className="p-2 text-left">Tipo</th>
+                          <th className="p-2 text-right">Débito</th>
+                          <th className="p-2 text-right">Crédito</th>
+                          <th className="p-2 text-right">Saldo</th>
+                          <th className="p-2 text-center">Lçtos</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {razao.balancete.map((b: any) => (
+                          <tr key={b.conta} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"
+                            onClick={() => openDrill("categoria", "", `${b.conta} — ${b.nome}`)}>
+                            <td className="p-2 font-mono">{b.conta}</td>
+                            <td className="p-2 font-medium">{b.nome}</td>
+                            <td className="p-2"><Badge variant="outline" className={`text-[8px] ${b.grupo === "RECEITA" ? "text-emerald-600 border-emerald-300" : b.grupo === "DESPESA" ? "text-red-600 border-red-300" : "text-blue-600 border-blue-300"}`}>{b.grupo}</Badge></td>
+                            <td className="p-2 text-muted-foreground text-[10px]">{b.tipo}</td>
+                            <td className="p-2 text-right text-red-600">{b.debito > 0 ? fmt(b.debito) : "—"}</td>
+                            <td className="p-2 text-right text-emerald-600">{b.credito > 0 ? fmt(b.credito) : "—"}</td>
+                            <td className="p-2 text-right font-bold">{fmt(b.saldo)}</td>
+                            <td className="p-2 text-center text-muted-foreground">{b.count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t-2 font-bold bg-muted/20">
+                          <td className="p-2" colSpan={4}>TOTAIS</td>
+                          <td className="p-2 text-right text-red-600">{fmt(razao.balancete.reduce((s: number, b: any) => s + b.debito, 0))}</td>
+                          <td className="p-2 text-right text-emerald-600">{fmt(razao.balancete.reduce((s: number, b: any) => s + b.credito, 0))}</td>
+                          <td className="p-2 text-right" colSpan={2}></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground text-center pt-2">💡 Clique numa conta para ver os lançamentos</p>
+                </CardContent>
+              </Card>
+
+              {/* Controlling — resultado por tipo de conta */}
+              {razao.porTipo?.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Controlling — Resultado por Natureza</CardTitle></CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart data={razao.porTipo}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                        <XAxis dataKey="tipo" fontSize={9} angle={-20} textAnchor="end" height={60} interval={0} />
+                        <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                        <Tooltip formatter={(v: any) => fmt(v)} />
+                        <Legend fontSize={10} />
+                        <Bar dataKey="receita" name="Receita" fill="#0d9488" radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="despesa" name="Despesa" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Livro Razão (lançamentos) */}
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Livro-Razão (Lançamentos)</CardTitle>
+                  <CardDescription>Diário de todas as partidas contábeis</CardDescription></CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto max-h-[500px]">
+                    <table className="w-full text-[11px]">
+                      <thead className="sticky top-0 bg-card">
+                        <tr className="border-b">
+                          <th className="p-1.5 text-left">Documento</th>
+                          <th className="p-1.5 text-left">Data</th>
+                          <th className="p-1.5 text-left">Conta</th>
+                          <th className="p-1.5 text-left">Business Partner</th>
+                          <th className="p-1.5 text-left">Histórico</th>
+                          <th className="p-1.5 text-center">D/C</th>
+                          <th className="p-1.5 text-right">Valor</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {razao.ledger.map((l: any, i: number) => (
+                          <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
+                            <td className="p-1.5 font-mono text-[9px] text-muted-foreground">{l.docNum}</td>
+                            <td className="p-1.5 whitespace-nowrap">{new Date(l.data).toLocaleDateString("pt-BR")}</td>
+                            <td className="p-1.5"><span className="font-mono">{l.conta}</span> <span className="text-muted-foreground">{l.contaNome}</span></td>
+                            <td className="p-1.5 max-w-[140px] truncate">{l.businessPartner}</td>
+                            <td className="p-1.5 max-w-[200px] truncate text-muted-foreground">{l.historico}</td>
+                            <td className="p-1.5 text-center"><Badge variant="outline" className={`text-[8px] ${l.natureza === "Crédito" ? "text-emerald-600" : "text-red-600"}`}>{l.natureza === "Crédito" ? "C" : "D"}</Badge></td>
+                            <td className={`p-1.5 text-right font-medium ${l.tipo === "RECEITA" ? "text-emerald-600" : "text-red-600"}`}>{fmt(l.valor)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {razao.totalLancamentos > 300 && <p className="text-[10px] text-muted-foreground text-center py-2">Mostrando 300 de {razao.totalLancamentos} lançamentos</p>}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
       )}
