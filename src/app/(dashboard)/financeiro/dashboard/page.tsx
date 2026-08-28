@@ -27,13 +27,17 @@ export default function FinanceiroUnificadoPage() {
 
   // IA state
   const [iaLoading, setIaLoading] = React.useState(false);
-  const [iaAnalise, setIaAnalise] = React.useState<string | null>(null);
+  const [iaStructured, setIaStructured] = React.useState<any>(null);
+  const [iaRaw, setIaRaw] = React.useState<string | null>(null);
+  const [iaResposta, setIaResposta] = React.useState<string | null>(null);
   const [iaInsights, setIaInsights] = React.useState<any[]>([]);
   const [iaAvailable, setIaAvailable] = React.useState<boolean | null>(null);
   const [pergunta, setPergunta] = React.useState("");
 
   const runIA = React.useCallback(async (q?: string) => {
     setIaLoading(true);
+    if (!q) { setIaStructured(null); setIaRaw(null); }
+    setIaResposta(null);
     try {
       const res = await fetch("/api/financeiro/ia-analise", {
         method: "POST",
@@ -43,7 +47,12 @@ export default function FinanceiroUnificadoPage() {
       const d = await res.json();
       if (d.success) {
         setIaAvailable(d.data.available);
-        setIaAnalise(d.data.analise || null);
+        if (q) {
+          setIaResposta(d.data.resposta || null);
+        } else {
+          setIaStructured(d.data.structured || null);
+          setIaRaw(d.data.analiseRaw || null);
+        }
         setIaInsights(d.data.insights || []);
       }
     } catch {}
@@ -229,6 +238,38 @@ export default function FinanceiroUnificadoPage() {
             </Card>
           )}
 
+          {/* Waterfall + Heatmap */}
+          {periodos.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Cascata de Resultado</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <ComposedChart data={buildWaterfall(periodos)}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="periodo" fontSize={10} />
+                      <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                      <Tooltip formatter={(v: any) => fmt(v)} />
+                      <Bar dataKey="base" stackId="a" fill="transparent" />
+                      <Bar dataKey="ganho" stackId="a" fill="#0d9488" radius={[3, 3, 0, 0]} />
+                      <Bar dataKey="perda" stackId="a" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Heatmap Mensal</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center min-h-[220px]">
+                  <Heatmap periodos={periodos} fmt={fmt} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Burn/Runway/Break-even */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {burnRate && (
@@ -358,13 +399,18 @@ export default function FinanceiroUnificadoPage() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Inteligência NVIDIA cruza todos os dados financeiros e operacionais em tempo real para revelar o que passa despercebido.
                   </p>
-                  {!iaAnalise && iaInsights.length === 0 && (
+                  {!iaStructured && !iaRaw && iaInsights.length === 0 && (
                     <Button onClick={() => runIA()} disabled={iaLoading}>
                       {iaLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Brain className="h-4 w-4 mr-2" />}
                       Analisar Saúde Financeira
                     </Button>
                   )}
                 </div>
+                {(iaStructured || iaRaw) && (
+                  <Button variant="outline" size="sm" onClick={() => runIA()} disabled={iaLoading}>
+                    <Repeat className="h-3 w-3 mr-1" /> Nova Análise
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -394,25 +440,161 @@ export default function FinanceiroUnificadoPage() {
             </div>
           )}
 
-          {/* AI response */}
-          {iaAnalise && !iaLoading && (
+          {/* Natural language answer */}
+          {iaResposta && !iaLoading && (
+            <Card className="border-primary/20">
+              <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Brain className="h-4 w-4 text-primary" /> Resposta</CardTitle></CardHeader>
+              <CardContent><p className="text-sm whitespace-pre-wrap leading-relaxed">{iaResposta}</p></CardContent>
+            </Card>
+          )}
+
+          {/* STRUCTURED AI ANALYSIS — visual cards */}
+          {iaStructured && !iaLoading && (
+            <div className="space-y-5">
+              {/* Health Score + Executive Summary */}
+              <Card className="overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-4">
+                  <div className={`p-6 flex flex-col items-center justify-center text-white ${
+                    iaStructured.healthScore >= 70 ? "bg-emerald-600" : iaStructured.healthScore >= 40 ? "bg-amber-500" : "bg-red-600"
+                  }`}>
+                    <p className="text-5xl font-bold">{iaStructured.healthScore}</p>
+                    <p className="text-xs opacity-90 mt-1">SAÚDE FINANCEIRA</p>
+                  </div>
+                  <div className="md:col-span-3 p-6 flex items-center">
+                    <p className="text-sm leading-relaxed">{iaStructured.resumoExecutivo}</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* KPIs Destaque */}
+              {iaStructured.kpisDestaque?.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {iaStructured.kpisDestaque.map((k: any, i: number) => {
+                    const colorMap: Record<string, string> = { green: "text-emerald-600", red: "text-red-600", amber: "text-amber-600", blue: "text-blue-600" };
+                    return (
+                      <Card key={i}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] text-muted-foreground">{k.label}</p>
+                            {k.tendencia === "up" ? <TrendingUp className="h-3 w-3 text-emerald-600" /> : k.tendencia === "down" ? <TrendingDown className="h-3 w-3 text-red-600" /> : null}
+                          </div>
+                          <p className={`text-lg font-bold ${colorMap[k.cor] || ""}`}>{k.valor}</p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Diagnóstico */}
+                {iaStructured.diagnostico?.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2">🔍 Diagnóstico</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {iaStructured.diagnostico.map((d: any, i: number) => (
+                        <div key={i} className={`p-2.5 rounded-lg border-l-4 ${
+                          d.severidade === "positivo" ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/10" :
+                          d.severidade === "critico" ? "border-red-500 bg-red-50/50 dark:bg-red-950/10" :
+                          d.severidade === "atencao" ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/10" :
+                          "border-slate-300 bg-muted/30"
+                        }`}>
+                          <p className="text-xs font-semibold">{d.titulo}</p>
+                          <p className="text-[11px] text-muted-foreground">{d.detalhe}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Riscos */}
+                {iaStructured.riscos?.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2">⚠️ Riscos Ocultos</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {iaStructured.riscos.map((r: any, i: number) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-muted/30 flex items-start gap-2">
+                          <Badge variant={r.impacto === "alto" ? "destructive" : "outline"} className="text-[8px] shrink-0 mt-0.5">{(r.impacto || "").toUpperCase()}</Badge>
+                          <div>
+                            <p className="text-xs font-semibold">{r.titulo}</p>
+                            <p className="text-[11px] text-muted-foreground">{r.detalhe}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Oportunidades — com ganho potencial */}
+              {iaStructured.oportunidades?.length > 0 && (
+                <Card className="border-emerald-200/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">💡 Oportunidades
+                      <Badge variant="default" className="text-[9px] ml-auto bg-emerald-600">
+                        Potencial: {fmt(iaStructured.oportunidades.reduce((s: number, o: any) => s + (o.ganhoPotencialMensal || 0), 0))}/mês
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Bar chart of opportunities */}
+                    {iaStructured.oportunidades.some((o: any) => o.ganhoPotencialMensal > 0) && (
+                      <ResponsiveContainer width="100%" height={Math.max(120, iaStructured.oportunidades.length * 42)}>
+                        <BarChart data={iaStructured.oportunidades.filter((o: any) => o.ganhoPotencialMensal > 0)} layout="vertical" margin={{ left: 10, right: 40 }}>
+                          <XAxis type="number" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} fontSize={10} />
+                          <YAxis type="category" dataKey="titulo" fontSize={9} width={130} />
+                          <Tooltip formatter={(v: any) => `${fmt(v)}/mês`} />
+                          <Bar dataKey="ganhoPotencialMensal" fill="#10b981" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    <div className="space-y-2 mt-2">
+                      {iaStructured.oportunidades.map((o: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/40 dark:bg-emerald-950/10">
+                          <div>
+                            <p className="text-xs font-semibold">{o.titulo}</p>
+                            <p className="text-[11px] text-muted-foreground">{o.detalhe}</p>
+                          </div>
+                          {o.ganhoPotencialMensal > 0 && <p className="text-xs font-bold text-emerald-600 shrink-0">+{fmtK(o.ganhoPotencialMensal)}/mês</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Ações Priorizadas */}
+              {iaStructured.acoes?.length > 0 && (
+                <Card className="border-primary/20">
+                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2">🎯 Plano de Ação Priorizado</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {[...iaStructured.acoes].sort((a: any, b: any) => (a.prioridade || 9) - (b.prioridade || 9)).map((a: any, i: number) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg border">
+                          <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                            {a.prioridade || i + 1}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-semibold">{a.titulo}</p>
+                              {a.prazo && <Badge variant="outline" className="text-[8px]">{a.prazo}</Badge>}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">{a.descricao}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Raw text fallback if JSON parse failed */}
+          {iaRaw && !iaStructured && !iaLoading && (
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-primary" /> Análise da IA
-                  <Badge variant="outline" className="text-[9px] ml-auto">NVIDIA Nemotron</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed">
-                  {iaAnalise}
-                </div>
-                <div className="mt-4 pt-3 border-t flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => runIA()} disabled={iaLoading}>
-                    <Repeat className="h-3 w-3 mr-1" /> Nova Análise
-                  </Button>
-                </div>
-              </CardContent>
+              <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Brain className="h-4 w-4 text-primary" /> Análise da IA</CardTitle></CardHeader>
+              <CardContent><div className="whitespace-pre-wrap text-sm leading-relaxed">{iaRaw}</div></CardContent>
             </Card>
           )}
 
@@ -420,7 +602,7 @@ export default function FinanceiroUnificadoPage() {
           {iaInsights.length > 0 && !iaLoading && (
             <div className="space-y-3">
               {iaAvailable === false && (
-                <p className="text-xs text-muted-foreground">💡 Análise baseada em regras (configure NVIDIA_API_KEY para análise por IA generativa).</p>
+                <p className="text-xs text-muted-foreground">💡 Análise baseada em regras (IA indisponível no momento).</p>
               )}
               {iaInsights.map((ins: any, i: number) => (
                 <Card key={i} className={
@@ -461,6 +643,19 @@ export default function FinanceiroUnificadoPage() {
                     <Bar dataKey="perda" stackId="a" fill="#ef4444" radius={[3, 3, 0, 0]} />
                   </ComposedChart>
                 </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Heatmap mensal de resultado */}
+          {periodos.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Heatmap de Performance Mensal</CardTitle>
+                <CardDescription>Verde = superávit · Vermelho = déficit · Intensidade = magnitude</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Heatmap periodos={periodos} fmt={fmt} />
               </CardContent>
             </Card>
           )}
@@ -752,6 +947,34 @@ function AgingBar({ label, value, count, total, color }: any) {
 }
 function IndexCard({ label, value, good }: { label: string; value: string; good: boolean }) {
   return <div className={`p-3 rounded-lg border ${good ? "border-emerald-200/50 bg-emerald-50/30" : "border-red-200/50 bg-red-50/30"}`}><p className="text-[10px] text-muted-foreground">{label}</p><p className={`text-lg font-bold ${good ? "text-emerald-600" : "text-red-600"}`}>{value}</p></div>;
+}
+
+// Monthly performance heatmap
+function Heatmap({ periodos, fmt }: { periodos: any[]; fmt: (v: number) => string }) {
+  const maxAbs = Math.max(...periodos.map((p: any) => Math.abs(p.resultado || 0)), 1);
+  return (
+    <div className="flex flex-wrap gap-2">
+      {periodos.map((p: any, i: number) => {
+        const r = p.resultado || 0;
+        const intensity = Math.min(1, Math.abs(r) / maxAbs);
+        const bg = r >= 0
+          ? `rgba(13, 148, 136, ${0.15 + intensity * 0.75})`
+          : `rgba(239, 68, 68, ${0.15 + intensity * 0.75})`;
+        return (
+          <div key={i} className="flex flex-col items-center gap-1">
+            <div
+              className="w-16 h-16 rounded-lg flex items-center justify-center text-[10px] font-bold text-white transition-transform hover:scale-105 cursor-default"
+              style={{ background: bg }}
+              title={`${p.periodo}: ${fmt(r)}`}
+            >
+              {r >= 0 ? "+" : "-"}{Math.abs(Math.round(r / 1000))}k
+            </div>
+            <span className="text-[9px] text-muted-foreground">{p.periodo}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // Build waterfall chart data: cumulative running balance with monthly gains/losses

@@ -102,33 +102,59 @@ OPERACIONAL:
     }
 
     // ═══ AI-powered analysis ═══
-    const systemPrompt = `Você é um CFO virtual sênior especializado em gestão financeira de centros terapêuticos e clínicas de saúde no Brasil. Você analisa dados financeiros com profundidade de nível institucional, cruzando dados operacionais e financeiros para revelar insights que gestores humanos deixam passar.
+    // For free-text questions, return prose. For the full analysis, return STRUCTURED JSON.
+    if (pergunta) {
+      const systemPrompt = `Você é um CFO virtual sênior de centros terapêuticos no Brasil. Responda em português, específico com números, direto ao ponto.`;
+      const userPrompt = `${contexto}\n\nPERGUNTA DO GESTOR: ${pergunta}\n\nResponda com base nos dados acima, de forma objetiva.`;
+      try {
+        const resposta = await financialReasoning({ systemPrompt, userPrompt, maxTokens: 1500 });
+        return NextResponse.json({ success: true, data: { available: true, resposta, contexto: serieMensal, custosPorCategoria } });
+      } catch {
+        return NextResponse.json({ success: true, data: { available: false, contexto: serieMensal, custosPorCategoria, insights: gerarInsightsLocais(serieMensal, custosPorCategoria, totalRec, totalDesp, ativos, capacidade, previstoMensal, semMensalidade) } });
+      }
+    }
 
-Regras:
-- Responda SEMPRE em português brasileiro.
-- Seja específico com números e percentuais dos dados fornecidos.
-- Identifique padrões, tendências, riscos e oportunidades NÃO óbvios.
-- Cruze dados operacionais (ocupação, acolhidos) com financeiros.
-- Priorize insights acionáveis sobre observações genéricas.
-- Use formato de bullets curtos e diretos.`;
+    const systemPrompt = `Você é um CFO virtual sênior especializado em gestão financeira de centros terapêuticos no Brasil. Você DEVE responder APENAS com JSON válido (sem markdown, sem \`\`\`), seguindo EXATAMENTE este schema:
 
-    const userPrompt = pergunta
-      ? `${contexto}\n\nPERGUNTA DO GESTOR: ${pergunta}\n\nResponda com base nos dados acima.`
-      : `${contexto}\n\nFaça uma análise financeira PROFUNDA. Estruture em 4 seções:
-1. 🔍 DIAGNÓSTICO — saúde financeira real (o que os números revelam)
-2. ⚠️ RISCOS OCULTOS — problemas que passam despercebidos (sazonalidade, concentração, tendências negativas)
-3. 💡 OPORTUNIDADES — onde há dinheiro sendo perdido ou que pode ser capturado
-4. 🎯 AÇÕES RECOMENDADAS — 3 a 5 ações concretas e priorizadas
+{
+  "healthScore": <número 0-100 representando a saúde financeira geral>,
+  "resumoExecutivo": "<1-2 frases sobre a situação geral>",
+  "kpisDestaque": [
+    { "label": "<nome>", "valor": "<valor formatado>", "tendencia": "up|down|neutral", "cor": "green|red|amber|blue" }
+  ],
+  "diagnostico": [
+    { "titulo": "<curto>", "detalhe": "<1 frase com número>", "severidade": "positivo|neutro|atencao|critico" }
+  ],
+  "riscos": [
+    { "titulo": "<curto>", "detalhe": "<1 frase com número>", "impacto": "alto|medio|baixo" }
+  ],
+  "oportunidades": [
+    { "titulo": "<curto>", "detalhe": "<1 frase>", "ganhoPotencialMensal": <número em reais ou 0> }
+  ],
+  "acoes": [
+    { "prioridade": <1-5>, "titulo": "<curto>", "descricao": "<1 frase acionável>", "prazo": "<ex: 30 dias>" }
+  ]
+}
 
-Seja incisivo e revele o que um humano deixaria passar.`;
+Regras: 4-6 itens por seção no máximo. Números reais dos dados. Sem texto fora do JSON.`;
+
+    const userPrompt = `${contexto}\n\nAnalise profundamente e retorne o JSON estruturado com diagnóstico, riscos ocultos, oportunidades (com ganho potencial mensal em reais) e ações priorizadas. Cruze dados operacionais com financeiros. Revele o que um humano deixaria passar.`;
 
     try {
-      const analise = await financialReasoning({ systemPrompt, userPrompt, maxTokens: 2048 });
+      const raw = await financialReasoning({ systemPrompt, userPrompt, maxTokens: 3000 });
+      // Extract JSON from the response (strip any markdown fences or reasoning prefix)
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      let structured = null;
+      if (jsonMatch) {
+        try { structured = JSON.parse(jsonMatch[0]); } catch { structured = null; }
+      }
+
       return NextResponse.json({
         success: true,
         data: {
           available: true,
-          analise,
+          structured,
+          analiseRaw: structured ? null : raw, // fallback to raw text if JSON parse failed
           contexto: serieMensal,
           custosPorCategoria,
         },
