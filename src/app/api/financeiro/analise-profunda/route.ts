@@ -230,19 +230,42 @@ export async function GET(req: NextRequest) {
     // ═══════════════════════════════════════════════════════════
     // 10. ANOMALIAS (Outlier Detection - Z-score based)
     // ═══════════════════════════════════════════════════════════
+    // Detecção de anomalias por IQR (Interquartile Range) DENTRO de cada categoria.
+    // Isso evita marcar despesas grandes legítimas (folha, parcelas) como anomalia,
+    // já que despesas seguem distribuição log-normal, não normal.
     const despesas = movs.filter(m => m.tipo === "DESPESA");
-    const mediaDesp = despesas.reduce((s, m) => s + m.valor, 0) / (despesas.length || 1);
-    const stdDevDesp = Math.sqrt(despesas.reduce((s, m) => s + Math.pow(m.valor - mediaDesp, 2), 0) / (despesas.length || 1));
     const anomalias: { data: string; descricao: string; valor: number; motivo: string; zscore: number }[] = [];
+
+    // Agrupa por categoria e calcula limite superior (Q3 + 1.5*IQR) por categoria
+    const porCategoriaDesp: Record<string, number[]> = {};
     for (const m of despesas) {
-      const zscore = stdDevDesp > 0 ? (m.valor - mediaDesp) / stdDevDesp : 0;
-      if (zscore > 2) {
+      if (!porCategoriaDesp[m.categoria]) porCategoriaDesp[m.categoria] = [];
+      porCategoriaDesp[m.categoria].push(m.valor);
+    }
+    const limitesPorCategoria: Record<string, number> = {};
+    for (const [cat, valores] of Object.entries(porCategoriaDesp)) {
+      const sorted = [...valores].sort((a, b) => a - b);
+      const q1 = sorted[Math.floor(sorted.length * 0.25)] || 0;
+      const q3 = sorted[Math.floor(sorted.length * 0.75)] || 0;
+      const iqr = q3 - q1;
+      limitesPorCategoria[cat] = q3 + 1.5 * iqr; // upper fence
+    }
+
+    for (const m of despesas) {
+      const limite = limitesPorCategoria[m.categoria] || Infinity;
+      const medianaCateg = (() => {
+        const s = [...porCategoriaDesp[m.categoria]].sort((a, b) => a - b);
+        return s[Math.floor(s.length / 2)] || 1;
+      })();
+      // Anomalia = acima do limite superior da categoria E pelo menos 2x a mediana da categoria
+      if (m.valor > limite && m.valor > medianaCateg * 2 && limite < Infinity && porCategoriaDesp[m.categoria].length >= 4) {
+        const multiplo = m.valor / medianaCateg;
         anomalias.push({
           data: m.dataVencimento.toISOString().split("T")[0],
           descricao: m.descricao.slice(0, 50),
           valor: m.valor,
-          motivo: `Z-score ${zscore.toFixed(1)} (${(m.valor / mediaDesp).toFixed(1)}x a média)`,
-          zscore,
+          motivo: `${multiplo.toFixed(1)}x acima da mediana de ${m.categoria}`,
+          zscore: multiplo,
         });
       }
     }
@@ -557,7 +580,10 @@ export async function GET(req: NextRequest) {
     // ═══════════════════════════════════════════════════════════
     const porDia: Record<string, { rec: number; desp: number }> = {};
     for (const m of movs) {
-      const key = m.dataVencimento.toISOString().split("T")[0];
+      // Fluxo de CAIXA usa a data em que o dinheiro efetivamente entrou/saiu (dataPagamento).
+      // Fallback para dataVencimento se não houver pagamento registrado.
+      const dataFluxo = m.dataPagamento || m.dataVencimento;
+      const key = dataFluxo.toISOString().split("T")[0];
       if (!porDia[key]) porDia[key] = { rec: 0, desp: 0 };
       if (m.tipo === "RECEITA") porDia[key].rec += m.valor;
       else porDia[key].desp += m.valor;
