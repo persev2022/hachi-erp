@@ -291,25 +291,73 @@ export default function NovoPacientePage() {
               <label className="text-sm font-medium text-foreground">
                 Tempo de Uso
               </label>
-              <Input name="tempoUso" placeholder="Ex: 5 anos" />
+              <select
+                name="tempoUso"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Selecione</option>
+                <option value="Menos de 1 ano">Menos de 1 ano</option>
+                <option value="1 a 3 anos">1 a 3 anos</option>
+                <option value="3 a 5 anos">3 a 5 anos</option>
+                <option value="5 a 10 anos">5 a 10 anos</option>
+                <option value="Mais de 10 anos">Mais de 10 anos</option>
+              </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Internações Prévias
               </label>
-              <Input name="internacoesPrevias" type="number" placeholder="0" min={0} defaultValue={0} />
+              <select
+                name="internacoesPrevias"
+                defaultValue="0"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="0">Nenhuma (primeira internação)</option>
+                <option value="1">1 internação</option>
+                <option value="2">2 internações</option>
+                <option value="3">3 internações</option>
+                <option value="4">4 internações</option>
+                <option value="5">5 ou mais</option>
+              </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Comorbidades
               </label>
-              <Input name="comorbidades" placeholder="Ex: Depressão, Ansiedade" />
+              <select
+                name="comorbidades"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Selecione</option>
+                <option value="Nenhuma">Nenhuma</option>
+                <option value="Depressão">Depressão</option>
+                <option value="Ansiedade">Ansiedade</option>
+                <option value="Transtorno Bipolar">Transtorno Bipolar</option>
+                <option value="Esquizofrenia">Esquizofrenia</option>
+                <option value="Transtorno de Personalidade">Transtorno de Personalidade</option>
+                <option value="Depressão e Ansiedade">Depressão e Ansiedade</option>
+                <option value="Diabetes">Diabetes</option>
+                <option value="Hipertensão">Hipertensão</option>
+                <option value="Outras">Outras</option>
+              </select>
             </div>
-            <div className="md:col-span-2 space-y-2">
+            <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Alergias
               </label>
-              <Input name="alergias" placeholder="Alergias conhecidas" />
+              <select
+                name="alergias"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Selecione</option>
+                <option value="Nenhuma conhecida">Nenhuma conhecida</option>
+                <option value="Dipirona">Dipirona</option>
+                <option value="Penicilina">Penicilina</option>
+                <option value="AAS / Aspirina">AAS / Aspirina</option>
+                <option value="Anti-inflamatórios">Anti-inflamatórios</option>
+                <option value="Sulfas">Sulfas</option>
+                <option value="Outras">Outras</option>
+              </select>
             </div>
           </CardContent>
         </Card>
@@ -332,7 +380,20 @@ export default function NovoPacientePage() {
               <label className="text-sm font-medium text-foreground">
                 {terms.diasTratamento} *
               </label>
-              <Input name="diasTratamento" type="number" placeholder="90" min={1} required defaultValue={90} />
+              <select
+                name="diasTratamento"
+                required
+                defaultValue="90"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="30">30 dias</option>
+                <option value="60">60 dias</option>
+                <option value="90">90 dias</option>
+                <option value="120">120 dias</option>
+                <option value="180">180 dias</option>
+                <option value="270">270 dias</option>
+                <option value="365">365 dias (1 ano)</option>
+              </select>
               {fieldError("diasTratamento")}
             </div>
             <div className="space-y-2">
