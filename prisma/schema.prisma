@@ -490,8 +490,14 @@ model DispensacaoMedicamento {
   itemId        String
   pacienteId    String?                  // null para entrada/ajuste geral
   tipo          TipoMovimentacaoEstoque  @default(DISPENSACAO)
-  quantidade    Int                      // quantidade movimentada (positiva)
-  dosagem       String?                  // ex: "1 comp 8/8h"
+  quantidade    Int                      // quantidade dispensada ao acolhido (positiva)
+  dosagem       String?                  // texto livre: ex "1 comp 8/8h"
+  // Posologia estruturada para controle diário automático
+  dosePorVez    Float?                   // quantas unidades por administração (ex: 1)
+  vezesPorDia   Int?                     // administrações por dia (ex: 3 para 8/8h)
+  dataInicio    DateTime?                // início do uso (default = data da dispensação)
+  dataFim       DateTime?                // fim previsto (calculado ou manual)
+  ativo         Boolean                  @default(true) // tratamento em andamento
   observacoes   String?
   dispensadoPor String                   // userId
   tenantId      String?

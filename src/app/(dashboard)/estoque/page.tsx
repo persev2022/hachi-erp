@@ -229,20 +229,37 @@ export default function EstoquePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {resumoAcolhido.map((r: any) => (
-                <Card key={r.pacienteId}>
+                <Card key={r.pacienteId} className={r.precisaRepor ? "border-amber-300" : ""}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Users className="h-4 w-4 text-primary" /> {r.nome}
+                      {r.precisaRepor && <Badge variant="outline" className="text-[9px] bg-amber-100 text-amber-700 border-amber-300 ml-auto">Repor</Badge>}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-1.5">
-                      {r.medicamentos.map((m: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between text-xs">
-                          <span className="flex items-center gap-1.5"><Pill className="h-3 w-3 text-muted-foreground" /> {m.nome}</span>
-                          <Badge variant="secondary" className="text-[10px]">{m.total} {m.unidade}</Badge>
-                        </div>
-                      ))}
+                    <div className="space-y-2">
+                      {r.medicamentos.map((m: any, i: number) => {
+                        const statusColor = m.status === "ESGOTADO" ? "text-red-600" : m.status === "REPOR" ? "text-amber-600" : m.status === "MANUAL" ? "text-slate-500" : "text-emerald-600";
+                        return (
+                          <div key={i} className="p-2 rounded-lg bg-muted/30 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-1.5 text-xs font-medium"><Pill className="h-3 w-3 text-muted-foreground" /> {m.nome}</span>
+                              <Badge variant="secondary" className="text-[10px]">{m.restante}/{m.totalDispensado} {m.unidade}</Badge>
+                            </div>
+                            {m.posologia && <p className="text-[10px] text-muted-foreground">{m.posologia}</p>}
+                            {m.consumoDiario > 0 ? (
+                              <div className="flex items-center justify-between text-[10px]">
+                                <span className="text-muted-foreground">{m.consumoDiario} {m.unidade}/dia</span>
+                                <span className={`font-medium ${statusColor}`}>
+                                  {m.status === "ESGOTADO" ? "⚠️ Esgotado" : `${m.diasRestantes} dias restantes`}
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="text-[10px] text-slate-500">Controle manual (sem posologia)</p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -313,19 +330,41 @@ export default function EstoquePage() {
                   {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Quantidade *</label>
-                  <Input name="quantidade" type="number" required min={1} max={dispensarItem.quantidade} defaultValue={1} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Dosagem</label>
-                  <Input name="dosagem" placeholder="Ex: 1 comp 8/8h" />
-                </div>
-              </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Observações</label>
-                <Input name="observacoes" placeholder="Opcional" />
+                <label className="text-sm font-medium">Quantidade dispensada *</label>
+                <Input name="quantidade" type="number" required min={1} max={dispensarItem.quantidade} defaultValue={1} />
+                <p className="text-[10px] text-muted-foreground">Total entregue ao {terms.paciente.toLowerCase()} (ex: cartela com 30 comprimidos)</p>
+              </div>
+
+              {/* Posologia estruturada para controle automático */}
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-3">
+                <p className="text-xs font-medium flex items-center gap-1"><Pill className="h-3 w-3" /> Posologia (controle diário automático)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Dose por vez</label>
+                    <Input name="dosePorVez" type="number" step="0.5" min={0} placeholder="Ex: 1" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Vezes por dia</label>
+                    <select name="vezesPorDia" className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+                      <option value="">—</option>
+                      <option value="1">1x/dia (24/24h)</option>
+                      <option value="2">2x/dia (12/12h)</option>
+                      <option value="3">3x/dia (8/8h)</option>
+                      <option value="4">4x/dia (6/6h)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Início do uso</label>
+                  <Input name="dataInicio" type="date" defaultValue={new Date().toISOString().split("T")[0]} />
+                </div>
+                <p className="text-[10px] text-muted-foreground">💡 Com a posologia, o sistema calcula automaticamente quanto o {terms.paciente.toLowerCase()} já consumiu e quantos dias ainda dura — sem baixa manual diária.</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Observações / Dosagem (texto)</label>
+                <Input name="dosagem" placeholder="Ex: tomar em jejum" />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setDispensarItem(null)}>Cancelar</Button>
