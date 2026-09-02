@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Package, AlertTriangle, Plus, Search, Loader2, X, Pill, Users, ArrowDownCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,14 +38,12 @@ export default function EstoquePage() {
   const [loading, setLoading] = React.useState(true);
   const [showForm, setShowForm] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
-  const [tab, setTab] = React.useState<"estoque" | "por-acolhido">("estoque");
+  const [tab] = React.useState<"estoque">("estoque");
   const { show } = useToast();
 
   // Dispensa
   const [dispensarItem, setDispensarItem] = React.useState<Item | null>(null);
   const [pacientes, setPacientes] = React.useState<{ id: string; nome: string }[]>([]);
-  const [resumoAcolhido, setResumoAcolhido] = React.useState<any[]>([]);
-  const [loadingResumo, setLoadingResumo] = React.useState(false);
 
   const fetchItems = React.useCallback(async () => {
     setLoading(true);
@@ -66,17 +65,6 @@ export default function EstoquePage() {
       .then(d => { if (d.success) setPacientes(d.data.map((p: any) => ({ id: p.id, nome: p.nome }))); })
       .catch(() => {});
   }, []);
-
-  const fetchResumo = React.useCallback(async () => {
-    setLoadingResumo(true);
-    try {
-      const res = await fetch("/api/estoque/dispensar?resumo=true");
-      const d = await res.json();
-      if (d.success) setResumoAcolhido(d.data);
-    } catch {} finally { setLoadingResumo(false); }
-  }, []);
-
-  React.useEffect(() => { if (tab === "por-acolhido") fetchResumo(); }, [tab, fetchResumo]);
 
   const alertas = items.filter((i) => i.quantidade <= i.minimo);
 
@@ -137,9 +125,9 @@ export default function EstoquePage() {
         <button onClick={() => setTab("estoque")} className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium ${tab === "estoque" ? "bg-background shadow text-primary" : "text-muted-foreground"}`}>
           <Package className="h-3.5 w-3.5" /> Estoque
         </button>
-        <button onClick={() => setTab("por-acolhido")} className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium ${tab === "por-acolhido" ? "bg-background shadow text-primary" : "text-muted-foreground"}`}>
-          <Users className="h-3.5 w-3.5" /> Medicamentos por {terms.paciente}
-        </button>
+        <Link href="/estoque/medicamentos" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground">
+          <Users className="h-3.5 w-3.5" /> Medicamentos por {terms.paciente} →
+        </Link>
       </div>
 
       {/* Alertas */}
@@ -214,59 +202,6 @@ export default function EstoquePage() {
             </div>
           )}
         </>
-      )}
-
-      {/* ═══════ POR ACOLHIDO TAB ═══════ */}
-      {tab === "por-acolhido" && (
-        <div className="space-y-4">
-          {loadingResumo ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
-          ) : resumoAcolhido.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              <Pill className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              Nenhuma dispensação registrada ainda. Use "Dispensar" na aba Estoque.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {resumoAcolhido.map((r: any) => (
-                <Card key={r.pacienteId} className={r.precisaRepor ? "border-amber-300" : ""}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Users className="h-4 w-4 text-primary" /> {r.nome}
-                      {r.precisaRepor && <Badge variant="outline" className="text-[9px] bg-amber-100 text-amber-700 border-amber-300 ml-auto">Repor</Badge>}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {r.medicamentos.map((m: any, i: number) => {
-                        const statusColor = m.status === "ESGOTADO" ? "text-red-600" : m.status === "REPOR" ? "text-amber-600" : m.status === "MANUAL" ? "text-slate-500" : "text-emerald-600";
-                        return (
-                          <div key={i} className="p-2 rounded-lg bg-muted/30 space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span className="flex items-center gap-1.5 text-xs font-medium"><Pill className="h-3 w-3 text-muted-foreground" /> {m.nome}</span>
-                              <Badge variant="secondary" className="text-[10px]">{m.restante}/{m.totalDispensado} {m.unidade}</Badge>
-                            </div>
-                            {m.posologia && <p className="text-[10px] text-muted-foreground">{m.posologia}</p>}
-                            {m.consumoDiario > 0 ? (
-                              <div className="flex items-center justify-between text-[10px]">
-                                <span className="text-muted-foreground">{m.consumoDiario} {m.unidade}/dia</span>
-                                <span className={`font-medium ${statusColor}`}>
-                                  {m.status === "ESGOTADO" ? "⚠️ Esgotado" : `${m.diasRestantes} dias restantes`}
-                                </span>
-                              </div>
-                            ) : (
-                              <p className="text-[10px] text-slate-500">Controle manual (sem posologia)</p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
       )}
 
       {/* ═══════ MODAL: Novo Item ═══════ */}
