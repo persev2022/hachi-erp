@@ -467,10 +467,42 @@ model ItemEstoque {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  dispensacoes  DispensacaoMedicamento[]
+
   @@index([categoria])
   @@index([validade])
   @@index([tenantId])
   @@map("itens_estoque")
+}
+
+// ═══════════════════════════════════════════════════════════
+// DISPENSAÇÃO DE MEDICAMENTOS (baixa vinculada ao acolhido)
+// ═══════════════════════════════════════════════════════════
+
+enum TipoMovimentacaoEstoque {
+  ENTRADA       // reposição de estoque
+  DISPENSACAO   // baixa para um acolhido
+  AJUSTE        // ajuste/perda/vencimento
+}
+
+model DispensacaoMedicamento {
+  id            String                   @id @default(uuid())
+  itemId        String
+  pacienteId    String?                  // null para entrada/ajuste geral
+  tipo          TipoMovimentacaoEstoque  @default(DISPENSACAO)
+  quantidade    Int                      // quantidade movimentada (positiva)
+  dosagem       String?                  // ex: "1 comp 8/8h"
+  observacoes   String?
+  dispensadoPor String                   // userId
+  tenantId      String?
+  createdAt     DateTime                 @default(now())
+
+  item      ItemEstoque @relation(fields: [itemId], references: [id])
+
+  @@index([itemId, createdAt])
+  @@index([pacienteId, createdAt])
+  @@index([tenantId])
+  @@map("dispensacoes_medicamento")
 }
 
 // ═══════════════════════════════════════════════════════════

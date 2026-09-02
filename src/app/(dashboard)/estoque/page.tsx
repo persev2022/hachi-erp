@@ -1,15 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { Package, AlertTriangle, Plus, Search, Loader2, X } from "lucide-react";
+import { Package, AlertTriangle, Plus, Search, Loader2, X, Pill, Users, ArrowDownCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-simple";
 import { EmptyState } from "@/components/empty-state";
+import { useTerminology } from "@/hooks/use-terminology";
 
 interface Item {
   id: string;
@@ -29,13 +31,20 @@ function formatValidade(d: string | null) {
 }
 
 export default function EstoquePage() {
+  const terms = useTerminology();
   const [busca, setBusca] = React.useState("");
   const [items, setItems] = React.useState<Item[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [alertCount, setAlertCount] = React.useState(0);
   const [showForm, setShowForm] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+  const [tab, setTab] = React.useState<"estoque" | "por-acolhido">("estoque");
   const { show } = useToast();
+
+  // Dispensa
+  const [dispensarItem, setDispensarItem] = React.useState<Item | null>(null);
+  const [pacientes, setPacientes] = React.useState<{ id: string; nome: string }[]>([]);
+  const [resumoAcolhido, setResumoAcolhido] = React.useState<any[]>([]);
+  const [loadingResumo, setLoadingResumo] = React.useState(false);
 
   const fetchItems = React.useCallback(async () => {
     setLoading(true);
@@ -44,18 +53,30 @@ export default function EstoquePage() {
       if (busca) params.set("search", busca);
       const res = await fetch(`/api/estoque?${params.toString()}`);
       const data = await res.json();
-      if (data.success) {
-        setItems(data.data);
-        setAlertCount(data.meta.alertas);
-      }
-    } catch {
-      show("Erro ao carregar estoque", "error");
-    } finally {
-      setLoading(false);
-    }
+      if (data.success) setItems(data.data);
+    } catch { show("Erro ao carregar estoque", "error"); }
+    finally { setLoading(false); }
   }, [busca, show]);
 
   React.useEffect(() => { fetchItems(); }, [fetchItems]);
+
+  React.useEffect(() => {
+    fetch("/api/pacientes?pageSize=100&status=ATIVO")
+      .then(r => r.json())
+      .then(d => { if (d.success) setPacientes(d.data.map((p: any) => ({ id: p.id, nome: p.nome }))); })
+      .catch(() => {});
+  }, []);
+
+  const fetchResumo = React.useCallback(async () => {
+    setLoadingResumo(true);
+    try {
+      const res = await fetch("/api/estoque/dispensar?resumo=true");
+      const d = await res.json();
+      if (d.success) setResumoAcolhido(d.data);
+    } catch {} finally { setLoadingResumo(false); }
+  }, []);
+
+  React.useEffect(() => { if (tab === "por-acolhido") fetchResumo(); }, [tab, fetchResumo]);
 
   const alertas = items.filter((i) => i.quantidade <= i.minimo);
 
@@ -63,27 +84,40 @@ export default function EstoquePage() {
     e.preventDefault();
     setSubmitting(true);
     const form = new FormData(e.currentTarget);
-
     const payload = {
-      nome: form.get("nome"),
-      categoria: form.get("categoria"),
-      unidade: form.get("unidade"),
+      nome: form.get("nome"), categoria: form.get("categoria"), unidade: form.get("unidade"),
       quantidade: parseInt(form.get("quantidade") as string) || 0,
       minimo: parseInt(form.get("minimo") as string) || 5,
       validade: form.get("validade") || undefined,
       localizacao: form.get("localizacao") || undefined,
       fornecedor: form.get("fornecedor") || undefined,
     };
-
     try {
-      const res = await fetch("/api/estoque", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch("/api/estoque", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (data.success) { show("Item cadastrado!", "success"); setShowForm(false); fetchItems(); }
       else show(data.error || "Erro ao cadastrar", "error");
+    } catch { show("Erro de conexão", "error"); }
+    finally { setSubmitting(false); }
+  };
+
+  const handleDispensar = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!dispensarItem) return;
+    setSubmitting(true);
+    const form = new FormData(e.currentTarget);
+    const payload = {
+      itemId: dispensarItem.id,
+      pacienteId: (form.get("pacienteId") as string) || undefined,
+      quantidade: parseInt(form.get("quantidade") as string) || 1,
+      dosagem: (form.get("dosagem") as string) || undefined,
+      observacoes: (form.get("observacoes") as string) || undefined,
+    };
+    try {
+      const res = await fetch("/api/estoque/dispensar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (data.success) { show(data.message || "Dispensado!", "success"); setDispensarItem(null); fetchItems(); }
+      else show(data.error || "Erro ao dispensar", "error");
     } catch { show("Erro de conexão", "error"); }
     finally { setSubmitting(false); }
   };
@@ -93,26 +127,141 @@ export default function EstoquePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold">Estoque</h1>
-          <p className="text-sm text-muted-foreground mt-1">Controle de medicamentos e materiais</p>
+          <p className="text-sm text-muted-foreground mt-1">Controle de medicamentos e materiais · dispensação por {terms.paciente.toLowerCase()}</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />Novo Item
-        </Button>
+        <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-2" />Novo Item</Button>
       </div>
 
-      {/* Modal */}
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-muted/50 rounded-lg w-fit">
+        <button onClick={() => setTab("estoque")} className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium ${tab === "estoque" ? "bg-background shadow text-primary" : "text-muted-foreground"}`}>
+          <Package className="h-3.5 w-3.5" /> Estoque
+        </button>
+        <button onClick={() => setTab("por-acolhido")} className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium ${tab === "por-acolhido" ? "bg-background shadow text-primary" : "text-muted-foreground"}`}>
+          <Users className="h-3.5 w-3.5" /> Medicamentos por {terms.paciente}
+        </button>
+      </div>
+
+      {/* Alertas */}
+      {tab === "estoque" && alertas.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-950/20">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <span className="font-medium text-amber-800 text-sm dark:text-amber-300">{alertas.length} item(ns) abaixo do estoque mínimo</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {alertas.map((item) => (
+              <Badge key={item.id} variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
+                {item.nome} ({item.quantidade}/{item.minimo} {item.unidade})
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════ ESTOQUE TAB ═══════ */}
+      {tab === "estoque" && (
+        <>
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Buscar por nome..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <div className="rounded-lg border bg-card overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Quantidade</TableHead>
+                    <TableHead>Validade</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item) => {
+                    const baixo = item.quantidade <= item.minimo;
+                    const isMed = item.categoria === "MEDICAMENTO";
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium flex items-center gap-2">
+                          {isMed && <Pill className="h-3.5 w-3.5 text-primary" />}{item.nome}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{item.categoria}</TableCell>
+                        <TableCell className={baixo ? "text-red-600 font-bold" : ""}>{item.quantidade} {item.unidade}</TableCell>
+                        <TableCell className="text-muted-foreground">{formatValidade(item.validade)}</TableCell>
+                        <TableCell>
+                          {baixo ? <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">Baixo</Badge>
+                                 : <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200">OK</Badge>}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="outline" size="sm" className="text-xs" disabled={item.quantidade === 0} onClick={() => setDispensarItem(item)}>
+                            <ArrowDownCircle className="h-3 w-3 mr-1" /> Dispensar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {items.length === 0 && (
+                    <TableRow><TableCell colSpan={6} className="p-0"><EmptyState module="estoque" /></TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ═══════ POR ACOLHIDO TAB ═══════ */}
+      {tab === "por-acolhido" && (
+        <div className="space-y-4">
+          {loadingResumo ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
+          ) : resumoAcolhido.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              <Pill className="h-10 w-10 mx-auto mb-3 opacity-40" />
+              Nenhuma dispensação registrada ainda. Use "Dispensar" na aba Estoque.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {resumoAcolhido.map((r: any) => (
+                <Card key={r.pacienteId}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" /> {r.nome}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-1.5">
+                      {r.medicamentos.map((m: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between text-xs">
+                          <span className="flex items-center gap-1.5"><Pill className="h-3 w-3 text-muted-foreground" /> {m.nome}</span>
+                          <Badge variant="secondary" className="text-[10px]">{m.total} {m.unidade}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════ MODAL: Novo Item ═══════ */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-card border rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-card border rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Novo Item</h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X className="h-4 w-4" /></Button>
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nome *</label>
-                <Input name="nome" required placeholder="Ex: Clonazepam 2mg" />
-              </div>
+              <div className="space-y-2"><label className="text-sm font-medium">Nome *</label><Input name="nome" required placeholder="Ex: Clonazepam 2mg" /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Categoria *</label>
@@ -127,120 +276,63 @@ export default function EstoquePage() {
                     <option value="OUTRO">Outro</option>
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Unidade *</label>
-                  <Input name="unidade" required placeholder="Ex: Cx, Un, L" />
-                </div>
+                <div className="space-y-2"><label className="text-sm font-medium">Unidade *</label><Input name="unidade" required placeholder="Ex: Comp, Cx, mL" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Quantidade</label>
-                  <Input name="quantidade" type="number" defaultValue={0} min={0} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Mínimo (alerta)</label>
-                  <Input name="minimo" type="number" defaultValue={5} min={0} />
-                </div>
+                <div className="space-y-2"><label className="text-sm font-medium">Quantidade</label><Input name="quantidade" type="number" defaultValue={0} min={0} /></div>
+                <div className="space-y-2"><label className="text-sm font-medium">Mínimo (alerta)</label><Input name="minimo" type="number" defaultValue={5} min={0} /></div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Validade</label>
-                <Input name="validade" type="date" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Fornecedor</label>
-                <Input name="fornecedor" placeholder="Nome do fornecedor" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Localização</label>
-                <Input name="localizacao" placeholder="Ex: Armário A, Prateleira 2" />
-              </div>
+              <div className="space-y-2"><label className="text-sm font-medium">Validade</label><Input name="validade" type="date" /></div>
+              <div className="space-y-2"><label className="text-sm font-medium">Fornecedor</label><Input name="fornecedor" placeholder="Nome do fornecedor" /></div>
+              <div className="space-y-2"><label className="text-sm font-medium">Localização</label><Input name="localizacao" placeholder="Ex: Armário A" /></div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Salvar
-                </Button>
+                <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Salvar</Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Alertas */}
-      {alertas.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <span className="font-medium text-amber-800 text-sm">
-              {alertas.length} item(ns) abaixo do estoque mínimo
-            </span>
+      {/* ═══════ MODAL: Dispensar ═══════ */}
+      {dispensarItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDispensarItem(null)}>
+          <div className="bg-card border rounded-xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2"><ArrowDownCircle className="h-4 w-4 text-primary" /> Dispensar</h2>
+                <p className="text-xs text-muted-foreground">{dispensarItem.nome} · disponível: {dispensarItem.quantidade} {dispensarItem.unidade}</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDispensarItem(null)}><X className="h-4 w-4" /></Button>
+            </div>
+            <form onSubmit={handleDispensar} className="p-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{terms.paciente}</label>
+                <select name="pacienteId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  <option value="">Estoque geral (sem {terms.paciente.toLowerCase()})</option>
+                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Quantidade *</label>
+                  <Input name="quantidade" type="number" required min={1} max={dispensarItem.quantidade} defaultValue={1} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Dosagem</label>
+                  <Input name="dosagem" placeholder="Ex: 1 comp 8/8h" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Observações</label>
+                <Input name="observacoes" placeholder="Opcional" />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setDispensarItem(null)}>Cancelar</Button>
+                <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Confirmar Baixa</Button>
+              </div>
+            </form>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {alertas.map((item) => (
-              <Badge key={item.id} variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
-                {item.nome} ({item.quantidade}/{item.minimo} {item.unidade})
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Busca */}
-      <div className="relative w-full sm:max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Buscar por nome..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
-      </div>
-
-      {/* Table */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="rounded-lg border bg-card overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Quantidade</TableHead>
-                <TableHead>Mínimo</TableHead>
-                <TableHead>Validade</TableHead>
-                <TableHead>Fornecedor</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => {
-                const baixo = item.quantidade <= item.minimo;
-                return (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.nome}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.categoria}</TableCell>
-                    <TableCell className={baixo ? "text-red-600 font-bold" : ""}>
-                      {item.quantidade} {item.unidade}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{item.minimo} {item.unidade}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatValidade(item.validade)}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.fornecedor || "—"}</TableCell>
-                    <TableCell>
-                      {baixo ? (
-                        <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">Baixo</Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200">OK</Badge>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {items.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="p-0">
-                    <EmptyState module="estoque" />
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
         </div>
       )}
     </div>
